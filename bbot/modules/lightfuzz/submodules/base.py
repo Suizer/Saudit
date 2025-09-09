@@ -233,6 +233,7 @@ class BaseLightfuzz:
             "",
             additional_params_populate_empty,
             skip_urlencoding,
+            timeout=timeout,
         )
         request_params.update({"allow_redirects": allow_redirects, "retries": 0, "timeout": timeout})
         self.debug(f"standard_probe requested URL: [{request_params['url']}]")
