@@ -19,7 +19,7 @@ class lightfuzz(BaseModule):
         "force_common_headers": "Force emit commonly exploitable parameters that may be difficult to detect",
         "enabled_submodules": "A list of submodules to enable. Empty list enabled all modules.",
         "disable_post": "Disable processing of POST parameters, avoiding form submissions.",
-        "avoid_wafs": "Avoid running against confirmed WAFs, which are likely to lightfuzz requests",
+        "avoid_wafs": "Avoid running against confirmed WAFs, which are likely to block lightfuzz requests",
     }
 
     meta = {
