@@ -170,7 +170,6 @@ class lightfuzz(BaseModule):
             except InteractshError as e:
                 self.debug(f"Error in interact.sh: {e}")
 
-
     async def filter_event(self, event):
         # Unless configured specifically to do so, avoid running against confirmed WAFs
         if self.avoid_wafs and any(tag in ["cdn-cloudflare", "cdn-akamai", "cdn-incapsula"] for tag in event.tags):
