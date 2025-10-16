@@ -1842,7 +1842,7 @@ class Test_Lightfuzz_filter_event(ModuleTestBase):
             module="httpx",
             tags=["status-200", "distance-0", "cdn-cloudflare"],
         )
-        
+
         self.web_param_event_with_waf = module_test.scan.make_event(
             {
                 "host": "127.0.0.1",
@@ -1857,7 +1857,7 @@ class Test_Lightfuzz_filter_event(ModuleTestBase):
             module="excavate",
             tags=["distance-0", "cdn-cloudflare"],
         )
-        
+
         self.url_event_without_waf = module_test.scan.make_event(
             "http://127.0.0.1:8888/",
             "URL",
@@ -1865,7 +1865,7 @@ class Test_Lightfuzz_filter_event(ModuleTestBase):
             module="httpx",
             tags=["status-200", "distance-0"],
         )
-        
+
         self.web_param_event_without_waf = module_test.scan.make_event(
             {
                 "host": "127.0.0.1",
@@ -1883,19 +1883,19 @@ class Test_Lightfuzz_filter_event(ModuleTestBase):
 
     async def test_filter_event(self, module_test):
         lightfuzz_module = module_test.scan.modules["lightfuzz"]
-        
+
         # Test URL event with WAF tag - should be filtered out
         result = await lightfuzz_module.filter_event(self.url_event_with_waf)
         assert result is False, "URL event with cdn-cloudflare tag should be filtered out"
-        
+
         # Test WEB_PARAMETER event with WAF tag - should be filtered out
         result = await lightfuzz_module.filter_event(self.web_param_event_with_waf)
         assert result is False, "WEB_PARAMETER event with cdn-cloudflare tag should be filtered out"
-        
+
         # Test URL event without WAF tag - should not be filtered
         result = await lightfuzz_module.filter_event(self.url_event_without_waf)
         assert result is True, "URL event without WAF tag should not be filtered"
-        
+
         # Test WEB_PARAMETER event without WAF tag - should not be filtered
         result = await lightfuzz_module.filter_event(self.web_param_event_without_waf)
         assert result is True, "WEB_PARAMETER event without WAF tag should not be filtered"
