@@ -173,7 +173,10 @@ class lightfuzz(BaseModule):
     async def filter_event(self, event):
         # Unless configured specifically to do so, avoid running against confirmed WAFs
         if self.avoid_wafs and any(tag in ["cdn-cloudflare", "cdn-akamai", "cdn-incapsula"] for tag in event.tags):
-            self.debug(f"Skipping WEB_PARAMETER because it is likely to be blocked by a WAF. URL: {event.data['url']}")
+            # Use parsed_url.geturl() for both URL and WEB_PARAMETER events
+            parsed_url = getattr(event, "parsed_url", None)
+            url = parsed_url.geturl() if parsed_url else "unknown"
+            self.debug(f"Skipping {event.type} because it is likely to be blocked by a WAF. URL: {url}")
             return False
 
         # If we've disabled fuzzing POST parameters, back out of POSTPARAM WEB_PARAMETER events as quickly as possible
