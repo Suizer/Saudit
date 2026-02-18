@@ -1333,7 +1333,7 @@ def which(*executables, path=None):
     for e in executables:
         location = shutil.which(e, path=path)
         if location:
-            return location
+            return os.path.realpath(location)
 
 
 def search_dict_by_key(key, d):
