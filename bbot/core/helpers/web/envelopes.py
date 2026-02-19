@@ -188,9 +188,11 @@ class BaseEnvelope(metaclass=EnvelopeChildTracker):
             if key is None:
                 raise ValueError("No subparam selected for non-singleton envelope")
             data = copy.deepcopy(inner)
+            # In the loop: Traverse all the way down to the parent of the target value (all segments except the last),
             target = data
             for segment in key[:-1]:
                 target = target[segment]
+            # Use the final segment to actually assign the value.
             target[key[-1]] = value
         return self._pack(data)
 
