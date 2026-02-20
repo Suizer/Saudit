@@ -1735,11 +1735,17 @@ class Test_Lightfuzz_PaddingOracleDetection_Reflecting(Test_Lightfuzz_PaddingOra
                 if "HTTP Extracted Parameter [encrypted_data] (POST Form" in e.data["description"]:
                     web_parameter_extracted = True
             if e.type == "FINDING":
-                if "Probable Cryptographic Parameter." in e.data["description"] and "encrypted_data" in e.data["description"]:
+                if (
+                    "Probable Cryptographic Parameter." in e.data["description"]
+                    and "encrypted_data" in e.data["description"]
+                ):
                     cryptographic_parameter_finding = True
 
             if e.type == "VULNERABILITY":
-                if "Padding Oracle Vulnerability. Block size: [16]" in e.data["description"] and "encrypted_data" in e.data["description"]:
+                if (
+                    "Padding Oracle Vulnerability. Block size: [16]" in e.data["description"]
+                    and "encrypted_data" in e.data["description"]
+                ):
                     padding_oracle_detected = True
 
         assert web_parameter_extracted, "Web parameter was not extracted"
@@ -1806,7 +1812,10 @@ class Test_Lightfuzz_PaddingOracleDetection_Noisy(Test_Lightfuzz_PaddingOracleDe
                 if "HTTP Extracted Parameter [encrypted_data] (POST Form" in e.data["description"]:
                     web_parameter_extracted = True
             if e.type == "FINDING":
-                if "Probable Cryptographic Parameter." in e.data["description"] and "encrypted_data" in e.data["description"]:
+                if (
+                    "Probable Cryptographic Parameter." in e.data["description"]
+                    and "encrypted_data" in e.data["description"]
+                ):
                     cryptographic_parameter_finding = True
             if e.type == "VULNERABILITY":
                 if "Padding Oracle" in e.data["description"]:
@@ -1814,7 +1823,9 @@ class Test_Lightfuzz_PaddingOracleDetection_Noisy(Test_Lightfuzz_PaddingOracleDe
 
         assert web_parameter_extracted, "Web parameter was not extracted"
         assert cryptographic_parameter_finding, "Cryptographic parameter not detected"
-        assert not padding_oracle_detected, "Padding oracle should NOT be detected when 30 probes differ (exceeds block size)"
+        assert not padding_oracle_detected, (
+            "Padding oracle should NOT be detected when 30 probes differ (exceeds block size)"
+        )
 
 
 class Test_Lightfuzz_XSS_jsquotecontext(ModuleTestBase):
