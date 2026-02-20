@@ -1691,6 +1691,132 @@ class Test_Lightfuzz_PaddingOracleDetection(ModuleTestBase):
         assert padding_oracle_detected, "Padding oracle vulnerability was not detected"
 
 
+class Test_Lightfuzz_PaddingOracleDetection_Reflecting(Test_Lightfuzz_PaddingOracleDetection):
+    """Padding oracle test where the server reflects the submitted value in the response body.
+    Without reflection-stripping logic, every probe body differs and detection always fails."""
+
+    def request_handler(self, request):
+        encrypted_value = quote(
+            "dplyorsu8VUriMW/8DqVDU6kRwL/FDk3Q+4GXVGZbo0CTh9YX1YvzZZJrYe4cHxvAICyliYtp1im4fWoOa54Zg=="
+        )
+        default_html_response = f"""
+        <html>
+            <body>
+                <form action="/decrypt" method="post">
+                    <input type="hidden" name="encrypted_data" value="{encrypted_value}" />
+                    <button type="submit">Decrypt</button>
+                </form>
+            </body>
+        </html>
+        """
+
+        if "/decrypt" in request.url and request.method == "POST":
+            if request.form and request.form["encrypted_data"]:
+                encrypted_data = request.form["encrypted_data"]
+                if "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALwAgLKWJi2nWKbh9ag5rnhm" in encrypted_data:
+                    response_content = f"Padding error detected. Input: {encrypted_data}"
+                elif "4GXVGZbo0DTh9YX1YvzZZJrYe4cHxvAICyliYtp1im4fWoOa54Zg" in encrypted_data:
+                    response_content = f"DIFFERENT CRYPTOGRAPHIC ERROR. Input: {encrypted_data}"
+                elif "AAAAAAA" in encrypted_data:
+                    response_content = f"YET DIFFERENT CRYPTOGRAPHIC ERROR. Input: {encrypted_data}"
+                else:
+                    response_content = f"Decryption failed. Input: {encrypted_data}"
+
+            return Response(response_content, status=200)
+        else:
+            return Response(default_html_response, status=200)
+
+    def check(self, module_test, events):
+        web_parameter_extracted = False
+        cryptographic_parameter_finding = False
+        padding_oracle_detected = False
+        for e in events:
+            if e.type == "WEB_PARAMETER":
+                if "HTTP Extracted Parameter [encrypted_data] (POST Form" in e.data["description"]:
+                    web_parameter_extracted = True
+            if e.type == "FINDING":
+                if "Probable Cryptographic Parameter." in e.data["description"] and "encrypted_data" in e.data["description"]:
+                    cryptographic_parameter_finding = True
+
+            if e.type == "VULNERABILITY":
+                if "Padding Oracle Vulnerability. Block size: [16]" in e.data["description"] and "encrypted_data" in e.data["description"]:
+                    padding_oracle_detected = True
+
+        assert web_parameter_extracted, "Web parameter was not extracted"
+        assert cryptographic_parameter_finding, "Cryptographic parameter not detected"
+        assert padding_oracle_detected, "Padding oracle vulnerability was not detected"
+
+
+class Test_Lightfuzz_PaddingOracleDetection_Noisy(Test_Lightfuzz_PaddingOracleDetection):
+    """Padding oracle negative test: the server returns different responses for ~30 byte values,
+    which exceeds any valid block size. This should NOT produce a VULNERABILITY."""
+
+    def request_handler(self, request):
+        encrypted_value = quote(
+            "dplyorsu8VUriMW/8DqVDU6kRwL/FDk3Q+4GXVGZbo0CTh9YX1YvzZZJrYe4cHxvAICyliYtp1im4fWoOa54Zg=="
+        )
+        default_html_response = f"""
+        <html>
+            <body>
+                <form action="/decrypt" method="post">
+                    <input type="hidden" name="encrypted_data" value="{encrypted_value}" />
+                    <button type="submit">Decrypt</button>
+                </form>
+            </body>
+        </html>
+        """
+
+        if "/decrypt" in request.url and request.method == "POST":
+            if request.form and request.form["encrypted_data"]:
+                encrypted_data = request.form["encrypted_data"]
+                # Check for the data block from the original ciphertext (mutate/truncate probes)
+                if "4GXVGZbo0DTh9YX1YvzZZJrYe4cHxvAICyliYtp1im4fWoOa54Zg" in encrypted_data:
+                    response_content = "DIFFERENT CRYPTOGRAPHIC ERROR"
+                # Padding oracle probes: null IV + padding blocks produce long runs of A's in base64
+                elif encrypted_data.startswith("AAAAAAAAAAAAAAAA"):
+                    try:
+                        decoded = base64.b64decode(encrypted_data)
+                        if len(decoded) >= 32:
+                            varying_byte = decoded[31]
+                            # 30 byte values produce a different response - way over any block size
+                            if 100 <= varying_byte <= 129:
+                                response_content = "Noisy error type A"
+                            else:
+                                response_content = "Decryption failed"
+                        else:
+                            response_content = "Decryption failed"
+                    except Exception:
+                        response_content = "Decryption failed"
+                # Arbitrary probe
+                elif "AAAAAAA" in encrypted_data:
+                    response_content = "YET DIFFERENT CRYPTOGRAPHIC ERROR"
+                else:
+                    response_content = "Decryption failed"
+
+            return Response(response_content, status=200)
+        else:
+            return Response(default_html_response, status=200)
+
+    def check(self, module_test, events):
+        web_parameter_extracted = False
+        cryptographic_parameter_finding = False
+        padding_oracle_detected = False
+        for e in events:
+            if e.type == "WEB_PARAMETER":
+                if "HTTP Extracted Parameter [encrypted_data] (POST Form" in e.data["description"]:
+                    web_parameter_extracted = True
+            if e.type == "FINDING":
+                if "Probable Cryptographic Parameter." in e.data["description"] and "encrypted_data" in e.data["description"]:
+                    cryptographic_parameter_finding = True
+            if e.type == "VULNERABILITY":
+                if "Padding Oracle" in e.data["description"]:
+                    padding_oracle_detected = True
+
+        assert web_parameter_extracted, "Web parameter was not extracted"
+        assert cryptographic_parameter_finding, "Cryptographic parameter not detected"
+        assert not padding_oracle_detected, "Padding oracle should NOT be detected when 30 probes differ (exceeds block size)"
+
+
 class Test_Lightfuzz_XSS_jsquotecontext(ModuleTestBase):
     targets = ["http://127.0.0.1:8888"]
     modules_overrides = ["httpx", "lightfuzz", "excavate", "paramminer_getparams"]
@@ -1903,6 +2029,18 @@ class Test_Lightfuzz_envelope_isolation_crypto(Test_Lightfuzz_crypto_error):
 
 # Envelope state isolation: padding oracle detection with all submodules enabled.
 class Test_Lightfuzz_envelope_isolation_paddingoracle(Test_Lightfuzz_PaddingOracleDetection):
+    config_overrides = {
+        "interactsh_disable": True,
+        "modules": {
+            "lightfuzz": {
+                "enabled_submodules": ["sqli", "cmdi", "xss", "path", "ssti", "crypto", "serial", "esi"],
+            }
+        },
+    }
+
+
+# Envelope state isolation: reflecting padding oracle detection with all submodules enabled.
+class Test_Lightfuzz_envelope_isolation_paddingoracle_reflecting(Test_Lightfuzz_PaddingOracleDetection_Reflecting):
     config_overrides = {
         "interactsh_disable": True,
         "modules": {
