@@ -1511,7 +1511,9 @@ class TestExcavateIgnorePDF(ModuleTestBase):
         url_unverified_events = [
             e for e in events if e.type == "URL_UNVERIFIED" and "pdf-extracted.test.notreal" in e.data
         ]
-        assert len(url_unverified_events) == 0, f"PDF body should not be processed by excavate, but got: {url_unverified_events}"
+        assert len(url_unverified_events) == 0, (
+            f"PDF body should not be processed by excavate, but got: {url_unverified_events}"
+        )
 
         ftp_findings = [
             e for e in events if e.type == "FINDING" and "ftp://ftp.test.notreal" in e.data.get("description", "")
