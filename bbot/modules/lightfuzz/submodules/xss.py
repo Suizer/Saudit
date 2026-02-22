@@ -91,7 +91,7 @@ class xss(BaseLightfuzz):
             self.results.append(
                 {
                     "type": "FINDING",
-                    "description": f"Possible Reflected XSS. Parameter: [{self.event.data['name']}] Context: [{context}] Parameter Type: [{self.event.data['type']}]",
+                    "description": f"Possible Reflected XSS. Parameter: [{self.event.data['name']}] Context: [{context}] Parameter Type: [{self.event.data['type']}]{' (converted from POSTPARAM)' if self.event.data.get('converted_from_post', False) else ''}",
                 }
             )
             return True

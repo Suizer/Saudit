@@ -239,7 +239,8 @@ class BaseLightfuzz:
         return await self.lightfuzz.helpers.request(**request_params)
 
     def metadata(self):
-        metadata_string = f"Parameter: [{self.event.data['name']}] Parameter Type: [{self.event.data['type']}]"
+        param_type_note = " (converted from POSTPARAM)" if self.event.data.get("converted_from_post", False) else ""
+        metadata_string = f"Parameter: [{self.event.data['name']}] Parameter Type: [{self.event.data['type']}]{param_type_note}"
         if self.event.data["original_value"] != "" and self.event.data["original_value"] is not None:
             metadata_string += (
                 f" Original Value: [{self.lightfuzz.helpers.truncate_string(self.event.data['original_value'], 200)}]"
