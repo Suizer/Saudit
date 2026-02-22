@@ -246,9 +246,7 @@ class BaseLightfuzz:
         return ""
 
     def metadata(self):
-        metadata_string = (
-            f"Parameter: [{self.event.data['name']}] Parameter Type: [{self.event.data['type']}]{self.conversion_note()}"
-        )
+        metadata_string = f"Parameter: [{self.event.data['name']}] Parameter Type: [{self.event.data['type']}]{self.conversion_note()}"
         if self.event.data["original_value"] != "" and self.event.data["original_value"] is not None:
             metadata_string += (
                 f" Original Value: [{self.lightfuzz.helpers.truncate_string(self.event.data['original_value'], 200)}]"

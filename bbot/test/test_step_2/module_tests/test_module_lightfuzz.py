@@ -2061,4 +2061,6 @@ class Test_Lightfuzz_try_get_as_post(ModuleTestBase):
                     sqli_postparam_converted_finding_emitted = True
 
         assert web_parameter_emitted, "WEB_PARAMETER was not emitted"
-        assert sqli_postparam_converted_finding_emitted, "SQLi POSTPARAM (converted from GETPARAM) FINDING not emitted (try_get_as_post failed)"
+        assert sqli_postparam_converted_finding_emitted, (
+            "SQLi POSTPARAM (converted from GETPARAM) FINDING not emitted (try_get_as_post failed)"
+        )
