@@ -14,12 +14,14 @@ class lightfuzz(BaseModule):
         "enabled_submodules": ["sqli", "cmdi", "xss", "path", "ssti", "crypto", "serial", "esi"],
         "disable_post": False,
         "try_post_as_get": False,
+        "try_get_as_post": False,
     }
     options_desc = {
         "force_common_headers": "Force emit commonly exploitable parameters that may be difficult to detect",
         "enabled_submodules": "A list of submodules to enable. Empty list enabled all modules.",
         "disable_post": "Disable processing of POST parameters, avoiding form submissions.",
         "try_post_as_get": "For each POSTPARAM, also fuzz it as a GETPARAM (in addition to normal POST fuzzing).",
+        "try_get_as_post": "For each GETPARAM, also fuzz it as a POSTPARAM (in addition to normal GET fuzzing).",
     }
 
     meta = {
@@ -39,6 +41,7 @@ class lightfuzz(BaseModule):
         self.interactsh_domain = None
         self.disable_post = self.config.get("disable_post", False)
         self.try_post_as_get = self.config.get("try_post_as_get", False)
+        self.try_get_as_post = self.config.get("try_get_as_post", False)
         self.enabled_submodules = self.config.get("enabled_submodules")
         self.interactsh_disable = self.scan.config.get("interactsh_disable", False)
         self.submodules = {}
@@ -145,18 +148,28 @@ class lightfuzz(BaseModule):
             connectivity_test = await self.helpers.request(event.data["url"], timeout=10)
 
             if connectivity_test:
+                original_type = event.data["type"]
+
                 # Normal fuzzing pass (skipped for POSTPARAM if disable_post is True)
-                if not (self.disable_post and event.data["type"] == "POSTPARAM"):
+                if not (self.disable_post and original_type == "POSTPARAM"):
                     for submodule_name, submodule in self.submodules.items():
                         self.debug(f"Starting {submodule_name} fuzz()")
                         await self.run_submodule(submodule, event)
 
                 # Additional pass: try POSTPARAM as GETPARAM
-                if self.try_post_as_get and event.data["type"] == "POSTPARAM":
+                if self.try_post_as_get and original_type == "POSTPARAM":
                     event.data["type"] = "GETPARAM"
                     event.data["converted_from_post"] = True
                     for submodule_name, submodule in self.submodules.items():
                         self.debug(f"Starting {submodule_name} fuzz() (try_post_as_get)")
+                        await self.run_submodule(submodule, event)
+
+                # Additional pass: try GETPARAM as POSTPARAM
+                if self.try_get_as_post and original_type == "GETPARAM":
+                    event.data["type"] = "POSTPARAM"
+                    event.data["converted_from_get"] = True
+                    for submodule_name, submodule in self.submodules.items():
+                        self.debug(f"Starting {submodule_name} fuzz() (try_get_as_post)")
                         await self.run_submodule(submodule, event)
             else:
                 self.debug(f"WEB_PARAMETER URL {event.data['url']} failed connectivity test, aborting")
