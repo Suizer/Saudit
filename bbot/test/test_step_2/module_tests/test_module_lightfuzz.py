@@ -1984,12 +1984,11 @@ class Test_Lightfuzz_try_post_as_get(ModuleTestBase):
                     in e.data["description"]
                 ):
                     sqli_getparam_finding_emitted = True
-                if (
-                    "Possible SQL Injection. Parameter: [search] Parameter Type: [POSTPARAM]"
-                    in e.data["description"]
-                ):
+                if "Possible SQL Injection. Parameter: [search] Parameter Type: [POSTPARAM]" in e.data["description"]:
                     sqli_postparam_finding_emitted = True
 
         assert web_parameter_emitted, "WEB_PARAMETER was not emitted"
-        assert sqli_getparam_finding_emitted, "SQLi GETPARAM (converted from POSTPARAM) FINDING not emitted (try_post_as_get failed)"
+        assert sqli_getparam_finding_emitted, (
+            "SQLi GETPARAM (converted from POSTPARAM) FINDING not emitted (try_post_as_get failed)"
+        )
         assert not sqli_postparam_finding_emitted, "POSTPARAM FINDING emitted despite disable_post=True"
