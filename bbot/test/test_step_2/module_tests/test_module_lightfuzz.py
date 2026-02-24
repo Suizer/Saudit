@@ -2060,3 +2060,89 @@ class Test_Lightfuzz_envelope_isolation_paddingoracle_reflecting(Test_Lightfuzz_
             }
         },
     }
+
+
+# Test filter_event method with WAF tags
+class Test_Lightfuzz_filter_event(ModuleTestBase):
+    targets = ["http://127.0.0.1:8888"]
+    modules_overrides = ["httpx", "lightfuzz"]
+    config_overrides = {
+        "interactsh_disable": True,
+        "modules": {
+            "lightfuzz": {
+                "enabled_submodules": ["xss"],
+                "avoid_wafs": True,
+            }
+        },
+    }
+
+    async def setup_after_prep(self, module_test):
+        # Create test events with WAF tags
+        self.url_event_with_waf = module_test.scan.make_event(
+            "http://127.0.0.1:8888/",
+            "URL",
+            module_test.scan.root_event,
+            module="httpx",
+            tags=["status-200", "distance-0", "waf"],
+        )
+
+        self.web_param_event_with_waf = module_test.scan.make_event(
+            {
+                "host": "127.0.0.1",
+                "type": "GETPARAM",
+                "name": "test",
+                "original_value": "value",
+                "url": "http://127.0.0.1:8888/",
+                "description": "Test parameter",
+            },
+            "WEB_PARAMETER",
+            module_test.scan.root_event,
+            module="excavate",
+            tags=["distance-0", "waf"],
+        )
+
+        self.url_event_without_waf = module_test.scan.make_event(
+            "http://127.0.0.1:8888/",
+            "URL",
+            module_test.scan.root_event,
+            module="httpx",
+            tags=["status-200", "distance-0"],
+        )
+
+        self.web_param_event_without_waf = module_test.scan.make_event(
+            {
+                "host": "127.0.0.1",
+                "type": "GETPARAM",
+                "name": "test",
+                "original_value": "value",
+                "url": "http://127.0.0.1:8888/",
+                "description": "Test parameter",
+            },
+            "WEB_PARAMETER",
+            module_test.scan.root_event,
+            module="excavate",
+            tags=["distance-0"],
+        )
+
+    async def test_filter_event(self, module_test):
+        lightfuzz_module = module_test.scan.modules["lightfuzz"]
+
+        # Test URL event with WAF tag - should be filtered out
+        result = await lightfuzz_module.filter_event(self.url_event_with_waf)
+        assert result is False, "URL event with waf tag should be filtered out"
+
+        # Test WEB_PARAMETER event with WAF tag - should be filtered out
+        result = await lightfuzz_module.filter_event(self.web_param_event_with_waf)
+        assert result is False, "WEB_PARAMETER event with waf tag should be filtered out"
+
+        # Test URL event without WAF tag - should not be filtered
+        result = await lightfuzz_module.filter_event(self.url_event_without_waf)
+        assert result is True, "URL event without WAF tag should not be filtered"
+
+        # Test WEB_PARAMETER event without WAF tag - should not be filtered
+        result = await lightfuzz_module.filter_event(self.web_param_event_without_waf)
+        assert result is True, "WEB_PARAMETER event without WAF tag should not be filtered"
+
+    def check(self, module_test, events):
+        # This test doesn't need to check events since it's testing the filter method directly
+        pass

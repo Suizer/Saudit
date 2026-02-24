@@ -13,11 +13,13 @@ class lightfuzz(BaseModule):
         "force_common_headers": False,
         "enabled_submodules": ["sqli", "cmdi", "xss", "path", "ssti", "crypto", "serial", "esi"],
         "disable_post": False,
+        "avoid_wafs": True,
     }
     options_desc = {
         "force_common_headers": "Force emit commonly exploitable parameters that may be difficult to detect",
         "enabled_submodules": "A list of submodules to enable. Empty list enabled all modules.",
         "disable_post": "Disable processing of POST parameters, avoiding form submissions.",
+        "avoid_wafs": "Avoid running against confirmed WAFs, which are likely to block lightfuzz requests",
     }
 
     meta = {
@@ -38,6 +40,7 @@ class lightfuzz(BaseModule):
         self.disable_post = self.config.get("disable_post", False)
         self.enabled_submodules = self.config.get("enabled_submodules")
         self.interactsh_disable = self.scan.config.get("interactsh_disable", False)
+        self.avoid_wafs = self.scan.config.get("avoid_wafs", True)
         self.submodules = {}
 
         if not self.enabled_submodules:
@@ -167,8 +170,16 @@ class lightfuzz(BaseModule):
             except InteractshError as e:
                 self.debug(f"Error in interact.sh: {e}")
 
-    # If we've disabled fuzzing POST parameters, back out of POSTPARAM WEB_PARAMETER events as quickly as possible
     async def filter_event(self, event):
+        # Unless configured specifically to do so, avoid running against confirmed WAFs
+        if self.avoid_wafs and "waf" in event.tags:
+            # Use parsed_url.geturl() for both URL and WEB_PARAMETER events
+            parsed_url = getattr(event, "parsed_url", None)
+            url = parsed_url.geturl() if parsed_url else "unknown"
+            self.debug(f"Skipping {event.type} because it is likely to be blocked by a WAF. URL: {url}")
+            return False
+
+        # If we've disabled fuzzing POST parameters, back out of POSTPARAM WEB_PARAMETER events as quickly as possible
         if event.type == "WEB_PARAMETER" and self.disable_post and event.data["type"] == "POSTPARAM":
             return False, "POST parameter disabled in lightfuzz module"
         return True
