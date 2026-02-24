@@ -1840,7 +1840,7 @@ class Test_Lightfuzz_filter_event(ModuleTestBase):
             "URL",
             module_test.scan.root_event,
             module="httpx",
-            tags=["status-200", "distance-0", "cdn-cloudflare"],
+            tags=["status-200", "distance-0", "waf"],
         )
 
         self.web_param_event_with_waf = module_test.scan.make_event(
@@ -1855,7 +1855,7 @@ class Test_Lightfuzz_filter_event(ModuleTestBase):
             "WEB_PARAMETER",
             module_test.scan.root_event,
             module="excavate",
-            tags=["distance-0", "cdn-cloudflare"],
+            tags=["distance-0", "waf"],
         )
 
         self.url_event_without_waf = module_test.scan.make_event(
@@ -1886,11 +1886,11 @@ class Test_Lightfuzz_filter_event(ModuleTestBase):
 
         # Test URL event with WAF tag - should be filtered out
         result = await lightfuzz_module.filter_event(self.url_event_with_waf)
-        assert result is False, "URL event with cdn-cloudflare tag should be filtered out"
+        assert result is False, "URL event with waf tag should be filtered out"
 
         # Test WEB_PARAMETER event with WAF tag - should be filtered out
         result = await lightfuzz_module.filter_event(self.web_param_event_with_waf)
-        assert result is False, "WEB_PARAMETER event with cdn-cloudflare tag should be filtered out"
+        assert result is False, "WEB_PARAMETER event with waf tag should be filtered out"
 
         # Test URL event without WAF tag - should not be filtered
         result = await lightfuzz_module.filter_event(self.url_event_without_waf)

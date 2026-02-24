@@ -172,7 +172,7 @@ class lightfuzz(BaseModule):
 
     async def filter_event(self, event):
         # Unless configured specifically to do so, avoid running against confirmed WAFs
-        if self.avoid_wafs and any(tag in ["cdn-cloudflare", "cdn-akamai", "cdn-incapsula"] for tag in event.tags):
+        if self.avoid_wafs and "waf" in event.tags:
             # Use parsed_url.geturl() for both URL and WEB_PARAMETER events
             parsed_url = getattr(event, "parsed_url", None)
             url = parsed_url.geturl() if parsed_url else "unknown"
