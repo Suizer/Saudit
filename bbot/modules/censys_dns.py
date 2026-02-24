@@ -1,16 +1,17 @@
-from bbot.modules.templates.subdomain_enum import subdomain_enum_apikey
+from bbot.modules.templates.censys import censys
 
 
-class censys(subdomain_enum_apikey):
+class censys_dns(censys):
     """
-    thanks to https://github.com/owasp-amass/amass/blob/master/resources/scripts/cert/censys.ads
+    Query the Censys certificates API for subdomains.
+    Thanks to https://github.com/owasp-amass/amass/blob/master/resources/scripts/cert/censys.ads
     """
 
     watched_events = ["DNS_NAME"]
     produced_events = ["DNS_NAME"]
     flags = ["subdomain-enum", "passive", "safe"]
     meta = {
-        "description": "Query the Censys API",
+        "description": "Query the Censys API for subdomains",
         "created_date": "2022-08-04",
         "author": "@TheTechromancer",
         "auth_required": True,
@@ -21,26 +22,9 @@ class censys(subdomain_enum_apikey):
         "max_pages": "Maximum number of pages to fetch (100 results per page)",
     }
 
-    base_url = "https://search.censys.io/api"
-
     async def setup(self):
         self.max_pages = self.config.get("max_pages", 5)
         return await super().setup()
-
-    async def ping(self):
-        url = f"{self.base_url}/v1/account"
-        resp = await self.api_request(url, retry_on_http_429=False)
-        d = resp.json()
-        assert isinstance(d, dict), f"Invalid response from {url}: {resp}"
-        quota = d.get("quota", {})
-        used = int(quota.get("used", 0))
-        allowance = int(quota.get("allowance", 0))
-        assert used < allowance, "No quota remaining"
-
-    def prepare_api_request(self, url, kwargs):
-        api_id, api_secret = self.api_key.split(":", 1)
-        kwargs["auth"] = (api_id, api_secret)
-        return url, kwargs
 
     async def query(self, query):
         results = set()

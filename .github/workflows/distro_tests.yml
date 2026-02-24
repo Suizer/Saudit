@@ -16,7 +16,7 @@ jobs:
       matrix:
         os: ["ubuntu:22.04", "ubuntu:24.04", "debian", "archlinux", "fedora", "kalilinux/kali-rolling", "parrotsec/security"]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install Python and Poetry
         run: |
           if [ -f /etc/os-release ]; then
@@ -30,7 +30,7 @@ jobs:
             elif [ "$ID" = "arch" ]; then
               pacman -Syu --noconfirm curl docker git bash base-devel
             elif [ "$ID" = "fedora" ]; then
-              dnf install -y curl docker git bash gcc make openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel tk-devel gdbm-devel readline-devel sqlite-devel python3-libdnf5
+              dnf install -y curl docker git bash gcc make patch p7zip p7zip-plugins openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel tk-devel gdbm-devel readline-devel sqlite-devel python3-libdnf5
             elif [ "$ID" = "gentoo" ]; then
               echo "media-libs/libglvnd X" >> /etc/portage/package.use/libglvnd
               emerge-webrsync
@@ -66,7 +66,7 @@ jobs:
           poetry run pytest --reruns 2 --exitfirst -o timeout_func_only=true --timeout 1200 --disable-warnings --log-cli-level=INFO .
       - name: Upload Debug Logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: pytest-debug-logs-${{ env.OS_NAME }}
           path: pytest_debug.log

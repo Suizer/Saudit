@@ -1,8 +1,8 @@
 from .base import ModuleTestBase
 
 
-class TestCensys(ModuleTestBase):
-    config_overrides = {"modules": {"censys": {"api_key": "api_id:api_secret"}}}
+class TestCensys_DNS(ModuleTestBase):
+    config_overrides = {"modules": {"censys_dns": {"api_key": "api_id:api_secret"}}}
 
     async def setup_before_prep(self, module_test):
         module_test.httpx_mock.add_response(
