@@ -2146,3 +2146,156 @@ class Test_Lightfuzz_filter_event(ModuleTestBase):
     def check(self, module_test, events):
         # This test doesn't need to check events since it's testing the filter method directly
         pass
+
+
+# try_post_as_get: fuzz POST parameters as GET parameters
+class Test_Lightfuzz_try_post_as_get(ModuleTestBase):
+    targets = ["http://127.0.0.1:8888"]
+    modules_overrides = ["httpx", "lightfuzz", "excavate"]
+    config_overrides = {
+        "interactsh_disable": True,
+        "modules": {
+            "lightfuzz": {
+                "enabled_submodules": ["sqli"],
+                "disable_post": True,
+                "try_post_as_get": True,
+            }
+        },
+    }
+
+    def request_handler(self, request):
+        qs = str(request.query_string.decode())
+
+        parameter_block = """
+        <section class=search>
+            <form action=/ method=POST>
+                <input type=text placeholder='Search the blog...' name=search>
+                <button type=submit class=button>Search</button>
+            </form>
+        </section>
+        """
+
+        if "search=" in qs:
+            value = qs.split("=")[1]
+            if "&" in value:
+                value = value.split("&")[0]
+
+            sql_block_normal = f"""
+        <section class=blog-header>
+            <h1>0 search results for '{unquote(value)}'</h1>
+            <hr>
+        </section>
+        """
+
+            sql_block_error = """
+        <section class=error>
+            <h1>Found error in SQL query</h1>
+            <hr>
+        </section>
+        """
+            if value.endswith("'"):
+                if value.endswith("''"):
+                    return Response(sql_block_normal, status=200)
+                return Response(sql_block_error, status=500)
+        return Response(parameter_block, status=200)
+
+    async def setup_after_prep(self, module_test):
+        module_test.scan.modules["lightfuzz"].helpers.rand_string = lambda *args, **kwargs: "AAAAAAAAAAAAAA"
+        expect_args = re.compile("/")
+        module_test.set_expect_requests_handler(expect_args=expect_args, request_handler=self.request_handler)
+
+    def check(self, module_test, events):
+        web_parameter_emitted = False
+        sqli_getparam_finding_emitted = False
+        sqli_postparam_finding_emitted = False
+        for e in events:
+            if e.type == "WEB_PARAMETER":
+                if "HTTP Extracted Parameter [search]" in e.data["description"]:
+                    web_parameter_emitted = True
+
+            if e.type == "FINDING":
+                if (
+                    "Possible SQL Injection. Parameter: [search] Parameter Type: [GETPARAM] (converted from POSTPARAM) Detection Method: [Single Quote/Two Single Quote, Code Change (200->500->200)]"
+                    in e.data["description"]
+                ):
+                    sqli_getparam_finding_emitted = True
+                if "Possible SQL Injection. Parameter: [search] Parameter Type: [POSTPARAM]" in e.data["description"]:
+                    sqli_postparam_finding_emitted = True
+
+        assert web_parameter_emitted, "WEB_PARAMETER was not emitted"
+        assert sqli_getparam_finding_emitted, (
+            "SQLi GETPARAM (converted from POSTPARAM) FINDING not emitted (try_post_as_get failed)"
+        )
+        assert not sqli_postparam_finding_emitted, "POSTPARAM FINDING emitted despite disable_post=True"
+
+
+# try_get_as_post: fuzz GET parameters as POST parameters
+class Test_Lightfuzz_try_get_as_post(ModuleTestBase):
+    targets = ["http://127.0.0.1:8888"]
+    modules_overrides = ["httpx", "lightfuzz", "excavate"]
+    config_overrides = {
+        "interactsh_disable": True,
+        "modules": {
+            "lightfuzz": {
+                "enabled_submodules": ["sqli"],
+                "try_get_as_post": True,
+            }
+        },
+    }
+
+    def request_handler(self, request):
+        parameter_block = """
+        <section class=search>
+            <form action=/ method=GET>
+                <input type=text placeholder='Search the blog...' name=search>
+                <button type=submit class=button>Search</button>
+            </form>
+        </section>
+        """
+
+        if request.method == "POST" and "search" in request.form.keys():
+            value = request.form["search"]
+
+            sql_block_normal = f"""
+        <section class=blog-header>
+            <h1>0 search results for '{unquote(value)}'</h1>
+            <hr>
+        </section>
+        """
+
+            sql_block_error = """
+        <section class=error>
+            <h1>Found error in SQL query</h1>
+            <hr>
+        </section>
+        """
+            if value.endswith("'"):
+                if value.endswith("''"):
+                    return Response(sql_block_normal, status=200)
+                return Response(sql_block_error, status=500)
+        return Response(parameter_block, status=200)
+
+    async def setup_after_prep(self, module_test):
+        module_test.scan.modules["lightfuzz"].helpers.rand_string = lambda *args, **kwargs: "AAAAAAAAAAAAAA"
+        expect_args = re.compile("/")
+        module_test.set_expect_requests_handler(expect_args=expect_args, request_handler=self.request_handler)
+
+    def check(self, module_test, events):
+        web_parameter_emitted = False
+        sqli_postparam_converted_finding_emitted = False
+        for e in events:
+            if e.type == "WEB_PARAMETER":
+                if "HTTP Extracted Parameter [search]" in e.data["description"]:
+                    web_parameter_emitted = True
+
+            if e.type == "FINDING":
+                if (
+                    "Possible SQL Injection. Parameter: [search] Parameter Type: [POSTPARAM] (converted from GETPARAM) Detection Method: [Single Quote/Two Single Quote, Code Change (200->500->200)]"
+                    in e.data["description"]
+                ):
+                    sqli_postparam_converted_finding_emitted = True
+
+        assert web_parameter_emitted, "WEB_PARAMETER was not emitted"
+        assert sqli_postparam_converted_finding_emitted, (
+            "SQLi POSTPARAM (converted from GETPARAM) FINDING not emitted (try_get_as_post failed)"
+        )
