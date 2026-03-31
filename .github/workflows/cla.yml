@@ -26,17 +26,13 @@ jobs:
 
       - name: Check org membership
         id: membership
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            AUTHOR="${{ github.event.pull_request.user.login }}"
+            ASSOC="${{ github.event.pull_request.author_association }}"
           else
-            # For issue_comment events, look up the PR author
-            PR_NUM="${{ github.event.issue.number }}"
-            AUTHOR=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUM" --jq '.user.login' 2>/dev/null)
+            ASSOC="${{ github.event.issue.author_association }}"
           fi
-          if [ -n "$AUTHOR" ] && gh api "orgs/blacklanternsecurity/members/$AUTHOR" > /dev/null 2>&1; then
+          if [ "$ASSOC" = "MEMBER" ] || [ "$ASSOC" = "OWNER" ] || [ "$ASSOC" = "COLLABORATOR" ]; then
             echo "is_member=true" >> "$GITHUB_OUTPUT"
           else
             echo "is_member=false" >> "$GITHUB_OUTPUT"
