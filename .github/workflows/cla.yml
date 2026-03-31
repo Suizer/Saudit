@@ -28,7 +28,7 @@ jobs:
         id: membership
         if: github.event_name == 'pull_request_target'
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           AUTHOR="${{ github.event.pull_request.user.login }}"
           if gh api "orgs/blacklanternsecurity/members/$AUTHOR" > /dev/null 2>&1; then
