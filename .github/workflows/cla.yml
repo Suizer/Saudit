@@ -22,17 +22,19 @@ jobs:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: blacklanternsecurity
-          repositories: CLA
 
       - name: Check org membership
         id: membership
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            ASSOC="${{ github.event.pull_request.author_association }}"
+            AUTHOR="${{ github.event.pull_request.user.login }}"
           else
-            ASSOC="${{ github.event.issue.author_association }}"
+            PR_NUM="${{ github.event.issue.number }}"
+            AUTHOR=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUM" --jq '.user.login' 2>/dev/null)
           fi
-          if [ "$ASSOC" = "MEMBER" ] || [ "$ASSOC" = "OWNER" ] || [ "$ASSOC" = "COLLABORATOR" ]; then
+          if [ -n "$AUTHOR" ] && gh api "orgs/blacklanternsecurity/members/$AUTHOR" > /dev/null 2>&1; then
             echo "is_member=true" >> "$GITHUB_OUTPUT"
           else
             echo "is_member=false" >> "$GITHUB_OUTPUT"
