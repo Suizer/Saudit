@@ -8,7 +8,6 @@ flags:
 
 modules:
   - ffuf
-  - wayback
 
 config:
   modules:
@@ -34,6 +33,3 @@ config:
         - json
         - yml
         - yaml
-    # emit URLs from wayback
-    wayback:
-      urls: True
