@@ -1,3 +1,5 @@
+import random
+import asyncio
 import logging
 import warnings
 from pathlib import Path
@@ -118,6 +120,12 @@ class WebHelper(EngineClient):
         Note:
             If the web request fails, it will return None unless `raise_error` is `True`.
         """
+        consulting = self.config.get("consulting", {})
+        delay_max = consulting.get("request_delay_max", 0)
+        if delay_max > 0:
+            delay_min = consulting.get("request_delay_min", 0)
+            await asyncio.sleep(random.uniform(delay_min, delay_max))
+
         raise_error = kwargs.get("raise_error", False)
         result = await self.run_and_return("request", *args, **kwargs)
         if isinstance(result, dict) and "_request_error" in result:

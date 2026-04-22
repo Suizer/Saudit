@@ -276,3 +276,19 @@ omit_event_types:
 interactsh_server: null
 interactsh_token: null
 interactsh_disable: false
+
+### CONSULTING / STEALTH MODE ###
+# These settings are used by the consulting presets and custom modules.
+# They have zero effect unless explicitly set (delay_max > 0 enables jitter).
+consulting:
+  # Random sleep injected between every HTTP request (seconds).
+  # Set request_delay_max > 0 to enable. A uniform random value between
+  # [request_delay_min, request_delay_max] is chosen per request.
+  request_delay_min: 0
+  request_delay_max: 0
+  # Absolute path to the JsFuzzer tool root (the directory containing main.py).
+  # Leave empty to disable JsFuzzer integration.
+  jsfuzzer_path: ""
+  # Absolute path to the MendixRecon tool root (the directory containing main.py).
+  # Leave empty to disable MendixRecon integration.
+  mendix_recon_path: ""
