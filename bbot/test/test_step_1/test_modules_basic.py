@@ -136,7 +136,7 @@ async def test_modules_basic_checks(events, httpx_mock):
     assert all_preloaded["sslcert"]["deps"]["pip"]
     assert all_preloaded["sslcert"]["deps"]["apt"]
     assert all_preloaded["dnsbrute"]["deps"]["common"]
-    assert all_preloaded["gowitness"]["deps"]["ansible"]
+
 
     all_flags = set()
 

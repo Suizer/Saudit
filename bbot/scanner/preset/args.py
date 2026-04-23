@@ -33,11 +33,7 @@ class BBOTArgs:
             "Perform a passive-only subdomain enumeration on evilcorp.com",
             "bbot -t evilcorp.com -p subdomain-enum -rf passive",
         ),
-        (
-            "Subdomains + port scan + web screenshots",
-            "Port-scan every subdomain, screenshot every webpage, output to current directory",
-            "bbot -t evilcorp.com -p subdomain-enum -m portscan gowitness -n my_scan -o .",
-        ),
+
         (
             "Subdomains + basic web scan",
             "A basic web scan includes robots.txt, storage buckets, IIS shortnames, and other non-intrusive web modules",
