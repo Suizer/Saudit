@@ -54,15 +54,6 @@ class Stdout(BaseOutputModule):
         else:
             event_str = self.human_event_str(event)
 
-        # log vulnerabilities in vivid colors
-        if event.type == "VULNERABILITY":
-            severity = event.data.get("severity", "INFO")
-            if severity in self.vuln_severity_map:
-                loglevel = self.vuln_severity_map[severity]
-                log_to_stderr(event_str, level=loglevel, logname=False)
-        elif event.type == "FINDING":
-            log_to_stderr(event_str, level="HUGEINFO", logname=False)
-
         print(event_str)
 
     async def handle_json(self, event, event_json):

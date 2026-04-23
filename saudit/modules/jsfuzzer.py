@@ -102,11 +102,11 @@ class jsfuzzer(BaseModule):
             return False, "not a .js URL"
         if url in self._seen_urls:
             return False, "already processed"
+        self._seen_urls.add(url)
         return True, ""
 
     async def handle_event(self, event):
         url = event.data
-        self._seen_urls.add(url)
         loop = asyncio.get_event_loop()
 
         # Download JS

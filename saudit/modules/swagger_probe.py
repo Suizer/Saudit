@@ -1,9 +1,9 @@
 import json
+import re
 from urllib.parse import urlparse
 
 from saudit.modules.base import BaseModule
 
-# Paths comunes donde suele vivir la spec OpenAPI/Swagger
 SWAGGER_PATHS = [
     "/api-docs",
     "/api-docs.json",
@@ -23,6 +23,11 @@ SWAGGER_PATHS = [
     "/api/v2/swagger.json",
 ]
 
+# Swagger UI HTML pattern — signals a hosted Swagger UI page
+_SWAGGER_UI_RE = re.compile(r'id=["\']swagger-ui["\']', re.IGNORECASE)
+# Extracts the swaggerDoc object embedded in swagger-ui-init.js
+_SWAGGER_DOC_RE = re.compile(r'"swaggerDoc"\s*:\s*(\{.*?\})\s*,\s*"customOptions"', re.DOTALL)
+
 HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 
 
@@ -34,12 +39,10 @@ def _base_url(url: str) -> str:
 def _extract_params(operation: dict, spec_version: int) -> list[str]:
     """Extract parameter names from an OpenAPI operation."""
     params = []
-    # query / path / header params (OpenAPI 2 & 3)
     for p in operation.get("parameters", []):
         name = p.get("name", "")
         if name and p.get("in") in ("query", "path"):
             params.append(name)
-    # OpenAPI 3 requestBody JSON schema
     if spec_version == 3:
         rb = operation.get("requestBody", {})
         schema = (
@@ -49,20 +52,20 @@ def _extract_params(operation: dict, spec_version: int) -> list[str]:
         )
         for name in schema.get("properties", {}):
             params.append(name)
-    # OpenAPI 2 body / formData params
     else:
         for p in operation.get("parameters", []):
             if p.get("in") in ("body", "formData"):
                 schema = p.get("schema", {})
                 for name in schema.get("properties", {}):
                     params.append(name)
-    return list(dict.fromkeys(params))  # dedupe preserving order
+    return list(dict.fromkeys(params))
 
 
 class swagger_probe(BaseModule):
     """
     Discovers OpenAPI / Swagger specs and emits one FINDING per documented
     endpoint so that api_probe can test each one with real parameter names.
+    Handles both standalone JSON specs and Swagger UI pages with embedded specs.
     """
 
     watched_events = ["URL"]
@@ -88,7 +91,6 @@ class swagger_probe(BaseModule):
         url = event.data
         if not isinstance(url, str):
             return False, "not a string URL"
-        # only process root / host-level URLs, not .js files etc.
         p = urlparse(url)
         if "." in p.path.split("/")[-1]:
             return False, "not a root URL"
@@ -100,6 +102,8 @@ class swagger_probe(BaseModule):
             return
         self._seen_hosts.add(base)
 
+        swagger_ui_paths = []  # paths that returned Swagger UI HTML
+
         for path in SWAGGER_PATHS:
             resp = await self.helpers.request(
                 f"{base}{path}",
@@ -110,12 +114,30 @@ class swagger_probe(BaseModule):
                 continue
 
             spec = self._parse_spec(resp)
-            if not spec:
-                continue
+            if spec:
+                self.info(f"Found OpenAPI spec at {base}{path}")
+                await self._emit_spec(spec, base, path, event)
+                return
 
-            self.info(f"Found OpenAPI spec at {base}{path}")
-            await self._emit_spec(spec, base, path, event)
-            return  # stop after first valid spec
+            # Track Swagger UI HTML pages for init.js fallback
+            if _SWAGGER_UI_RE.search(resp.text):
+                swagger_ui_paths.append(path)
+
+        # Fallback: try to extract embedded spec from swagger-ui-init.js
+        for ui_path in swagger_ui_paths:
+            init_url = f"{base}{ui_path}/swagger-ui-init.js"
+            resp = await self.helpers.request(
+                init_url,
+                headers=self._auth_headers,
+                allow_redirects=True,
+            )
+            if resp is None or resp.status_code != 200:
+                continue
+            spec = self._parse_spec_from_js(resp.text)
+            if spec:
+                self.info(f"Found embedded OpenAPI spec in {init_url}")
+                await self._emit_spec(spec, base, f"{ui_path}/swagger-ui-init.js", event)
+                return
 
     def _parse_spec(self, resp) -> dict | None:
         ct = resp.headers.get("content-type", "")
@@ -123,13 +145,24 @@ class swagger_probe(BaseModule):
             if "json" in ct or resp.text.strip().startswith("{"):
                 data = resp.json()
             else:
-                # minimal YAML fallback — only if yaml available
                 try:
                     import yaml
                     data = yaml.safe_load(resp.text)
                 except ImportError:
                     return None
-            # must have paths key to be a real spec
+            if isinstance(data, dict) and "paths" in data:
+                return data
+        except Exception:
+            pass
+        return None
+
+    def _parse_spec_from_js(self, js_text: str) -> dict | None:
+        """Extract swaggerDoc embedded in swagger-ui-init.js."""
+        m = _SWAGGER_DOC_RE.search(js_text)
+        if not m:
+            return None
+        try:
+            data = json.loads(m.group(1))
             if isinstance(data, dict) and "paths" in data:
                 return data
         except Exception:
@@ -137,7 +170,6 @@ class swagger_probe(BaseModule):
         return None
 
     async def _emit_spec(self, spec: dict, base: str, spec_path: str, parent_event):
-        # detect version
         spec_version = 3 if "openapi" in spec else 2
         info = spec.get("info", {})
         api_title = info.get("title", "API")
