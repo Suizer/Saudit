@@ -151,7 +151,7 @@ class jsfuzzer(BaseModule):
 
         host = event.host
         emitted_frameworks = set()
-        scanner = self._JScanner()
+        scanner = self._JScanner(config_dir=str(self._tool_path / "config"))
 
         for scan_path in files_to_scan:
             try:
