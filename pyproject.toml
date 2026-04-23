@@ -15,13 +15,13 @@ classifiers = [
     "Topic :: Security",
 ]
 
-packages = [{include = "bbot"}]
+packages = [{include = "saudit"}]
 
 [tool.poetry.urls]
 "GitHub" = "https://github.com/Suizer/SuizerAudit"
 
 [tool.poetry.scripts]
-saudit = 'bbot.cli:main'
+saudit = 'saudit.cli:main'
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -111,11 +111,11 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.codespell]
 ignore-words-list = "bu,cna,couldn,dialin,nd,ned,thirdparty"
-skip = "./docs/javascripts/vega*.js,./bbot/wordlists/*"
+skip = "./docs/javascripts/vega*.js,./saudit/wordlists/*"
 
 [tool.ruff]
 line-length = 119
-format.exclude = ["bbot/test/test_step_1/test_manager_*"]
+format.exclude = ["saudit/test/test_step_1/test_manager_*"]
 lint.select = ["E", "F"]
 lint.ignore = ["E402", "E711", "E713", "E721", "E741", "F403", "F405", "E501"]
 
