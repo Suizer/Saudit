@@ -133,6 +133,13 @@ class webpeas(BaseOutputModule):
             "tags":     tags,
         })
 
+        # Live print for high/critical findings as they arrive
+        if sev in ("critical", "high"):
+            icon  = SEV_ICON.get(sev, SEV_ICON["unknown"])
+            src   = f"{DIM}[{source}]{R}"
+            short = str(title)[:100]
+            print(f"  {icon} {src} LIVE  {short}", flush=True)
+
     async def report(self):
         # Separator so webpeas output doesn't blend with bbot log lines
         print("\n" + "═" * 60, flush=True)
