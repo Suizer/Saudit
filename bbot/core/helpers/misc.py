@@ -2857,10 +2857,15 @@ def get_python_constraints():
 
         return req_string
 
-    from importlib.metadata import distribution
+    from importlib.metadata import distribution, PackageNotFoundError
 
-    dist = distribution("bbot")
-    return [clean_requirement(r) for r in dist.requires]
+    for pkg_name in ("saudit", "bbot"):
+        try:
+            dist = distribution(pkg_name)
+            return [clean_requirement(r) for r in (dist.requires or [])]
+        except PackageNotFoundError:
+            continue
+    return []
 
 
 def is_printable(s):

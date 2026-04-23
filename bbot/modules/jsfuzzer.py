@@ -1,38 +1,57 @@
 import sys
+import json
+import re
 import asyncio
+import shutil
 from pathlib import Path
 
 from bbot.modules.base import BaseModule
 
+_CHUNK_NAME_RE = re.compile(
+    r"(?:^|[-_.])(?:\d+|chunk[-_][a-f0-9]+|runtime[~-]|vendors[-_]|framework[-_]|polyfill)"
+    r"(?:\.chunk)?\.js$",
+    re.IGNORECASE,
+)
+
+
+def _is_chunk_map(map_path: Path) -> bool:
+    """Skip webpack chunk maps that contain only framework internals or empty sources."""
+    if _CHUNK_NAME_RE.search(map_path.name):
+        return True
+    try:
+        data = json.loads(map_path.read_text(encoding="utf-8", errors="replace"))
+        sources = data.get("sources", [])
+        contents = data.get("sourcesContent", [])
+        if not sources:
+            return True
+        if all("webpack" in (s or "").lower() or (s or "").startswith("(") for s in sources):
+            return True
+        non_empty = sum(1 for c in contents if c and len(c.strip()) > 50)
+        if contents and non_empty / len(contents) < 0.3:
+            return True
+    except Exception:
+        return True
+    return False
+
 
 class jsfuzzer(BaseModule):
-    """
-    Integration module: downloads JavaScript files discovered by BBOT and
-    passes them through the JsFuzzer static analysis engine (AST deobfuscation +
-    secret/endpoint pattern matching).
-
-    Requires JsFuzzer to be present on disk. Set the path via:
-        -c consulting.jsfuzzer_path=/path/to/JsFuzzer/JsFuzzer
-    """
-
     watched_events = ["URL"]
     produced_events = ["FINDING", "TECHNOLOGY"]
     flags = ["active", "safe"]
     meta = {
-        "description": "Analyse discovered JavaScript files with JsFuzzer (secrets, endpoints, frameworks)",
+        "description": "Analyse JS files with JsFuzzer — secrets, endpoints, source maps",
         "created_date": "2024-01-01",
-        "author": "@consulting",
+        "author": "@suizer",
     }
 
-    # JS URLs are marked "special" in BBOT — opt-in required
     accept_url_special = True
 
     options = {
         "tool_path": "",
-        "severity_filter": ["critical", "high", "medium"],
+        "severity_filter": ["critical", "high", "medium", "info"],
     }
     options_desc = {
-        "tool_path": "Absolute path to the JsFuzzer directory (overrides consulting.jsfuzzer_path)",
+        "tool_path": "Absolute path to the JsFuzzer directory",
         "severity_filter": "Only emit findings at or above these severity levels",
     }
 
@@ -40,11 +59,13 @@ class jsfuzzer(BaseModule):
 
     async def setup(self):
         self._seen_urls = set()
-        self._scanner = None
 
-        tool_path = self.config.get("tool_path") or self.scan.config.get("consulting", {}).get("jsfuzzer_path", "")
+        tool_path = (
+            self.config.get("tool_path")
+            or self.scan.config.get("consulting", {}).get("jsfuzzer_path", "")
+        )
         if not tool_path:
-            self.warning("JsFuzzer path not configured — module disabled. Set consulting.jsfuzzer_path or modules.jsfuzzer.tool_path")
+            self.warning("JsFuzzer path not configured — set modules.jsfuzzer.tool_path in your preset")
             return None, "jsfuzzer_path not set"
 
         tool_path = Path(tool_path).expanduser().resolve()
@@ -59,15 +80,17 @@ class jsfuzzer(BaseModule):
             from core.scanner import JScanner
             from core.downloader import download_js_file
             from core.ast_engine import deobfuscate
+            from core.map import unpack_map
 
             self._JScanner = JScanner
             self._download_js_file = download_js_file
             self._deobfuscate = deobfuscate
+            self._unpack_map = unpack_map
         except ImportError as e:
             return None, f"Failed to import JsFuzzer modules: {e}"
 
-        self._severity_filter = set(self.config.get("severity_filter", ["critical", "high", "medium"]))
-        self._tmp_dir = self.scan.home / "jsfuzzer_tmp"
+        self._severity_filter = set(self.config.get("severity_filter", ["critical", "high", "medium", "info"]))
+        self._tmp_dir = self.scan.home / "jsfuzzer_files"
         self._tmp_dir.mkdir(parents=True, exist_ok=True)
         return True
 
@@ -75,8 +98,7 @@ class jsfuzzer(BaseModule):
         url = event.data
         if not isinstance(url, str):
             return False, "not a string URL"
-        lower = url.lower().split("?")[0]
-        if not lower.endswith(".js"):
+        if not url.lower().split("?")[0].endswith(".js"):
             return False, "not a .js URL"
         if url in self._seen_urls:
             return False, "already processed"
@@ -85,10 +107,10 @@ class jsfuzzer(BaseModule):
     async def handle_event(self, event):
         url = event.data
         self._seen_urls.add(url)
+        loop = asyncio.get_event_loop()
 
-        # Download JS file to temp dir
+        # Download JS
         try:
-            loop = asyncio.get_event_loop()
             success, js_path = await loop.run_in_executor(
                 None, self._download_js_file, url, self._tmp_dir
             )
@@ -97,84 +119,96 @@ class jsfuzzer(BaseModule):
             return
 
         if not success or not js_path:
-            self.debug(f"Could not download {url}")
             return
 
-        # Deobfuscate
-        try:
-            ast_result = await asyncio.get_event_loop().run_in_executor(
-                None, self._deobfuscate, js_path
-            )
-            if ast_result and ast_result.success:
-                scan_path = js_path.with_suffix(".deob.js")
-                scan_path.write_text(ast_result.code, encoding="utf-8", errors="replace")
-            else:
-                scan_path = js_path
-        except Exception as e:
-            self.debug(f"Deobfuscation error for {url}: {e}")
-            scan_path = js_path
+        js_path = Path(js_path)
+        files_to_scan = []
 
-        # Static analysis
-        try:
-            scanner = self._JScanner()
-            findings = await asyncio.get_event_loop().run_in_executor(
-                None, scanner.scan_file, scan_path
-            )
-        except Exception as e:
-            self.verbose(f"JsFuzzer scan error for {url}: {e}")
-            return
+        # Check for source map alongside the JS
+        map_path = Path(str(js_path) + ".map")
+        if map_path.exists() and not _is_chunk_map(map_path):
+            unpack_dir = self._tmp_dir / "unpacked_sources"
+            try:
+                await loop.run_in_executor(None, self._unpack_map, map_path, unpack_dir)
+                for src in unpack_dir.rglob("*"):
+                    if src.is_file() and src.suffix in (".js", ".ts", ".jsx", ".tsx", ".vue"):
+                        files_to_scan.append(src)
+            except Exception as e:
+                self.debug(f"Map unpack error for {map_path.name}: {e}")
 
-        if not findings:
-            return
+        # Deobfuscate + scan the original JS if no source files extracted
+        if not files_to_scan:
+            try:
+                ast_result = await loop.run_in_executor(None, self._deobfuscate, js_path)
+                if ast_result and ast_result.success:
+                    deob_path = js_path.with_suffix(".deob.js")
+                    deob_path.write_text(ast_result.code, encoding="utf-8", errors="replace")
+                    files_to_scan.append(deob_path)
+                else:
+                    files_to_scan.append(js_path)
+            except Exception:
+                files_to_scan.append(js_path)
 
         host = event.host
         emitted_frameworks = set()
+        scanner = self._JScanner()
 
-        for finding in findings:
-            severity = finding.get("severity", "info").lower()
-            ftype = finding.get("type", "").upper()
-
-            # Emit framework detections as TECHNOLOGY events
-            if ftype == "FRAMEWORK":
-                name = finding.get("name", "")
-                if name and name not in emitted_frameworks:
-                    emitted_frameworks.add(name)
-                    await self.emit_event(
-                        {"host": str(host), "technology": name, "url": url},
-                        "TECHNOLOGY",
-                        parent=event,
-                        context=f"{{module}} detected {{event.type}} {name} in JavaScript at {url}",
-                    )
+        for scan_path in files_to_scan:
+            try:
+                findings = await loop.run_in_executor(None, scanner.scan_file, scan_path)
+            except Exception as e:
+                self.verbose(f"Scan error on {scan_path.name}: {e}")
                 continue
 
-            # Filter non-interesting severities
-            if severity not in self._severity_filter and "info" not in self._severity_filter:
+            if not findings:
                 continue
 
-            desc_parts = [f"[{ftype}] {finding.get('name', 'Unknown')}"]
-            if finding.get("match"):
-                desc_parts.append(f"Match: {finding['match']}")
-            if finding.get("context"):
-                desc_parts.append(f"Context: {finding['context']}")
-            if finding.get("line"):
-                desc_parts.append(f"Line: {finding['line']}")
+            for finding in findings:
+                severity = finding.get("severity", "info").lower()
+                ftype = finding.get("type", "").upper()
 
-            await self.emit_event(
-                {
-                    "host": str(host),
-                    "url": url,
-                    "description": " | ".join(desc_parts),
-                },
-                "FINDING",
-                parent=event,
-                tags=[f"jsfuzzer", f"severity-{severity}", ftype.lower()],
-                context=f"{{module}} found {{event.type}} ({severity.upper()}) in {url}: {finding.get('name', '')}",
-            )
+                if ftype == "FRAMEWORK":
+                    name = finding.get("name", "")
+                    if name and name not in emitted_frameworks:
+                        emitted_frameworks.add(name)
+                        await self.emit_event(
+                            {"host": str(host), "technology": name, "url": url},
+                            "TECHNOLOGY",
+                            parent=event,
+                            context=f"{{module}} detected {{event.type}} {name} in JS at {url}",
+                        )
+                    continue
+
+                if severity not in self._severity_filter:
+                    continue
+
+                source_file = scan_path.name if scan_path != js_path else ""
+                desc_parts = [f"[{ftype}] {finding.get('name', 'Unknown')}"]
+                if source_file:
+                    desc_parts.append(f"Source: {source_file}")
+                if finding.get("match"):
+                    desc_parts.append(f"Match: {finding['match']}")
+                if finding.get("context"):
+                    desc_parts.append(f"Context: {finding['context']}")
+                if finding.get("line"):
+                    desc_parts.append(f"Line: {finding['line']}")
+
+                await self.emit_event(
+                    {"host": str(host), "url": url, "description": " | ".join(desc_parts)},
+                    "FINDING",
+                    parent=event,
+                    tags=["jsfuzzer", f"severity-{severity}", ftype.lower()],
+                    context=f"{{module}} found {{event.type}} ({severity.upper()}) in {url}: {finding.get('name', '')}",
+                )
 
     async def cleanup(self):
-        import shutil
+        # Move JS files to scan output dir for manual review instead of deleting
         try:
             if hasattr(self, "_tmp_dir") and self._tmp_dir.exists():
-                shutil.rmtree(self._tmp_dir, ignore_errors=True)
+                dest = self.scan.home / "js_analysis"
+                if dest.exists():
+                    shutil.rmtree(dest, ignore_errors=True)
+                shutil.move(str(self._tmp_dir), str(dest))
+                self.info(f"JS files preserved for review at {dest}")
         except Exception:
             pass
