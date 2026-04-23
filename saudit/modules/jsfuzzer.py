@@ -182,6 +182,9 @@ class jsfuzzer(BaseModule):
                 if severity not in self._severity_filter:
                     continue
 
+                if self._is_false_positive(finding):
+                    continue
+
                 source_file = scan_path.name if scan_path != js_path else ""
                 desc_parts = [f"[{ftype}] {finding.get('name', 'Unknown')}"]
                 if source_file:
@@ -200,6 +203,41 @@ class jsfuzzer(BaseModule):
                     tags=["jsfuzzer", f"severity-{severity}", ftype.lower()],
                     context=f"{{module}} found {{event.type}} ({severity.upper()}) in {url}: {finding.get('name', '')}",
                 )
+
+    def _is_false_positive(self, finding: dict) -> bool:
+        ftype   = finding.get("type", "").upper()
+        match   = finding.get("match", "") or ""
+        context = finding.get("context", "") or ""
+        name    = finding.get("name", "") or ""
+
+        # ENTROPY: base64/hex charsets — just alphabets, not secrets
+        if ftype == "ENTROPY":
+            clean = match.replace("...", "")
+            if all(c in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/=-_" for c in clean if c.strip()):
+                return True
+            # Angular form validator arrays: [J.required, J.minLength, J.maxLength...]
+            if any(kw in context for kw in ("minLength", "maxLength", "required", "Validators")):
+                return True
+
+        # SECRET: empty string assignment  password="" / password=''
+        if ftype == "SECRET" and "Password" in name:
+            stripped = match.strip("\"'* ")
+            if stripped == "" or stripped == "***":
+                # check context — empty string init is not a real credential
+                if 'password=""' in context.lower() or "password=''" in context.lower():
+                    return True
+
+        # URL: external documentation links — no attack surface
+        if ftype == "URL":
+            doc_domains = (
+                "angular.dev", "owasp.org", "socket.io/docs",
+                "developer.mozilla", "w3.org", "schema.org",
+                "freeprivacypolicy.com",
+            )
+            if any(d in match for d in doc_domains):
+                return True
+
+        return False
 
     async def cleanup(self):
         # Move JS files to scan output dir for manual review instead of deleting

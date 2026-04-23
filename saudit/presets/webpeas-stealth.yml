@@ -12,7 +12,8 @@ modules:
   - badsecrets
   - bypass403
   - jsfuzzer
-  - api_sqli_probe
+  - swagger_probe
+  - api_probe
 
 output_modules:
   - webpeas
