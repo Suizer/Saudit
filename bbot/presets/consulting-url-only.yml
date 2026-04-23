@@ -12,6 +12,8 @@ modules:
   - ntlm
   - jsfuzzer
   - mendix_recon
+  - badsecrets
+  - bypass403
 
 output_modules:
   - consulting_report
