@@ -1,28 +1,25 @@
 [tool.poetry]
-name = "bbot"
-version = "2.8.4"
-description = "OSINT automation for hackers."
+name = "saudit"
+version = "1.0.0"
+description = "SuizerAudit — autonomous web reconnaissance tool."
 authors = [
-    "TheTechromancer",
-    "Paul Mueller",
+    "Suizer <matias.fajardom@gmail.com>",
 ]
 license = "GPL-3.0"
 readme = "README.md"
-repository = "https://github.com/blacklanternsecurity/bbot"
-homepage = "https://github.com/blacklanternsecurity/bbot"
-documentation = "https://www.blacklanternsecurity.com/bbot/"
-keywords = ["python", "cli", "automation", "osint", "threat-intel", "intelligence", "neo4j", "scanner", "python-library", "hacking", "recursion", "pentesting", "recon", "command-line-tool", "bugbounty", "subdomains", "security-tools", "subdomain-scanner", "osint-framework", "attack-surface", "subdomain-enumeration", "osint-tool"]
+repository = "https://github.com/Suizer/SuizerAudit"
+homepage = "https://github.com/Suizer/SuizerAudit"
+keywords = ["python", "cli", "automation", "recon", "pentesting", "security-tools", "web-recon", "bugbounty"]
 classifiers = [
     "Operating System :: POSIX :: Linux",
     "Topic :: Security",
 ]
 
 [tool.poetry.urls]
-"Discord" = "https://discord.com/invite/PZqkgxu5SA"
-"Docker Hub" = "https://hub.docker.com/r/blacklanternsecurity/bbot"
+"GitHub" = "https://github.com/Suizer/SuizerAudit"
 
 [tool.poetry.scripts]
-bbot = 'bbot.cli:main'
+saudit = 'bbot.cli:main'
 
 [tool.poetry.dependencies]
 python = "^3.9"
