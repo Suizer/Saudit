@@ -78,7 +78,8 @@ class webpeas(BaseOutputModule):
         self._techs      = set()
         self._urls       = []          # confirmed live URLs
         self._js_stats   = defaultdict(int)   # type → count (from jsfuzzer tags)
-        self._target     = str(self.scan.target)
+        seeds = getattr(self.scan.target, "seeds", [])
+        self._target = ", ".join(str(s.data) for s in seeds) if seeds else str(self.scan.name)
         return True
 
     async def handle_event(self, event):
@@ -133,6 +134,8 @@ class webpeas(BaseOutputModule):
         })
 
     async def report(self):
+        # Separator so webpeas output doesn't blend with bbot log lines
+        print("\n" + "═" * 60, flush=True)
         lines = [BANNER]
         lines.append(f"  {WHT}Target :{R} {self._target}")
         lines.append(f"  {WHT}Date   :{R} {datetime.now().strftime('%Y-%m-%d %H:%M')}")

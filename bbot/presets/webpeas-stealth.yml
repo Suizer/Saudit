@@ -8,9 +8,7 @@ modules:
   - httpx
   - robots
   - securitytxt
-  - sslcert
   - ntlm
-  - wafw00f
   - badsecrets
   - bypass403
   - jsfuzzer
@@ -18,6 +16,7 @@ modules:
 output_modules:
   - webpeas
   - json
+  - stdout
 
 config:
   scope:
@@ -26,7 +25,6 @@ config:
     report_distance: 0
 
   dns:
-    minimal: true
     search_distance: 0
 
   web:
