@@ -264,14 +264,25 @@ class DepsInstaller:
 
         return success
 
+    @staticmethod
+    def _pip_is_externally_managed():
+        from pathlib import Path
+
+        ver = f"{sys.version_info.major}.{sys.version_info.minor}"
+        marker = Path(sys.prefix) / "lib" / f"python{ver}" / "EXTERNALLY-MANAGED"
+        return marker.exists()
+
     async def pip_install(self, packages, constraints=None):
         packages_str = ",".join(packages)
         log.info(f"Installing the following pip packages: {packages_str}")
 
+        in_venv = sys.prefix != sys.base_prefix
         command = [sys.executable, "-m", "pip", "install", "--upgrade"] + packages
+        if not in_venv and self._pip_is_externally_managed():
+            command.append("--break-system-packages")
 
         # if no custom constraints are provided, use the constraints of the currently installed version of saudit
-        if constraints is not None:
+        if constraints is None:
             constraints = get_python_constraints()
 
         constraints_tempfile = self.parent_helper.tempfile(constraints, pipe=False)
