@@ -59,6 +59,7 @@ class jsfuzzer(BaseModule):
 
     async def setup(self):
         self._seen_urls = set()
+        self._seen_endpoints = set()  # deduplicate endpoint paths across JS files
 
         tool_path = (
             self.config.get("tool_path")
@@ -185,6 +186,14 @@ class jsfuzzer(BaseModule):
                 if self._is_false_positive(finding):
                     continue
 
+                # Deduplicate endpoint paths across multiple JS bundles
+                if ftype == "ENDPOINT":
+                    endpoint_path = finding.get("match", "")
+                    if endpoint_path and endpoint_path in self._seen_endpoints:
+                        continue
+                    if endpoint_path:
+                        self._seen_endpoints.add(endpoint_path)
+
                 source_file = scan_path.name if scan_path != js_path else ""
                 desc_parts = [f"[{ftype}] {finding.get('name', 'Unknown')}"]
                 if source_file:
@@ -235,6 +244,12 @@ class jsfuzzer(BaseModule):
                 "freeprivacypolicy.com",
             )
             if any(d in match for d in doc_domains):
+                return True
+
+        # ENDPOINT: paths extracted from documentation URLs (e.g. socket.io migration guide)
+        if ftype == "ENDPOINT":
+            doc_patterns = ("migrating", "socket.io/docs", "changelog", "upgrade-guide")
+            if any(p in context.lower() for p in doc_patterns):
                 return True
 
         return False

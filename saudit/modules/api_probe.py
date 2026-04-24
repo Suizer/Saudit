@@ -178,12 +178,13 @@ class api_probe(BaseModule):
 
         get_results = await asyncio.gather(*[_probe_get(p) for p in all_params])
 
+        emitted_types = set()
         for finding in get_results:
-            if finding:
+            if finding and finding["type"] not in emitted_types:
                 await self._emit(finding, event)
-                return
+                emitted_types.add(finding["type"])
 
-        # ── POST/PUT/PATCH probe ─────────────────────────────────────────────
+        # ── POST/PUT/PATCH probe — always run regardless of GET findings ─────
         if self._test_post and (method in POST_METHODS or method == "GET"):
             body_params = swagger_params if swagger_params else COMMON_PARAMS
             body = {p: probe_value for p in body_params}
@@ -200,7 +201,7 @@ class api_probe(BaseModule):
                     canary=canary, method="POST",
                     param="json_body", url=endpoint_url, host=event.host,
                 )
-                if finding:
+                if finding and finding["type"] not in emitted_types:
                     await self._emit(finding, event)
 
     def _evaluate(self, resp, baseline_status, baseline_text,

@@ -139,14 +139,21 @@ class bypass403(BaseModule):
         if results is None:
             return
         if len(results) > collapse_threshold:
+            # Show up to 3 working signatures so the pentester knows what to replicate
+            sample = sorted(results)[:3]
+            sample_str = " | ".join(sample)
             await self.emit_event(
                 {
-                    "description": f"403 Bypass MULTIPLE SIGNATURES (exceeded threshold {str(collapse_threshold)})",
+                    "description": (
+                        f"403 Bypass MULTIPLE SIGNATURES ({len(results)} matched) — "
+                        f"sample: {sample_str}"
+                    ),
                     "host": str(event.host),
                     "url": event.data,
                 },
                 "FINDING",
                 parent=event,
+                tags=["severity-medium", "bypass403"],
                 context=f"{{module}} discovered multiple potential 403 bypasses ({{event.type}}) for {event.data}",
             )
         else:
@@ -155,6 +162,7 @@ class bypass403(BaseModule):
                     {"description": description, "host": str(event.host), "url": event.data},
                     "FINDING",
                     parent=event,
+                    tags=["severity-medium", "bypass403"],
                     context=f"{{module}} discovered potential 403 bypass ({{event.type}}) for {event.data}",
                 )
 
