@@ -1,0 +1,72 @@
+# Endpoint and cloud resource detection patterns
+
+endpoints:
+  - name: "REST API path"
+    patterns:
+      - "/api/v[0-9]+/"
+      - "/api/[a-zA-Z]+"
+      - "/v[0-9]+/[a-zA-Z]+"
+      - "/rest/[a-zA-Z]+"
+    severity: info
+    category: api
+
+  - name: "GraphQL endpoint"
+    patterns:
+      - "/graphql"
+      - "/gql"
+      - "query\\s*\\{\\s*[a-zA-Z]+"
+      - "mutation\\s*\\{\\s*[a-zA-Z]+"
+    severity: info
+    category: api
+
+  - name: "WebSocket endpoint"
+    patterns:
+      - "wss?://[^\"'\\s]+"
+    severity: info
+    category: api
+
+cloud_buckets:
+  - name: "AWS S3 Bucket"
+    patterns:
+      - "s3\\.amazonaws\\.com/[a-zA-Z0-9._-]+"
+      - "[a-zA-Z0-9._-]+\\.s3\\.amazonaws\\.com"
+      - "s3://[a-zA-Z0-9._-]+"
+      - "arn:aws:s3:::[a-zA-Z0-9._-]+"
+    severity: high
+    category: cloud
+
+  - name: "Google Cloud Storage"
+    patterns:
+      - "storage\\.googleapis\\.com/[a-zA-Z0-9._-]+"
+      - "[a-zA-Z0-9._-]+\\.storage\\.googleapis\\.com"
+      - "gs://[a-zA-Z0-9._-]+"
+    severity: high
+    category: cloud
+
+  - name: "Azure Blob Storage"
+    patterns:
+      - "[a-zA-Z0-9]+\\.blob\\.core\\.windows\\.net"
+      - "[a-zA-Z0-9]+\\.file\\.core\\.windows\\.net"
+    severity: high
+    category: cloud
+
+  - name: "Firebase Storage"
+    patterns:
+      - "firebasestorage\\.googleapis\\.com"
+      - "[a-zA-Z0-9-]+\\.firebaseio\\.com"
+      - "[a-zA-Z0-9-]+\\.firebaseapp\\.com"
+    severity: high
+    category: cloud
+
+urls:
+  - name: "Absolute URL"
+    patterns:
+      - "https?://[a-zA-Z0-9._-]+\\.[a-zA-Z]{2,}[/a-zA-Z0-9._?&=#-]*"
+    severity: info
+    category: url
+
+  - name: "Subdomain reference"
+    patterns:
+      - "(?i)(?:dev|staging|internal|admin|api|test|uat|pre-?prod)[.-][a-zA-Z0-9._-]+\\.[a-zA-Z]{2,}"
+    severity: medium
+    category: url

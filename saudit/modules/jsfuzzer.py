@@ -1,4 +1,5 @@
-import sys
+from __future__ import annotations
+
 import json
 import re
 import asyncio
@@ -59,36 +60,29 @@ class jsfuzzer(BaseModule):
 
     async def setup(self):
         self._seen_urls = set()
-        self._seen_endpoints = set()  # deduplicate endpoint paths across JS files
+        self._seen_endpoints = set()
 
+        from saudit.modules._jsfuzzer.scanner import JScanner
+        from saudit.modules._jsfuzzer.downloader import download_js_file
+        from saudit.modules._jsfuzzer.ast_engine import deobfuscate
+        from saudit.modules._jsfuzzer.map import unpack_map
+
+        self._JScanner = JScanner
+        self._download_js_file = download_js_file
+        self._deobfuscate = deobfuscate
+        self._unpack_map = unpack_map
+
+        # tool_path is now optional — only used to override the config directory
         tool_path = (
             self.config.get("tool_path")
             or self.scan.config.get("consulting", {}).get("jsfuzzer_path", "")
         )
-        if not tool_path:
-            self.warning("JsFuzzer path not configured — set modules.jsfuzzer.tool_path in your preset")
-            return None, "jsfuzzer_path not set"
-
-        tool_path = Path(tool_path).expanduser().resolve()
-        if not tool_path.is_dir():
-            return None, f"JsFuzzer path does not exist: {tool_path}"
-
-        self._tool_path = tool_path
-        if str(tool_path) not in sys.path:
-            sys.path.insert(0, str(tool_path))
-
-        try:
-            from core.scanner import JScanner
-            from core.downloader import download_js_file
-            from core.ast_engine import deobfuscate
-            from core.map import unpack_map
-
-            self._JScanner = JScanner
-            self._download_js_file = download_js_file
-            self._deobfuscate = deobfuscate
-            self._unpack_map = unpack_map
-        except ImportError as e:
-            return None, f"Failed to import JsFuzzer modules: {e}"
+        embedded_config = Path(__file__).parent / "_jsfuzzer" / "config"
+        if tool_path:
+            custom_config = Path(tool_path).expanduser().resolve() / "config"
+            self._config_dir = custom_config if custom_config.is_dir() else embedded_config
+        else:
+            self._config_dir = embedded_config
 
         self._severity_filter = set(self.config.get("severity_filter", ["critical", "high", "medium", "info"]))
         self._tmp_dir = self.scan.home / "jsfuzzer_files"
@@ -152,7 +146,7 @@ class jsfuzzer(BaseModule):
 
         host = event.host
         emitted_frameworks = set()
-        scanner = self._JScanner(config_dir=str(self._tool_path / "config"))
+        scanner = self._JScanner(config_dir=str(self._config_dir))
 
         for scan_path in files_to_scan:
             try:
