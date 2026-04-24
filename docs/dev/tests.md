@@ -1,6 +1,6 @@
 # Unit Tests
 
-BBOT takes tests seriously. Every module *must* have a custom-written test that *actually tests* its functionality. Don't worry if you want to contribute but you aren't used to writing tests. If you open a draft PR, we will help write them :)
+SAUDIT takes tests seriously. Every module *must* have a custom-written test that *actually tests* its functionality. Don't worry if you want to contribute but you aren't used to writing tests. If you open a draft PR, we will help write them :)
 
 We use [ruff](https://docs.astral.sh/ruff/) for linting, and [pytest](https://docs.pytest.org/en/8.2.x/) for tests.
 
@@ -41,7 +41,7 @@ poetry run pytest --log-cli-level=DEBUG
 
 ## Example: Writing a Module Test
 
-To write a test for your module, create a new python file in `bbot/test/test_step_2/module_tests`. Your filename must be `test_module_<module_name>`:
+To write a test for your module, create a new python file in `saudit/test/test_step_2/module_tests`. Your filename must be `test_module_<module_name>`:
 
 ```python title="test_module_mymodule.py"
 from .base import ModuleTestBase
@@ -100,6 +100,6 @@ Similar to debugging from within a module, you can debug from within a test usin
 
 ### More advanced tests
 
-If you have questions about tests or need to write a more advanced test, come talk to us on [GitHub](https://github.com/blacklanternsecurity/bbot/discussions) or [Discord](https://discord.com/invite/PZqkgxu5SA).
+If you have questions about tests or need to write a more advanced test, come talk to us on [GitHub](https://github.com/blacklanternsecurity/saudit/discussions) or [Discord](https://discord.com/invite/PZqkgxu5SA).
 
-It's also a good idea to look through our [existing tests](https://github.com/blacklanternsecurity/bbot/tree/stable/bbot/test/test_step_2/module_tests). BBOT has over a hundred of them, so you might find one that's similar to what you're trying to do.
+It's also a good idea to look through our [existing tests](https://github.com/blacklanternsecurity/saudit/tree/stable/saudit/test/test_step_2/module_tests). SAUDIT has over a hundred of them, so you might find one that's similar to what you're trying to do.

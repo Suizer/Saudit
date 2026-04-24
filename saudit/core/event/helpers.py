@@ -6,7 +6,7 @@ from saudit.core.helpers import validators
 from saudit.core.helpers.misc import split_host_port, make_ip_type
 from saudit.core.helpers import regexes, smart_decode, smart_encode_punycode
 
-bbot_event_seeds = {}
+saudit_event_seeds = {}
 
 
 """
@@ -15,9 +15,9 @@ An "Event Seed" is a lightweight event containing only the minimum logic require
     - validate+sanitize the data
     - extract the host for scope purposes
 
-It's useful for quickly parsing target lists without the cpu+memory overhead of creating full-fledged BBOT events
+It's useful for quickly parsing target lists without the cpu+memory overhead of creating full-fledged SAUDIT events
 
-Not every type of BBOT event needs to be represented here. Only ones that are meant to be targets.
+Not every type of SAUDIT event needs to be represented here. Only ones that are meant to be targets.
 """
 
 
@@ -27,17 +27,17 @@ class EventSeedRegistry(type):
     """
 
     def __new__(mcs, name, bases, attrs):
-        global bbot_event_seeds
+        global saudit_event_seeds
         cls = super().__new__(mcs, name, bases, attrs)
         # Don't register the base EventSeed class
         if name != "BaseEventSeed":
-            bbot_event_seeds[cls.__name__] = cls
+            saudit_event_seeds[cls.__name__] = cls
         return cls
 
 
 def EventSeed(input):
     input = smart_encode_punycode(smart_decode(input).strip())
-    for _, event_class in bbot_event_seeds.items():
+    for _, event_class in saudit_event_seeds.items():
         if hasattr(event_class, "precheck"):
             if event_class.precheck(input):
                 return event_class(input)

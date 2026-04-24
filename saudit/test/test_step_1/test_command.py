@@ -1,11 +1,11 @@
 import time
-from ..bbot_fixtures import *
+from ..saudit_fixtures import *
 from subprocess import CalledProcessError
 
 
 @pytest.mark.asyncio
-async def test_command(bbot_scanner):
-    scan1 = bbot_scanner()
+async def test_command(saudit_scanner):
+    scan1 = saudit_scanner()
 
     # test timeouts
     command = ["sleep", "3"]
@@ -118,30 +118,30 @@ async def test_command(bbot_scanner):
     # test sudo + existence of environment variables
     await scan1.load_modules()
     path_parts = os.environ.get("PATH", "").split(":")
-    assert "/tmp/.bbot_test/tools" in path_parts
+    assert "/tmp/.saudit_test/tools" in path_parts
     run_lines = (await scan1.helpers.run(["env"])).stdout.splitlines()
-    assert "BBOT_WEB_USER_AGENT=BBOT Test User-Agent" in run_lines
+    assert "SAUDIT_WEB_USER_AGENT=SAUDIT Test User-Agent" in run_lines
     for line in run_lines:
         if line.startswith("PATH="):
             path_parts = line.split("=", 1)[-1].split(":")
-            assert "/tmp/.bbot_test/tools" in path_parts
+            assert "/tmp/.saudit_test/tools" in path_parts
     run_lines_sudo = (await scan1.helpers.run(["env"], sudo=True)).stdout.splitlines()
-    assert "BBOT_WEB_USER_AGENT=BBOT Test User-Agent" in run_lines_sudo
+    assert "SAUDIT_WEB_USER_AGENT=SAUDIT Test User-Agent" in run_lines_sudo
     for line in run_lines_sudo:
         if line.startswith("PATH="):
             path_parts = line.split("=", 1)[-1].split(":")
-            assert "/tmp/.bbot_test/tools" in path_parts
+            assert "/tmp/.saudit_test/tools" in path_parts
     run_live_lines = [l async for l in scan1.helpers.run_live(["env"])]
-    assert "BBOT_WEB_USER_AGENT=BBOT Test User-Agent" in run_live_lines
+    assert "SAUDIT_WEB_USER_AGENT=SAUDIT Test User-Agent" in run_live_lines
     for line in run_live_lines:
         if line.startswith("PATH="):
             path_parts = line.strip().split("=", 1)[-1].split(":")
-            assert "/tmp/.bbot_test/tools" in path_parts
+            assert "/tmp/.saudit_test/tools" in path_parts
     run_live_lines_sudo = [l async for l in scan1.helpers.run_live(["env"], sudo=True)]
-    assert "BBOT_WEB_USER_AGENT=BBOT Test User-Agent" in run_live_lines_sudo
+    assert "SAUDIT_WEB_USER_AGENT=SAUDIT Test User-Agent" in run_live_lines_sudo
     for line in run_live_lines_sudo:
         if line.startswith("PATH="):
             path_parts = line.strip().split("=", 1)[-1].split(":")
-            assert "/tmp/.bbot_test/tools" in path_parts
+            assert "/tmp/.saudit_test/tools" in path_parts
 
     await scan1._cleanup()

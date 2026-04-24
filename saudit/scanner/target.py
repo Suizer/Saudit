@@ -14,12 +14,12 @@ log = logging.getLogger("saudit.core.target")
 
 class BaseTarget(RadixTarget):
     """
-    A collection of BBOT events that represent a scan target.
+    A collection of SAUDIT events that represent a scan target.
 
     The purpose of this class is to hold a potentially huge target list in a space-efficient way,
     while allowing lightning fast scope lookups.
 
-    This class is inherited by all three components of the BBOT target:
+    This class is inherited by all three components of the SAUDIT target:
         - Whitelist
         - Blacklist
         - Seeds
@@ -142,7 +142,7 @@ class ACLTarget(BaseTarget):
 
 class ScanWhitelist(ACLTarget):
     """
-    A collection of BBOT events that represent a scan's whitelist.
+    A collection of SAUDIT events that represent a scan's whitelist.
     """
 
     pass
@@ -150,7 +150,7 @@ class ScanWhitelist(ACLTarget):
 
 class ScanBlacklist(ACLTarget):
     """
-    A collection of BBOT events that represent a scan's blacklist.
+    A collection of SAUDIT events that represent a scan's blacklist.
     """
 
     accept_target_types = ["TARGET", "BLACKLIST"]
@@ -206,7 +206,7 @@ class ScanBlacklist(ACLTarget):
         return bool(len(self))
 
 
-class BBOTTarget:
+class SAUDITTarget:
     """
     A convenient abstraction of a scan target that contains three subtargets:
         - seeds
@@ -276,7 +276,7 @@ class BBOTTarget:
         """
         Check whether a hostname, url, IP, etc. is blacklisted.
 
-        Note that `host` can be a hostname, IP address, CIDR, email address, or any BBOT `Event` with the `host` attribute.
+        Note that `host` can be a hostname, IP address, CIDR, email address, or any SAUDIT `Event` with the `host` attribute.
 
         Args:
             host (str or IPAddress or Event): The host to check against the blacklist
@@ -292,7 +292,7 @@ class BBOTTarget:
         """
         Check whether a hostname, url, IP, etc. is whitelisted.
 
-        Note that `host` can be a hostname, IP address, CIDR, email address, or any BBOT `Event` with the `host` attribute.
+        Note that `host` can be a hostname, IP address, CIDR, email address, or any SAUDIT `Event` with the `host` attribute.
 
         Args:
             host (str or IPAddress or Event): The host to check against the whitelist

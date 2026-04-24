@@ -24,10 +24,10 @@ def tempfile(self, content, pipe=True, extension=None):
 
     Examples:
         >>> tempfile(["This", "is", "temp", "content"])
-        '/home/user/.bbot/temp/pgxml13bov87oqrvjz7a'
+        '/home/user/.saudit/temp/pgxml13bov87oqrvjz7a'
 
         >>> tempfile(["Another", "temp", "file"], pipe=False)
-        '/home/user/.bbot/temp/someotherfile'
+        '/home/user/.saudit/temp/someotherfile'
     """
     filename = self.temp_filename(extension)
     rm_at_exit(filename)
@@ -108,7 +108,7 @@ def feed_pipe(self, pipe, content, text=True):
         args=(pipe, content),
         kwargs={"text": text},
         daemon=True,
-        custom_name="bbot feed_pipe()",
+        custom_name="saudit feed_pipe()",
     )
     t.start()
 
@@ -133,7 +133,7 @@ def tempfile_tail(self, callback):
     try:
         os.mkfifo(filename)
         t = self.preset.core.create_thread(
-            target=tail, args=(filename, callback), daemon=True, custom_name="bbot tempfile_tail()"
+            target=tail, args=(filename, callback), daemon=True, custom_name="saudit tempfile_tail()"
         )
         t.start()
     except Exception as e:

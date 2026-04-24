@@ -1,16 +1,16 @@
 # Presets
 
-Once you start customizing BBOT, your commands can start to get really long. Presets let you put all your scan settings in a single file:
+Once you start customizing SAUDIT, your commands can start to get really long. Presets let you put all your scan settings in a single file:
 
 ```bash
-bbot -p ./my_preset.yml
+saudit -p ./my_preset.yml
 ```
 
 A Preset is a YAML file that can include scan targets, modules, and config options like API keys.
 
 A typical preset looks like this:
 
-<!-- BBOT SUBDOMAIN ENUM PRESET -->
+<!-- SAUDIT SUBDOMAIN ENUM PRESET -->
 ```yaml title="subdomain-enum.yml"
 description: Enumerate subdomains via APIs, brute-force
 
@@ -21,33 +21,33 @@ output_modules:
   - subdomains
 
 ```
-<!-- END BBOT SUBDOMAIN ENUM PRESET -->
+<!-- END SAUDIT SUBDOMAIN ENUM PRESET -->
 
 ## How to use Presets (`-p`)
 
-BBOT has a ready-made collection of presets for common tasks like subdomain enumeration and web spidering. They live in `~/.bbot/presets`.
+SAUDIT has a ready-made collection of presets for common tasks like subdomain enumeration and web spidering. They live in `~/.saudit/presets`.
 
 To list them, you can do:
 
 ```bash
 # list available presets
-bbot -lp
+saudit -lp
 ```
 
 Enable them with `-p`:
 
 ```bash
 # do a subdomain enumeration
-bbot -t evilcorp.com -p subdomain-enum
+saudit -t evilcorp.com -p subdomain-enum
 
 # multiple presets - subdomain enumeration + web spider
-bbot -t evilcorp.com -p subdomain-enum spider
+saudit -t evilcorp.com -p subdomain-enum spider
 
 # start with a preset but only enable modules that have the 'passive' flag
-bbot -t evilcorp.com -p subdomain-enum -rf passive
+saudit -t evilcorp.com -p subdomain-enum -rf passive
 
 # preset + manual config override
-bbot -t www.evilcorp.com -p spider -c web.spider_distance=10
+saudit -t www.evilcorp.com -p spider -c web.spider_distance=10
 ```
 
 You can build on the default presets, or create your own. Here's an example of a custom preset that builds on `subdomain-enum`:
@@ -86,7 +86,7 @@ config:
 To execute your custom preset, you do:
 
 ```bash
-bbot -p ./my_subdomains.yml
+saudit -p ./my_subdomains.yml
 ```
 
 ## Preset Load Order
@@ -102,34 +102,34 @@ config:
 ...and you enable it alongside the default `spider` preset in this order:
 
 ```bash
-bbot -t evilcorp.com -p ./my_spider.yml spider
+saudit -t evilcorp.com -p ./my_spider.yml spider
 ```
 
 ...the value of `web.spider_distance` will be overridden by `spider`. To ensure this doesn't happen, you would want to switch the order of the presets:
 
 ```bash
-bbot -t evilcorp.com -p spider ./my_spider.yml
+saudit -t evilcorp.com -p spider ./my_spider.yml
 ```
 
 ## Validating Presets
 
-To make sure BBOT is configured the way you expect, you can always check the `--current-preset` to show the final version of the config that will be used when BBOT executes:
+To make sure SAUDIT is configured the way you expect, you can always check the `--current-preset` to show the final version of the config that will be used when SAUDIT executes:
 
 ```bash
 # verify the preset is what you want
-bbot -p ./mypreset.yml --current-preset
+saudit -p ./mypreset.yml --current-preset
 ```
 
 ## Advanced Usage
 
-BBOT Presets support advanced features like environment variable substitution and custom conditions.
+SAUDIT Presets support advanced features like environment variable substitution and custom conditions.
 
 ### Custom Modules
 
-If you want to use a custom BBOT `.py` module, you can either move it into `bbot/modules` where BBOT is installed, or add its parent folder to `module_dirs` like so:
+If you want to use a custom SAUDIT `.py` module, you can either move it into `saudit/modules` where SAUDIT is installed, or add its parent folder to `module_dirs` like so:
 
 ```yaml title="custom_modules.yml"
-# load extra BBOT modules from this locaation
+# load extra SAUDIT modules from this locaation
 module_dirs:
   - /home/user/custom_modules
 ```
@@ -155,12 +155,12 @@ config:
 ```
 
 ```bash
-NUCLEI_TAGS=apache,nginx bbot -p ./my_nuclei.yml
+NUCLEI_TAGS=apache,nginx saudit -p ./my_nuclei.yml
 ```
 
 ### Conditions
 
-Sometimes, you might need to add custom logic to a preset. BBOT supports this via `conditions`. The `conditions` attribute allows you to specify a list of custom conditions that will be evaluated before the scan starts. This is useful for performing last-minute sanity checks, or changing the behavior of the scan based on custom criteria.
+Sometimes, you might need to add custom logic to a preset. SAUDIT supports this via `conditions`. The `conditions` attribute allows you to specify a list of custom conditions that will be evaluated before the scan starts. This is useful for performing last-minute sanity checks, or changing the behavior of the scan based on custom criteria.
 
 ```yaml title="my_preset.yml"
 description: Abort if nuclei templates aren't specified
@@ -196,4 +196,4 @@ Conditions use [Jinja](https://palletsprojects.com/p/jinja/), which means they c
 - `warn(message)` - display a custom warning message to the user
 - `abort(message)` - abort the scan with an optional message
 
-If you aren't able to accomplish what you want with conditions, or if you need access to a new variable/function, please let us know on [Github](https://github.com/blacklanternsecurity/bbot/issues/new/choose).
+If you aren't able to accomplish what you want with conditions, or if you need access to a new variable/function, please let us know on [Github](https://github.com/blacklanternsecurity/saudit/issues/new/choose).

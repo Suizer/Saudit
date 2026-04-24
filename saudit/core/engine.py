@@ -16,7 +16,7 @@ from concurrent.futures import CancelledError
 from contextlib import asynccontextmanager, suppress
 
 from saudit.core import CORE
-from saudit.errors import BBOTEngineError
+from saudit.errors import SAUDITEngineError
 from saudit.core.helpers.async_helpers import get_event_loop
 from saudit.core.multiprocess import SHARED_INTERPRETER_STATE
 from saudit.core.helpers.misc import rand_string, in_exception_chain
@@ -32,7 +32,7 @@ class EngineBase:
     An Engine is a simple and lightweight RPC implementation that allows offloading async tasks
     to a separate process. It leverages ZeroMQ in a ROUTER-DEALER configuration.
 
-    BBOT makes use of this by spawning a dedicated engine for DNS and HTTP tasks.
+    SAUDIT makes use of this by spawning a dedicated engine for DNS and HTTP tasks.
     This offloads I/O and helps free up the main event loop for other tasks.
 
     To use Engine, you must subclass both EngineClient and EngineServer.
@@ -40,11 +40,11 @@ class EngineBase:
     See the respective EngineClient and EngineServer classes for usage examples.
     """
 
-    ERROR_CLASS = BBOTEngineError
+    ERROR_CLASS = SAUDITEngineError
 
     def __init__(self, debug=False):
         self._shutdown_status = False
-        self.log = logging.getLogger(f"bbot.core.{self.__class__.__name__.lower()}")
+        self.log = logging.getLogger(f"saudit.core.{self.__class__.__name__.lower()}")
         self._engine_debug = debug
 
     def pickle(self, obj):
@@ -88,12 +88,12 @@ class EngineBase:
 
 class EngineClient(EngineBase):
     """
-    The client portion of BBOT's RPC Engine.
+    The client portion of SAUDIT's RPC Engine.
 
     To create an engine, you must create a subclass of this class and also
     define methods for each of your desired functions.
 
-    Note that this only supports async functions. If you need to offload a synchronous function to another CPU, use BBOT's multiprocessing pool instead.
+    Note that this only supports async functions. If you need to offload a synchronous function to another CPU, use SAUDIT's multiprocessing pool instead.
 
     Any CPU or I/O intense logic should be implemented in the EngineServer.
 
@@ -271,7 +271,7 @@ class EngineClient(EngineBase):
             kwargs = dict(self.server_kwargs)
             # if we're in tests, we use a single event loop to avoid weird race conditions
             # this allows us to more easily mock http, etc.
-            if os.environ.get("BBOT_TESTING", "") == "True":
+            if os.environ.get("SAUDIT_TESTING", "") == "True":
                 kwargs["_loop"] = get_event_loop()
             kwargs["debug"] = self._engine_debug
             self.process = CORE.create_process(
@@ -281,12 +281,12 @@ class EngineClient(EngineBase):
                     self.socket_path,
                 ),
                 kwargs=kwargs,
-                custom_name=f"BBOT {self.__class__.__name__}",
+                custom_name=f"SAUDIT {self.__class__.__name__}",
             )
             self.process.start()
             return self.process
         else:
-            raise BBOTEngineError(
+            raise SAUDITEngineError(
                 f"Tried to start server from process {process_name}. Did you forget \"if __name__ == '__main__'?\""
             )
 
@@ -349,7 +349,7 @@ class EngineClient(EngineBase):
 
 class EngineServer(EngineBase):
     """
-    The server portion of BBOT's RPC Engine.
+    The server portion of SAUDIT's RPC Engine.
 
     Methods defined here must match the methods in your EngineClient.
 

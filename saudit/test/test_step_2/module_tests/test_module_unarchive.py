@@ -3,7 +3,7 @@ import asyncio
 from pathlib import Path
 from .base import ModuleTestBase
 
-from ...bbot_fixtures import *
+from ...saudit_fixtures import *
 
 
 class TestUnarchive(ModuleTestBase):
@@ -12,13 +12,13 @@ class TestUnarchive(ModuleTestBase):
     config_overrides = {
         "modules": {
             "filedownload": {
-                "output_folder": bbot_test_dir / "filedownload",
+                "output_folder": saudit_test_dir / "filedownload",
             },
         }
     }
 
     async def setup_after_prep(self, module_test):
-        temp_path = Path("/tmp/.bbot_test")
+        temp_path = Path("/tmp/.saudit_test")
 
         # Create a text file to compress
         text_file = temp_path / "test.txt"

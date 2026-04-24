@@ -13,10 +13,10 @@ class TestPostgres(ModuleTestBase):
             "docker",
             "run",
             "--name",
-            "bbot-test-postgres",
+            "saudit-test-postgres",
             "--rm",
             "-e",
-            "POSTGRES_PASSWORD=bbotislife",
+            "POSTGRES_PASSWORD=sauditislife",
             "-e",
             "POSTGRES_USER=postgres",
             "-p",
@@ -31,11 +31,11 @@ class TestPostgres(ModuleTestBase):
         start_time = time.time()
         while True:
             try:
-                # Connect to the default 'postgres' database to create 'bbot'
+                # Connect to the default 'postgres' database to create 'saudit'
                 conn = await asyncpg.connect(
-                    user="postgres", password="bbotislife", database="postgres", host="127.0.0.1"
+                    user="postgres", password="sauditislife", database="postgres", host="127.0.0.1"
                 )
-                await conn.execute("CREATE DATABASE bbot")
+                await conn.execute("CREATE DATABASE saudit")
                 await conn.close()
                 break
             except asyncpg.exceptions.DuplicateDatabaseError:
@@ -54,7 +54,7 @@ class TestPostgres(ModuleTestBase):
         import asyncpg
 
         # Connect to the PostgreSQL database
-        conn = await asyncpg.connect(user="postgres", password="bbotislife", database="bbot", host="127.0.0.1")
+        conn = await asyncpg.connect(user="postgres", password="sauditislife", database="saudit", host="127.0.0.1")
 
         try:
             events = await conn.fetch("SELECT * FROM event")
@@ -66,7 +66,7 @@ class TestPostgres(ModuleTestBase):
         finally:
             await conn.close()
             process = await asyncio.create_subprocess_exec(
-                "docker", "stop", "bbot-test-postgres", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                "docker", "stop", "saudit-test-postgres", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
             stdout, stderr = await process.communicate()
 

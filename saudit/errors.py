@@ -1,64 +1,64 @@
-class BBOTError(Exception):
+class SAUDITError(Exception):
     pass
 
 
-class ScanError(BBOTError):
+class ScanError(SAUDITError):
     pass
 
 
-class ValidationError(BBOTError):
+class ValidationError(SAUDITError):
     pass
 
 
-class ConfigLoadError(BBOTError):
+class ConfigLoadError(SAUDITError):
     pass
 
 
-class HttpCompareError(BBOTError):
+class HttpCompareError(SAUDITError):
     pass
 
 
-class DirectoryCreationError(BBOTError):
+class DirectoryCreationError(SAUDITError):
     pass
 
 
-class DirectoryDeletionError(BBOTError):
+class DirectoryDeletionError(SAUDITError):
     pass
 
 
-class NTLMError(BBOTError):
+class NTLMError(SAUDITError):
     pass
 
 
-class InteractshError(BBOTError):
+class InteractshError(SAUDITError):
     pass
 
 
-class WordlistError(BBOTError):
+class WordlistError(SAUDITError):
     pass
 
 
-class CurlError(BBOTError):
+class CurlError(SAUDITError):
     pass
 
 
-class PresetNotFoundError(BBOTError):
+class PresetNotFoundError(SAUDITError):
     pass
 
 
-class EnableModuleError(BBOTError):
+class EnableModuleError(SAUDITError):
     pass
 
 
-class EnableFlagError(BBOTError):
+class EnableFlagError(SAUDITError):
     pass
 
 
-class BBOTArgumentError(BBOTError):
+class SAUDITArgumentError(SAUDITError):
     pass
 
 
-class PresetConditionError(BBOTError):
+class PresetConditionError(SAUDITError):
     pass
 
 
@@ -66,17 +66,17 @@ class PresetAbortError(PresetConditionError):
     pass
 
 
-class BBOTEngineError(BBOTError):
+class SAUDITEngineError(SAUDITError):
     pass
 
 
-class WebError(BBOTEngineError):
+class WebError(SAUDITEngineError):
     pass
 
 
-class DNSError(BBOTEngineError):
+class DNSError(SAUDITEngineError):
     pass
 
 
-class ExcavateError(BBOTError):
+class ExcavateError(SAUDITError):
     pass

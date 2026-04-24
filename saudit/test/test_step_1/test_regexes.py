@@ -1,7 +1,7 @@
 import pytest
 import traceback
 
-from ..bbot_fixtures import *  # noqa F401
+from ..saudit_fixtures import *  # noqa F401
 from saudit.core.helpers import regexes
 from saudit.errors import ValidationError
 from saudit.core.event.helpers import EventSeed
@@ -351,7 +351,7 @@ def test_url_regexes():
 
 @pytest.mark.asyncio
 async def test_regex_helper():
-    from bbot import Scanner
+    from saudit import Scanner
 
     scan = Scanner("evilcorp.com", "evilcorp.org", "evilcorp.net", "evilcorp.co.uk")
 

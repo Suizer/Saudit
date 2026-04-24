@@ -103,7 +103,7 @@ class host_header(BaseModule):
         output = await self.helpers.curl(
             url=url,
             headers={"Host": f"{subdomain_tag}.{self.domain}"},
-            ignore_bbot_global_settings=True,
+            ignore_saudit_global_settings=True,
             cookies=added_cookies,
         )
         if self.domain in output:

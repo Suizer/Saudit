@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-consulting.py — Unified entry point for the BBOT Consulting Suite.
+consulting.py — Unified entry point for the SAUDIT Consulting Suite.
 
 Automatically detects scan scope from the supplied target(s) and selects
-the appropriate BBOT preset:
+the appropriate SAUDIT preset:
   - Single URL / bare domain  → consulting-url-only   (strict scope, no brute)
   - File / multiple targets / CIDR  → consulting-full-scope  (subdomain enum, stealth)
 
-Integrates JsFuzzer and MendixRecon via BBOT custom modules.
+Integrates JsFuzzer and MendixRecon via SAUDIT custom modules.
 
 Usage examples
 --------------
@@ -96,7 +96,7 @@ def detect_scope(targets: list[str]) -> str:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="consulting.py",
-        description="BBOT Consulting Suite — scope-aware recon with JsFuzzer & MendixRecon",
+        description="SAUDIT Consulting Suite — scope-aware recon with JsFuzzer & MendixRecon",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -121,7 +121,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "-o", "--output-dir",
         metavar="DIR",
-        help="Directory for BBOT scan output",
+        help="Directory for SAUDIT scan output",
     )
     p.add_argument(
         "--proxy",
@@ -138,7 +138,7 @@ def build_parser() -> argparse.ArgumentParser:
         nargs="+",
         metavar="KEY=VALUE",
         default=[],
-        help="Extra BBOT config overrides (e.g. consulting.jsfuzzer_path=/opt/jsfuzzer)",
+        help="Extra SAUDIT config overrides (e.g. consulting.jsfuzzer_path=/opt/jsfuzzer)",
     )
     p.add_argument(
         "--jsfuzzer",
@@ -159,7 +159,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "-v", "--verbose",
         action="store_true",
-        help="Verbose BBOT output",
+        help="Verbose SAUDIT output",
     )
     return p
 
@@ -169,8 +169,8 @@ def build_parser() -> argparse.ArgumentParser:
 # ──────────────────────────────────────────────────────────────────────────────
 
 async def run_scan(targets: list, preset_name: str, extra_config: dict, output_dir: str | None, verbose: bool):
-    from bbot.scanner import Scanner
-    from bbot.scanner.preset import Preset
+    from saudit.scanner import Scanner
+    from saudit.scanner.preset import Preset
 
     preset_kwargs = {
         "preset": [preset_name],

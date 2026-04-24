@@ -1,4 +1,4 @@
-[submodule "bbot/modules/playground"]
-    path = bbot/modules/playground
-    url = https://github.com/blacklanternsecurity/bbot-module-playground
+[submodule "saudit/modules/playground"]
+    path = saudit/modules/playground
+    url = https://github.com/blacklanternsecurity/saudit-module-playground
     branch = main

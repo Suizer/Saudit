@@ -10,11 +10,11 @@ class TestSocial(ModuleTestBase):
         respond_args = {
             "response_data": """
             <html>
-                <a href="https://discord.gg/asdf"/><a href="https://github.com/blacklanternsecurity/bbot"/>
+                <a href="https://discord.gg/asdf"/><a href="https://github.com/blacklanternsecurity/saudit"/>
                 <a href="https://hub.docker.com/r/blacklanternsecurity"/>
-                <a href="https://hub.docker.com/r/blacklanternsecurity/bbot"/>
-                <a href="https://hub.docker.com/r/blacklanternSECURITY/bbot"/>
-                <a href="https://www.postman.com/blacklanternsecurity/bbot"/>
+                <a href="https://hub.docker.com/r/blacklanternsecurity/saudit"/>
+                <a href="https://hub.docker.com/r/blacklanternSECURITY/saudit"/>
+                <a href="https://www.postman.com/blacklanternsecurity/saudit"/>
             </html>
             """
         }

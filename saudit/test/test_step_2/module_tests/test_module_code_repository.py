@@ -10,11 +10,11 @@ class TestCodeRepository(ModuleTestBase):
         respond_args = {
             "response_data": """
             <html>
-                <a href="https://github.com/blacklanternsecurity/bbot"/>
-                <a href="https://gitlab.com/blacklanternsecurity/bbot"/>
-                <a href="https://gitlab.org/blacklanternsecurity/bbot"/>
-                <a href="https://hub.docker.com/r/blacklanternsecurity/bbot"/>
-                <a href="https://www.postman.com/blacklanternsecurity/bbot"/>
+                <a href="https://github.com/blacklanternsecurity/saudit"/>
+                <a href="https://gitlab.com/blacklanternsecurity/saudit"/>
+                <a href="https://gitlab.org/blacklanternsecurity/saudit"/>
+                <a href="https://hub.docker.com/r/blacklanternsecurity/saudit"/>
+                <a href="https://www.postman.com/blacklanternsecurity/saudit"/>
             </html>
             """
         }
@@ -28,7 +28,7 @@ class TestCodeRepository(ModuleTestBase):
                 for e in events
                 if e.type == "CODE_REPOSITORY"
                 and "git" in e.tags
-                and e.data["url"] == "https://github.com/blacklanternsecurity/bbot"
+                and e.data["url"] == "https://github.com/blacklanternsecurity/saudit"
             ]
         )
         assert 1 == len(
@@ -37,7 +37,7 @@ class TestCodeRepository(ModuleTestBase):
                 for e in events
                 if e.type == "CODE_REPOSITORY"
                 and "git" in e.tags
-                and e.data["url"] == "https://gitlab.com/blacklanternsecurity/bbot"
+                and e.data["url"] == "https://gitlab.com/blacklanternsecurity/saudit"
             ]
         )
         assert 1 == len(
@@ -46,7 +46,7 @@ class TestCodeRepository(ModuleTestBase):
                 for e in events
                 if e.type == "CODE_REPOSITORY"
                 and "git" in e.tags
-                and e.data["url"] == "https://gitlab.org/blacklanternsecurity/bbot"
+                and e.data["url"] == "https://gitlab.org/blacklanternsecurity/saudit"
             ]
         )
         assert 1 == len(
@@ -55,7 +55,7 @@ class TestCodeRepository(ModuleTestBase):
                 for e in events
                 if e.type == "CODE_REPOSITORY"
                 and "docker" in e.tags
-                and e.data["url"] == "https://hub.docker.com/r/blacklanternsecurity/bbot"
+                and e.data["url"] == "https://hub.docker.com/r/blacklanternsecurity/saudit"
             ]
         )
         assert 1 == len(
@@ -64,6 +64,6 @@ class TestCodeRepository(ModuleTestBase):
                 for e in events
                 if e.type == "CODE_REPOSITORY"
                 and "postman" in e.tags
-                and e.data["url"] == "https://www.postman.com/blacklanternsecurity/bbot"
+                and e.data["url"] == "https://www.postman.com/blacklanternsecurity/saudit"
             ]
         )

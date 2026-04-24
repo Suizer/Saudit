@@ -7,7 +7,7 @@ class TestClosestMatchBenchmarks:
     """
     Benchmark tests for closest_match operations.
 
-    This function is critical for BBOT's DNS brute forcing, where it finds the best
+    This function is critical for SAUDIT's DNS brute forcing, where it finds the best
     matching parent event among thousands of choices. Performance here directly impacts
     scan throughput and DNS mutation efficiency.
     """
@@ -32,7 +32,7 @@ class TestClosestMatchBenchmarks:
         return choices
 
     def _generate_realistic_closest_match_choices(self):
-        """Generate realistic closest match parent event choices (like actual BBOT usage)"""
+        """Generate realistic closest match parent event choices (like actual SAUDIT usage)"""
         choices = []
 
         # Common TLDs
@@ -67,7 +67,7 @@ class TestClosestMatchBenchmarks:
 
     @pytest.mark.benchmark(group="closest_match")
     def test_realistic_closest_match_workload(self, benchmark):
-        """Benchmark closest_match with realistic BBOT closest match parent event choices"""
+        """Benchmark closest_match with realistic SAUDIT closest match parent event choices"""
 
         def find_realistic_closest_match():
             return closest_match("subdomain123.example5.com", self.realistic_closest_match_choices)

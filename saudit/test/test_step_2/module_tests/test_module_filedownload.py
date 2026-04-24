@@ -1,6 +1,6 @@
 from pathlib import Path
 from .base import ModuleTestBase
-from saudit.test.bbot_fixtures import bbot_test_dir
+from saudit.test.saudit_fixtures import saudit_test_dir
 
 
 class TestFileDownload(ModuleTestBase):
@@ -8,7 +8,7 @@ class TestFileDownload(ModuleTestBase):
     modules_overrides = ["filedownload", "httpx", "excavate", "speculate"]
     config_overrides = {
         "web": {"spider_distance": 2, "spider_depth": 2},
-        "modules": {"filedownload": {"output_folder": str(bbot_test_dir / "test_filedownload_files")}},
+        "modules": {"filedownload": {"output_folder": str(saudit_test_dir / "test_filedownload_files")}},
     }
 
     pdf_data = """%PDF-1.

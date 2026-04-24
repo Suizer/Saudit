@@ -148,7 +148,7 @@ class WordCloud(dict):
 
     def absorb_event(self, event):
         """
-        Absorbs an event from a BBOT scan into the word cloud.
+        Absorbs an event from a SAUDIT scan into the word cloud.
 
         This method updates the word cloud by extracting words from the given event. It aims to avoid including PTR
         (Pointer) records, as they tend to produce unhelpful mutations in the word cloud.

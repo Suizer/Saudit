@@ -2,11 +2,11 @@ import asyncio
 import datetime
 import ipaddress
 
-from ..bbot_fixtures import *
+from ..saudit_fixtures import *
 
 
 @pytest.mark.asyncio
-async def test_helpers_misc(helpers, scan, bbot_scanner, bbot_httpserver):
+async def test_helpers_misc(helpers, scan, saudit_scanner, saudit_httpserver):
     ### URL ###
     bad_urls = (
         "http://e.co/index.html",
@@ -557,11 +557,11 @@ async def test_helpers_misc(helpers, scan, bbot_scanner, bbot_httpserver):
     with pytest.raises(NTLMError):
         helpers.ntlm.ntlmdecode("asdf")
 
-    test_filesize = bbot_test_dir / "test_filesize"
+    test_filesize = saudit_test_dir / "test_filesize"
     test_filesize.touch()
     assert test_filesize.is_file()
     assert helpers.filesize(test_filesize) == 0
-    assert helpers.filesize(bbot_test_dir / "glkasjdlgksadlkfsdf") == 0
+    assert helpers.filesize(saudit_test_dir / "glkasjdlgksadlkfsdf") == 0
 
     # memory stuff
     int(helpers.memory_status().available)
@@ -589,7 +589,7 @@ async def test_helpers_misc(helpers, scan, bbot_scanner, bbot_httpserver):
 
     await scan._cleanup()
 
-    scan1 = bbot_scanner(modules="ipneighbor")
+    scan1 = saudit_scanner(modules="ipneighbor")
     await scan1.load_modules()
     assert int(helpers.get_size(scan1.modules["ipneighbor"])) > 0
 
@@ -644,7 +644,7 @@ async def test_helpers_misc(helpers, scan, bbot_scanner, bbot_httpserver):
 
 
 @pytest.mark.asyncio
-async def test_word_cloud(helpers, bbot_scanner):
+async def test_word_cloud(helpers, saudit_scanner):
     number_mutations = helpers.word_cloud.get_number_mutations("base2_p013", n=5, padding=2)
     assert "base0_p013" in number_mutations
     assert "base7_p013" in number_mutations
@@ -660,7 +660,7 @@ async def test_word_cloud(helpers, bbot_scanner):
     assert ("dev", "_base") in permutations
 
     # saving and loading
-    scan1 = bbot_scanner("127.0.0.1")
+    scan1 = saudit_scanner("127.0.0.1")
     word_cloud = scan1.helpers.word_cloud
     word_cloud.add_word("lantern")
     word_cloud.add_word("black")
@@ -844,7 +844,7 @@ def test_portparse(helpers):
 
 
 def test_liststring_valid_strings(helpers):
-    assert helpers.chain_lists("hello,world,bbot") == ["hello", "world", "bbot"]
+    assert helpers.chain_lists("hello,world,saudit") == ["hello", "world", "saudit"]
 
 
 def test_liststring_invalid_string(helpers):
@@ -859,8 +859,8 @@ def test_liststring_singleitem(helpers):
 
 def test_liststring_invalidfnchars(helpers):
     with pytest.raises(ValueError) as e:
-        helpers.chain_lists("hello,world,bbot|test", validate=True)
-    assert str(e.value) == "Invalid character in string: bbot|test"
+        helpers.chain_lists("hello,world,saudit|test", validate=True)
+    assert str(e.value) == "Invalid character in string: saudit|test"
 
 
 # test parameter validation

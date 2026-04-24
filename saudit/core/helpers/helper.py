@@ -31,9 +31,9 @@ class ConfigAwareHelper:
     to provide seamless access to helper functions across various namespaces.
 
     Attributes:
-        config (dict): Configuration settings for the BBOT scan instance.
-        _scan (Scan): A BBOT scan instance.
-        bbot_home (Path): Home directory for BBOT.
+        config (dict): Configuration settings for the SAUDIT scan instance.
+        _scan (Scan): A SAUDIT scan instance.
+        saudit_home (Path): Home directory for SAUDIT.
         cache_dir (Path): Directory for storing cache files.
         temp_dir (Path): Directory for storing temporary files.
         tools_dir (Path): Directory for storing tools, e.g. compiled binaries.
@@ -150,7 +150,7 @@ class ConfigAwareHelper:
 
     def temp_filename(self, extension=None):
         """
-        temp_filename() --> Path("/home/user/.bbot/temp/pgxml13bov87oqrvjz7a")
+        temp_filename() --> Path("/home/user/.saudit/temp/pgxml13bov87oqrvjz7a")
         """
         filename = self.rand_string(20)
         if extension is not None:
@@ -212,7 +212,7 @@ class ConfigAwareHelper:
 
     @property
     def in_tests(self):
-        return os.environ.get("BBOT_TESTING", "") == "True"
+        return os.environ.get("SAUDIT_TESTING", "") == "True"
 
     def __getattribute__(self, attr):
         """

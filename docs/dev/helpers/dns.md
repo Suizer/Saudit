@@ -1,6 +1,6 @@
 # DNS
 
-These are helpers related to DNS resolution. They are used throughout BBOT and its modules for performing DNS lookups and detecting DNS wildcards, etc.
+These are helpers related to DNS resolution. They are used throughout SAUDIT and its modules for performing DNS lookups and detecting DNS wildcards, etc.
 
 Note that these helpers can be invoked directly from `self.helpers`, e.g.:
 
@@ -8,7 +8,7 @@ Note that these helpers can be invoked directly from `self.helpers`, e.g.:
 self.helpers.resolve("evilcorp.com")
 ```
 
-::: bbot.core.helpers.dns.DNSHelper
+::: saudit.core.helpers.dns.DNSHelper
     handler: python
     options:
       members:

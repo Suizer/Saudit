@@ -6,8 +6,8 @@ from multiprocessing.context import SpawnProcess
 from .misc import in_exception_chain
 
 
-class BBOTThread(threading.Thread):
-    default_name = "default bbot thread"
+class SAUDITThread(threading.Thread):
+    default_name = "default saudit thread"
 
     def __init__(self, *args, **kwargs):
         self.custom_name = kwargs.pop("custom_name", self.default_name)
@@ -22,8 +22,8 @@ class BBOTThread(threading.Thread):
         super().run()
 
 
-class BBOTProcess(SpawnProcess):
-    default_name = "bbot process pool"
+class SAUDITProcess(SpawnProcess):
+    default_name = "saudit process pool"
 
     def __init__(self, *args, **kwargs):
         self.log_queue = kwargs.pop("log_queue", None)
@@ -34,7 +34,7 @@ class BBOTProcess(SpawnProcess):
 
     def run(self):
         """
-        A version of Process.run() with BBOT logging and better error handling
+        A version of Process.run() with SAUDIT logging and better error handling
         """
         log = logging.getLogger("saudit.core.process")
         try:

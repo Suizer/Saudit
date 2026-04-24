@@ -13,7 +13,7 @@ logging.getLogger("neo4j").setLevel(logging.CRITICAL)
 class neo4j(BaseOutputModule):
     """
     # start Neo4j in the background with docker
-    docker run -d -p 7687:7687 -p 7474:7474 -v "$(pwd)/neo4j/:/data/" -e NEO4J_AUTH=neo4j/bbotislife neo4j
+    docker run -d -p 7687:7687 -p 7474:7474 -v "$(pwd)/neo4j/:/data/" -e NEO4J_AUTH=neo4j/sauditislife neo4j
 
     # view all running docker containers
     > docker ps
@@ -33,7 +33,7 @@ class neo4j(BaseOutputModule):
 
     watched_events = ["*"]
     meta = {"description": "Output to Neo4j", "created_date": "2022-04-07", "author": "@TheTechromancer"}
-    options = {"uri": "bolt://localhost:7687", "username": "neo4j", "password": "bbotislife"}
+    options = {"uri": "bolt://localhost:7687", "username": "neo4j", "password": "sauditislife"}
     options_desc = {
         "uri": "Neo4j server + port",
         "username": "Neo4j username",

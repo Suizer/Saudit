@@ -50,7 +50,7 @@ class TestEventValidationBenchmarks:
             targets.append(f"10.0.{rng.randint(1, 254)}.0/24")
 
         # URLs (only supported schemes: http, https)
-        url_schemes = ["http", "https"]  # Only schemes supported by BBOT auto-detection
+        url_schemes = ["http", "https"]  # Only schemes supported by SAUDIT auto-detection
         url_paths = ["", "/", "/admin", "/api/v1", "/login.php", "/index.html"]
         for _ in range(count // 8):
             scheme = rng.choice(url_schemes)

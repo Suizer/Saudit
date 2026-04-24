@@ -25,9 +25,9 @@ class fingerprintx(BaseModule):
         {
             "name": "Download fingerprintx",
             "unarchive": {
-                "src": "https://github.com/praetorian-inc/fingerprintx/releases/download/v#{BBOT_MODULES_FINGERPRINTX_VERSION}/fingerprintx_#{BBOT_MODULES_FINGERPRINTX_VERSION}_#{BBOT_OS_PLATFORM}_#{BBOT_CPU_ARCH_GOLANG}.tar.gz",
+                "src": "https://github.com/praetorian-inc/fingerprintx/releases/download/v#{SAUDIT_MODULES_FINGERPRINTX_VERSION}/fingerprintx_#{SAUDIT_MODULES_FINGERPRINTX_VERSION}_#{SAUDIT_OS_PLATFORM}_#{SAUDIT_CPU_ARCH_GOLANG}.tar.gz",
                 "include": "fingerprintx",
-                "dest": "#{BBOT_TOOLS}",
+                "dest": "#{SAUDIT_TOOLS}",
                 "remote_src": True,
             },
         },

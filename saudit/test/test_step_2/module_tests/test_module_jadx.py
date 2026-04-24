@@ -2,7 +2,7 @@ from pathlib import Path
 from saudit.core.helpers.libmagic import get_magic_info
 from saudit.test.test_step_2.module_tests.base import ModuleTestBase, tempapkfile
 
-from ...bbot_fixtures import *
+from ...saudit_fixtures import *
 
 
 class TestJadx(ModuleTestBase):
@@ -10,7 +10,7 @@ class TestJadx(ModuleTestBase):
     config_overrides = {
         "modules": {
             "apkpure": {
-                "output_folder": bbot_test_dir / "apkpure",
+                "output_folder": saudit_test_dir / "apkpure",
             },
         }
     }
@@ -26,16 +26,16 @@ class TestJadx(ModuleTestBase):
             <title>"blacklanternsecurity" - Android Apps on Google Play</title>
             </head>
             <body>
-            <a href="/store/apps/details?id=com.bbot.test&pcampaignid=dontmatchme&pli=1"/>
+            <a href="/store/apps/details?id=com.saudit.test&pcampaignid=dontmatchme&pli=1"/>
             </body>
             </html>""",
         )
         module_test.httpx_mock.add_response(
-            url="https://play.google.com/store/apps/details?id=com.bbot.test",
+            url="https://play.google.com/store/apps/details?id=com.saudit.test",
             text="""<!DOCTYPE html>
             <html>
             <head>
-            <title>BBOT</title>
+            <title>SAUDIT</title>
             </head>
             <body>
             <meta name="appstore:developer_url" content="https://www.blacklanternsecurity.com">
@@ -45,11 +45,11 @@ class TestJadx(ModuleTestBase):
             </html>""",
         )
         module_test.httpx_mock.add_response(
-            url="https://d.apkpure.com/b/XAPK/com.bbot.test?version=latest",
+            url="https://d.apkpure.com/b/XAPK/com.saudit.test?version=latest",
             content=self.apk_file,
             headers={
                 "Content-Type": "application/vnd.android.package-archive",
-                "Content-Disposition": "attachment; filename=com.bbot.test.apk",
+                "Content-Disposition": "attachment; filename=com.saudit.test.apk",
             },
         )
 

@@ -9,7 +9,7 @@ class TestBloomFilterBenchmarks:
     Benchmark tests for Bloom Filter operations.
 
     These tests measure the performance of bloom filter operations which are
-    critical for DNS brute-forcing efficiency in BBOT.
+    critical for DNS brute-forcing efficiency in SAUDIT.
     """
 
     def setup_method(self):

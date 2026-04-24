@@ -141,7 +141,7 @@ class webpeas(BaseOutputModule):
             print(f"  {icon} {src} LIVE  {short}", flush=True)
 
     async def report(self):
-        # Separator so webpeas output doesn't blend with bbot log lines
+        # Separator so webpeas output doesn't blend with saudit log lines
         print("\n" + "═" * 60, flush=True)
         lines = [BANNER]
         lines.append(f"  {WHT}Target :{R} {self._target}")

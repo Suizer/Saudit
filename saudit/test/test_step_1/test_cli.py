@@ -1,6 +1,6 @@
 import yaml
 
-from ..bbot_fixtures import *
+from ..saudit_fixtures import *
 
 from saudit import cli
 
@@ -15,7 +15,7 @@ async def test_cli_scope(monkeypatch, capsys):
     # basic target without whitelist
     monkeypatch.setattr(
         "sys.argv",
-        ["bbot", "-t", "one.one.one.one", "-c", "scope.report_distance=10", "dns.minimal=false", "--json"],
+        ["saudit", "-t", "one.one.one.one", "-c", "scope.report_distance=10", "dns.minimal=false", "--json"],
     )
     result = await cli._main()
     out, err = capsys.readouterr()
@@ -45,7 +45,7 @@ async def test_cli_scope(monkeypatch, capsys):
     monkeypatch.setattr(
         "sys.argv",
         [
-            "bbot",
+            "saudit",
             "-t",
             "one.one.one.one",
             "-w",
@@ -90,13 +90,13 @@ async def test_cli_scan(monkeypatch):
     monkeypatch.setattr(sys, "exit", lambda *args, **kwargs: True)
     monkeypatch.setattr(os, "_exit", lambda *args, **kwargs: True)
 
-    scans_home = bbot_test_dir / "scans"
+    scans_home = saudit_test_dir / "scans"
 
     # basic scan
     monkeypatch.setattr(
         sys,
         "argv",
-        ["bbot", "-y", "-t", "127.0.0.1", "www.example.com", "-n", "test_cli_scan", "-c", "dns.disable=true"],
+        ["saudit", "-y", "-t", "127.0.0.1", "www.example.com", "-n", "test_cli_scan", "-c", "dns.disable=true"],
     )
     result = await cli._main()
     assert result is True
@@ -143,7 +143,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     monkeypatch.setattr(os, "_exit", lambda *args, **kwargs: True)
 
     # show version
-    monkeypatch.setattr("sys.argv", ["bbot", "--version"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--version"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -151,7 +151,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert out.count(".") > 1
 
     # deps behavior
-    monkeypatch.setattr("sys.argv", ["bbot", "-n", "depstest", "--retry-deps", "--current-preset"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-n", "depstest", "--retry-deps", "--current-preset"])
     result = await cli._main()
     assert result is None
     out, err = capsys.readouterr()
@@ -165,7 +165,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     }
 
     # list modules
-    monkeypatch.setattr("sys.argv", ["bbot", "--list-modules"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--list-modules"])
     result = await cli._main()
     assert result is None
     out, err = capsys.readouterr()
@@ -177,7 +177,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert "| wayback " in out
 
     # list output modules
-    monkeypatch.setattr("sys.argv", ["bbot", "--list-output-modules"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--list-output-modules"])
     result = await cli._main()
     assert result == None
     out, err = capsys.readouterr()
@@ -189,12 +189,12 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert not "| wayback " in out
 
     # output dir and scan name
-    output_dir = bbot_test_dir / "bbot_cli_args_output"
-    scan_name = "bbot_cli_args_scan_name"
+    output_dir = saudit_test_dir / "saudit_cli_args_output"
+    scan_name = "saudit_cli_args_scan_name"
     scan_dir = output_dir / scan_name
     if output_dir.exists():
         shutil.rmtree(output_dir)
-    monkeypatch.setattr("sys.argv", ["bbot", "-o", str(output_dir), "-n", scan_name, "-y"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-o", str(output_dir), "-n", scan_name, "-y"])
     result = await cli._main()
     assert result is True
     assert output_dir.is_dir()
@@ -208,7 +208,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     shutil.rmtree(output_dir)
 
     # list module options
-    monkeypatch.setattr("sys.argv", ["bbot", "--list-module-options"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--list-module-options"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -220,7 +220,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert "| modules.robots.include_allow" in out
 
     # list module options by flag
-    monkeypatch.setattr("sys.argv", ["bbot", "-f", "subdomain-enum", "--list-module-options"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-f", "subdomain-enum", "--list-module-options"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -232,7 +232,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert "| modules.robots.include_allow" not in out
 
     # list module options by module
-    monkeypatch.setattr("sys.argv", ["bbot", "-m", "dnsbrute", "-lmo"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-m", "dnsbrute", "-lmo"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -242,14 +242,14 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert "| modules.robots.include_allow" not in out
 
     # list output module options by module
-    monkeypatch.setattr("sys.argv", ["bbot", "-om", "stdout", "-lmo"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-om", "stdout", "-lmo"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
     assert out.count("modules.") == out.count("modules.stdout.")
 
     # list flags
-    monkeypatch.setattr("sys.argv", ["bbot", "--list-flags"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--list-flags"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -259,7 +259,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert "| passive " in out
 
     # list only a single flag
-    monkeypatch.setattr("sys.argv", ["bbot", "-f", "active", "--list-flags"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-f", "active", "--list-flags"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -268,7 +268,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert "| passive " not in out
 
     # list multiple flags
-    monkeypatch.setattr("sys.argv", ["bbot", "-f", "active", "safe", "--list-flags"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-f", "active", "safe", "--list-flags"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -277,14 +277,14 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert "| passive " not in out
 
     # no args
-    monkeypatch.setattr("sys.argv", ["bbot"])
+    monkeypatch.setattr("sys.argv", ["saudit"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
     assert "-t TARGET [TARGET ...]" in out
 
     # list modules
-    monkeypatch.setattr("sys.argv", ["bbot", "-l"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-l"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -293,7 +293,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert "| robots " in out
 
     # list modules by flag
-    monkeypatch.setattr("sys.argv", ["bbot", "-f", "subdomain-enum", "-l"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-f", "subdomain-enum", "-l"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -302,7 +302,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert "| robots " not in out
 
     # list modules by flag + required flag
-    monkeypatch.setattr("sys.argv", ["bbot", "-f", "subdomain-enum", "-rf", "passive", "-l"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-f", "subdomain-enum", "-rf", "passive", "-l"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -310,7 +310,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert "| httpx " not in out
 
     # list modules by flag + excluded flag
-    monkeypatch.setattr("sys.argv", ["bbot", "-f", "subdomain-enum", "-ef", "active", "-l"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-f", "subdomain-enum", "-ef", "active", "-l"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -318,7 +318,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     assert "| httpx " not in out
 
     # list modules by flag + excluded module
-    monkeypatch.setattr("sys.argv", ["bbot", "-f", "subdomain-enum", "-em", "dnsbrute", "-l"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-f", "subdomain-enum", "-em", "dnsbrute", "-l"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is None
@@ -328,12 +328,12 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     # output modules override
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-om", "csv,json", "-y"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-om", "csv,json", "-y"])
     result = await cli._main()
     assert result is True
     assert "Loaded 2/2 output modules, (csv,json)" in caplog.text
     caplog.clear()
-    monkeypatch.setattr("sys.argv", ["bbot", "-em", "csv,json", "-y"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-em", "csv,json", "-y"])
     result = await cli._main()
     assert result is True
     assert "Loaded 3/3 output modules, (python,stdout,txt)" in caplog.text
@@ -341,7 +341,7 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     # output modules override
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-om", "subdomains", "-y"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-om", "subdomains", "-y"])
     result = await cli._main()
     assert result is True
     assert "Loaded 6/6 output modules, (csv,json,python,stdout,subdomains,txt)" in caplog.text
@@ -349,24 +349,24 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     # internal modules override
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-y"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-y"])
     result = await cli._main()
     assert result is True
     assert "Loaded 6/6 internal modules (aggregate,cloudcheck,dnsresolve,excavate,speculate,unarchive)" in caplog.text
     caplog.clear()
-    monkeypatch.setattr("sys.argv", ["bbot", "-em", "excavate", "speculate", "-y"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-em", "excavate", "speculate", "-y"])
     result = await cli._main()
     assert result is True
     assert "Loaded 4/4 internal modules (aggregate,cloudcheck,dnsresolve,unarchive)" in caplog.text
     caplog.clear()
-    monkeypatch.setattr("sys.argv", ["bbot", "-c", "speculate=false", "-y"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-c", "speculate=false", "-y"])
     result = await cli._main()
     assert result is True
     assert "Loaded 5/5 internal modules (aggregate,cloudcheck,dnsresolve,excavate,unarchive)" in caplog.text
 
     # custom target type
     out, err = capsys.readouterr()
-    monkeypatch.setattr("sys.argv", ["bbot", "-t", "ORG:evilcorp", "-y"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-t", "ORG:evilcorp", "-y"])
     result = await cli._main()
     out, err = capsys.readouterr()
     assert result is True
@@ -375,50 +375,50 @@ async def test_cli_args(monkeypatch, caplog, capsys, clean_default_config):
     # activate modules by flag
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-f", "passive"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-f", "passive"])
     result = await cli._main()
     assert result is True
 
     # unconsoleable output module
-    monkeypatch.setattr("sys.argv", ["bbot", "-om", "web_report"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-om", "web_report"])
     result = await cli._main()
     assert result is True
 
     # python dependency
-    monkeypatch.setattr("sys.argv", ["bbot", "-m", "baddns"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-m", "baddns"])
     result = await cli._main()
     assert result is True
 
     # require flags
-    monkeypatch.setattr("sys.argv", ["bbot", "-f", "active", "-rf", "passive"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-f", "active", "-rf", "passive"])
     result = await cli._main()
     assert result is True
 
     # excluded flags
-    monkeypatch.setattr("sys.argv", ["bbot", "-f", "active", "-ef", "active"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-f", "active", "-ef", "active"])
     result = await cli._main()
     assert result is True
 
     # slow modules
-    monkeypatch.setattr("sys.argv", ["bbot", "-m", "bucket_digitalocean"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-m", "bucket_digitalocean"])
     result = await cli._main()
     assert result is True
 
     # deadly modules
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-m", "nuclei"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-m", "nuclei"])
     result = await cli._main()
     assert result is False, "-m nuclei ran without --allow-deadly"
     assert "Please specify --allow-deadly to continue" in caplog.text
 
     # --allow-deadly
-    monkeypatch.setattr("sys.argv", ["bbot", "-m", "nuclei", "--allow-deadly"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-m", "nuclei", "--allow-deadly"])
     result = await cli._main()
     assert result is True, "-m nuclei failed to run with --allow-deadly"
 
     # install all deps
-    monkeypatch.setattr("sys.argv", ["bbot", "--install-all-deps"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--install-all-deps"])
     success = await cli._main()
     assert success is True, "--install-all-deps failed for at least one module"
 
@@ -430,7 +430,7 @@ async def test_cli_customheaders(monkeypatch, caplog, capsys):
 
     # test custom headers
     monkeypatch.setattr(
-        "sys.argv", ["bbot", "--custom-headers", "foo=bar", "foo2=bar2", "foo3=bar=3", "--current-preset"]
+        "sys.argv", ["saudit", "--custom-headers", "foo=bar", "foo2=bar2", "foo3=bar=3", "--current-preset"]
     )
     success = await cli._main()
     assert success is None, "setting custom headers on command line failed"
@@ -439,21 +439,21 @@ async def test_cli_customheaders(monkeypatch, caplog, capsys):
     assert stdout_preset["config"]["web"]["http_headers"] == {"foo": "bar", "foo2": "bar2", "foo3": "bar=3"}
 
     # test custom headers invalid (no "=")
-    monkeypatch.setattr("sys.argv", ["bbot", "--custom-headers", "justastring", "--current-preset"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--custom-headers", "justastring", "--current-preset"])
     result = await cli._main()
     assert result is None
     assert "Custom headers not formatted correctly (missing '=')" in caplog.text
     caplog.clear()
 
     # test custom headers invalid (missing key)
-    monkeypatch.setattr("sys.argv", ["bbot", "--custom-headers", "=nokey", "--current-preset"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--custom-headers", "=nokey", "--current-preset"])
     result = await cli._main()
     assert result is None
     assert "Custom headers not formatted correctly (missing header name or value)" in caplog.text
     caplog.clear()
 
     # test custom headers invalid (missing value)
-    monkeypatch.setattr("sys.argv", ["bbot", "--custom-headers", "missingvalue=", "--current-preset"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--custom-headers", "missingvalue=", "--current-preset"])
     result = await cli._main()
     assert result is None
     assert "Custom headers not formatted correctly (missing header name or value)" in caplog.text
@@ -464,7 +464,7 @@ async def test_cli_module_help(monkeypatch, capsys):
     monkeypatch.setattr(sys, "exit", lambda *args, **kwargs: True)
     monkeypatch.setattr(os, "_exit", lambda *args, **kwargs: True)
 
-    monkeypatch.setattr("sys.argv", ["bbot", "--module-help", "excavate"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--module-help", "excavate"])
     success = await cli._main()
     assert success is None, "module help failed to execute"
     captured = capsys.readouterr()
@@ -480,7 +480,7 @@ def test_cli_config_validation(monkeypatch, caplog):
     # incorrect module option
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-c", "modules.ipnegibhor.num_bits=4"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-c", "modules.ipnegibhor.num_bits=4"])
     cli.main()
     assert 'Could not find config option "modules.ipnegibhor.num_bits"' in caplog.text
     assert 'Did you mean "modules.ipneighbor.num_bits"?' in caplog.text
@@ -488,7 +488,7 @@ def test_cli_config_validation(monkeypatch, caplog):
     # incorrect global option
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-c", "web_spier_distance=4"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-c", "web_spier_distance=4"])
     cli.main()
     assert 'Could not find config option "web_spier_distance"' in caplog.text
     assert 'Did you mean "web.spider_distance"?' in caplog.text
@@ -501,7 +501,7 @@ def test_cli_module_validation(monkeypatch, caplog):
     # incorrect module
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-m", "dnsbrutes"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-m", "dnsbrutes"])
     cli.main()
     assert 'Could not find scan module "dnsbrutes"' in caplog.text
     assert 'Did you mean "dnsbrute"?' in caplog.text
@@ -509,7 +509,7 @@ def test_cli_module_validation(monkeypatch, caplog):
     # incorrect excluded module
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-em", "dnsbrutes"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-em", "dnsbrutes"])
     cli.main()
     assert 'Could not find module "dnsbrutes"' in caplog.text
     assert 'Did you mean "dnsbrute"?' in caplog.text
@@ -517,7 +517,7 @@ def test_cli_module_validation(monkeypatch, caplog):
     # incorrect output module
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-om", "neoo4j"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-om", "neoo4j"])
     cli.main()
     assert 'Could not find output module "neoo4j"' in caplog.text
     assert 'Did you mean "neo4j"?' in caplog.text
@@ -525,7 +525,7 @@ def test_cli_module_validation(monkeypatch, caplog):
     # output module setup failed
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-om", "websocket", "-c", "modules.websocket.url=", "-y"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-om", "websocket", "-c", "modules.websocket.url=", "-y"])
     cli.main()
     lines = caplog.text.splitlines()
     assert "Loaded 6/6 output modules, (csv,json,python,stdout,txt,websocket)" in caplog.text
@@ -533,7 +533,7 @@ def test_cli_module_validation(monkeypatch, caplog):
         [
             l
             for l in lines
-            if l.startswith("WARNING  bbot.scanner:scanner.py")
+            if l.startswith("WARNING  saudit.scanner:scanner.py")
             and l.endswith("Setup hard-failed for websocket: Must set URL")
         ]
     )
@@ -541,14 +541,14 @@ def test_cli_module_validation(monkeypatch, caplog):
         [
             l
             for l in lines
-            if l.startswith("WARNING  bbot.modules.output.websocket:base.py") and l.endswith("Setting error state")
+            if l.startswith("WARNING  saudit.modules.output.websocket:base.py") and l.endswith("Setting error state")
         ]
     )
     assert 1 == len(
         [
             l
             for l in lines
-            if l.startswith("ERROR    bbot.cli:cli.py")
+            if l.startswith("ERROR    saudit.cli:cli.py")
             and l.endswith("Setup hard-failed for 1 modules (websocket) (--force to run module anyway)")
         ]
     )
@@ -558,7 +558,7 @@ def test_cli_module_validation(monkeypatch, caplog):
     assert not caplog.text
     monkeypatch.setattr(
         "sys.argv",
-        ["bbot", "-om", "websocket", "-em", "python,stdout,csv,json,txt", "-c", "modules.websocket.url=", "-y"],
+        ["saudit", "-om", "websocket", "-em", "python,stdout,csv,json,txt", "-c", "modules.websocket.url=", "-y"],
     )
     cli.main()
     lines = caplog.text.splitlines()
@@ -567,7 +567,7 @@ def test_cli_module_validation(monkeypatch, caplog):
         [
             l
             for l in lines
-            if l.startswith("WARNING  bbot.scanner:scanner.py")
+            if l.startswith("WARNING  saudit.scanner:scanner.py")
             and l.endswith("Setup hard-failed for websocket: Must set URL")
         ]
     )
@@ -575,28 +575,28 @@ def test_cli_module_validation(monkeypatch, caplog):
         [
             l
             for l in lines
-            if l.startswith("WARNING  bbot.modules.output.websocket:base.py") and l.endswith("Setting error state")
+            if l.startswith("WARNING  saudit.modules.output.websocket:base.py") and l.endswith("Setting error state")
         ]
     )
     assert 1 == len(
         [
             l
             for l in lines
-            if l.startswith("ERROR    bbot.cli:cli.py") and l.endswith("Failed to load output modules. Aborting.")
+            if l.startswith("ERROR    saudit.cli:cli.py") and l.endswith("Failed to load output modules. Aborting.")
         ]
     )
 
     # bad target
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-t", "asdf:::sdf"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-t", "asdf:::sdf"])
     cli.main()
     assert 'Unable to autodetect data type from "asdf:::sdf"' in caplog.text
 
     # incorrect flag
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-f", "subdomainenum"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-f", "subdomainenum"])
     cli.main()
     assert 'Could not find flag "subdomainenum"' in caplog.text
     assert 'Did you mean "subdomain-enum"?' in caplog.text
@@ -604,7 +604,7 @@ def test_cli_module_validation(monkeypatch, caplog):
     # incorrect excluded flag
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-ef", "subdomainenum"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-ef", "subdomainenum"])
     cli.main()
     assert 'Could not find flag "subdomainenum"' in caplog.text
     assert 'Did you mean "subdomain-enum"?' in caplog.text
@@ -612,7 +612,7 @@ def test_cli_module_validation(monkeypatch, caplog):
     # incorrect required flag
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-rf", "subdomainenum"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-rf", "subdomainenum"])
     cli.main()
     assert 'Could not find flag "subdomainenum"' in caplog.text
     assert 'Did you mean "subdomain-enum"?' in caplog.text
@@ -625,18 +625,18 @@ def test_cli_presets(monkeypatch, capsys, caplog):
     monkeypatch.setattr(os, "_exit", lambda *args, **kwargs: True)
 
     # show current preset
-    monkeypatch.setattr("sys.argv", ["bbot", "-c", "web.http_proxy=currentpresettest", "--current-preset"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-c", "web.http_proxy=currentpresettest", "--current-preset"])
     cli.main()
     captured = capsys.readouterr()
     assert "    http_proxy: currentpresettest" in captured.out
 
     # show current preset (full)
-    monkeypatch.setattr("sys.argv", ["bbot", "-cmodules.c99.api_key=asdf", "--current-preset-full"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-cmodules.c99.api_key=asdf", "--current-preset-full"])
     cli.main()
     captured = capsys.readouterr()
     assert "      api_key: asdf" in captured.out
 
-    preset_dir = bbot_test_dir / "test_cli_presets"
+    preset_dir = saudit_test_dir / "test_cli_presets"
     preset_dir.mkdir(exist_ok=True)
 
     preset1_file = preset_dir / "cli_preset1.conf"
@@ -660,7 +660,7 @@ config:
         )
 
     # test reading single preset
-    monkeypatch.setattr("sys.argv", ["bbot", "-p", str(preset1_file.resolve()), "--current-preset"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-p", str(preset1_file.resolve()), "--current-preset"])
     cli.main()
     captured = capsys.readouterr()
     stdout_preset = yaml.safe_load(captured.out)
@@ -668,7 +668,7 @@ config:
 
     # preset overrides preset
     monkeypatch.setattr(
-        "sys.argv", ["bbot", "-p", str(preset2_file.resolve()), str(preset1_file.resolve()), "--current-preset"]
+        "sys.argv", ["saudit", "-p", str(preset2_file.resolve()), str(preset1_file.resolve()), "--current-preset"]
     )
     cli.main()
     captured = capsys.readouterr()
@@ -677,7 +677,7 @@ config:
 
     # override other way
     monkeypatch.setattr(
-        "sys.argv", ["bbot", "-p", str(preset1_file.resolve()), str(preset2_file.resolve()), "--current-preset"]
+        "sys.argv", ["saudit", "-p", str(preset1_file.resolve()), str(preset2_file.resolve()), "--current-preset"]
     )
     cli.main()
     captured = capsys.readouterr()
@@ -685,13 +685,13 @@ config:
     assert stdout_preset["config"]["web"]["http_proxy"] == "http://proxy2"
 
     # --fast-mode
-    monkeypatch.setattr("sys.argv", ["bbot", "--current-preset"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--current-preset"])
     cli.main()
     captured = capsys.readouterr()
     stdout_preset = yaml.safe_load(captured.out)
     assert list(stdout_preset) == ["description"]
 
-    monkeypatch.setattr("sys.argv", ["bbot", "--fast", "--current-preset"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--fast", "--current-preset"])
     cli.main()
     captured = capsys.readouterr()
     stdout_preset = yaml.safe_load(captured.out)
@@ -706,7 +706,7 @@ config:
     }
 
     # --proxy
-    monkeypatch.setattr("sys.argv", ["bbot", "--proxy", "http://127.0.0.1:8080", "--current-preset"])
+    monkeypatch.setattr("sys.argv", ["saudit", "--proxy", "http://127.0.0.1:8080", "--current-preset"])
     cli.main()
     captured = capsys.readouterr()
     stdout_preset = yaml.safe_load(captured.out)
@@ -717,7 +717,7 @@ config:
     monkeypatch.setattr(
         "sys.argv",
         [
-            "bbot",
+            "saudit",
             "-p",
             str(preset1_file.resolve()),
             str(preset2_file.resolve()),
@@ -734,7 +734,7 @@ config:
     # invalid preset
     caplog.clear()
     assert not caplog.text
-    monkeypatch.setattr("sys.argv", ["bbot", "-p", "asdfasdfasdf", "-y"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-p", "asdfasdfasdf", "-y"])
     cli.main()
     assert "file does not exist. Use -lp to list available presets" in caplog.text
 
@@ -742,9 +742,9 @@ config:
     preset2_file.unlink()
 
     # test output dir preset
-    output_dir_preset_file = bbot_test_dir / "output_dir_preset.yml"
+    output_dir_preset_file = saudit_test_dir / "output_dir_preset.yml"
     scan_name = "cli_output_dir_test"
-    output_dir = bbot_test_dir / "cli_output_dir_preset"
+    output_dir = saudit_test_dir / "cli_output_dir_preset"
     scan_dir = output_dir / scan_name
     output_file = scan_dir / "output.txt"
 
@@ -760,7 +760,7 @@ scan_name: {scan_name}
     assert not scan_dir.exists()
     assert not output_file.exists()
 
-    monkeypatch.setattr("sys.argv", ["bbot", "-p", str(output_dir_preset_file.resolve()), "--current-preset"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-p", str(output_dir_preset_file.resolve()), "--current-preset"])
     cli.main()
     captured = capsys.readouterr()
     stdout_preset = yaml.safe_load(captured.out)
@@ -775,7 +775,7 @@ scan_name: {scan_name}
     assert not scan_dir.exists()
     assert not output_file.exists()
 
-    monkeypatch.setattr("sys.argv", ["bbot", "-p", str(output_dir_preset_file.resolve())])
+    monkeypatch.setattr("sys.argv", ["saudit", "-p", str(output_dir_preset_file.resolve())])
     cli.main()
     captured = capsys.readouterr()
     assert output_dir.is_dir()

@@ -1,3 +1,3 @@
-from .core import BBOTCore
+from .core import SAUDITCore
 
-CORE = BBOTCore()
+CORE = SAUDITCore()

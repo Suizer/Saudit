@@ -1,4 +1,4 @@
-from ..bbot_fixtures import *
+from ..saudit_fixtures import *
 
 
 @pytest.mark.asyncio
@@ -94,7 +94,7 @@ async def test_engine():
     yield_cancelled = False
     yield_errored = False
     agen = test_engine.yield_stuff(None)
-    with pytest.raises(BBOTEngineError):
+    with pytest.raises(SAUDITEngineError):
         async for _ in agen:
             pass
     assert yield_cancelled is False
@@ -136,7 +136,7 @@ async def test_engine():
     return_finished = False
     return_cancelled = False
     return_errored = False
-    with pytest.raises(BBOTEngineError):
+    with pytest.raises(SAUDITEngineError):
         result = await test_engine.return_thing(None)
     assert return_started is True
     assert return_finished is False

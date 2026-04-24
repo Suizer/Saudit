@@ -1,4 +1,4 @@
-from ..bbot_fixtures import *  # noqa: F401
+from ..saudit_fixtures import *  # noqa: F401
 from ..test_step_2.module_tests.base import ModuleTestBase
 
 

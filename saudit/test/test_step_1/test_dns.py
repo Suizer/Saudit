@@ -1,4 +1,4 @@
-from ..bbot_fixtures import *
+from ..saudit_fixtures import *
 
 from saudit.core.helpers.dns.helpers import extract_targets, service_record, common_srvs
 
@@ -16,8 +16,8 @@ mock_records = {
 
 
 @pytest.mark.asyncio
-async def test_dns_engine(bbot_scanner):
-    scan = bbot_scanner()
+async def test_dns_engine(saudit_scanner):
+    scan = saudit_scanner()
     await scan.helpers._mock_dns(
         {"one.one.one.one": {"A": ["1.1.1.1"]}, "1.1.1.1.in-addr.arpa": {"PTR": ["one.one.one.one"]}}
     )
@@ -63,8 +63,8 @@ async def test_dns_engine(bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_dns_resolution(bbot_scanner):
-    scan = bbot_scanner("1.1.1.1")
+async def test_dns_resolution(saudit_scanner):
+    scan = saudit_scanner("1.1.1.1")
 
     from saudit.core.helpers.dns.engine import DNSEngine
 
@@ -167,7 +167,7 @@ async def test_dns_resolution(bbot_scanner):
     assert "a-record" in resolved_hosts_event1.tags
     assert "a-record" not in resolved_hosts_event2.tags
 
-    scan2 = bbot_scanner("evilcorp.com", config={"dns": {"minimal": False}})
+    scan2 = saudit_scanner("evilcorp.com", config={"dns": {"minimal": False}})
     await scan2.helpers.dns._mock_dns(
         {
             "evilcorp.com": {"TXT": ['"v=spf1 include:cloudprovider.com ~all"']},
@@ -184,8 +184,8 @@ async def test_dns_resolution(bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_wildcards(bbot_scanner):
-    scan = bbot_scanner("1.1.1.1")
+async def test_wildcards(saudit_scanner):
+    scan = saudit_scanner("1.1.1.1")
     helpers = scan.helpers
 
     from saudit.core.helpers.dns.engine import DNSEngine, all_rdtypes
@@ -252,8 +252,8 @@ def custom_lookup(query, rdtype):
 
     # first, we check with wildcard detection disabled
 
-    scan = bbot_scanner(
-        "bbot.fdsa.www.test.evilcorp.com",
+    scan = saudit_scanner(
+        "saudit.fdsa.www.test.evilcorp.com",
         whitelist=["evilcorp.com"],
         config={
             "dns": {"minimal": False, "disable": False, "search_distance": 5, "wildcard_ignore": ["evilcorp.com"]},
@@ -267,7 +267,7 @@ def custom_lookup(query, rdtype):
     assert len([e for e in events if e.type == "DNS_NAME"]) == 5
     assert len([e for e in events if e.type == "RAW_DNS_RECORD"]) == 4
     assert sorted([e.data for e in events if e.type == "DNS_NAME"]) == [
-        "bbot.fdsa.www.test.evilcorp.com",
+        "saudit.fdsa.www.test.evilcorp.com",
         "evilcorp.com",
         "fdsa.www.test.evilcorp.com",
         "test.evilcorp.com",
@@ -289,13 +289,13 @@ def custom_lookup(query, rdtype):
     assert dns_names_by_host["www.test.evilcorp.com"].resolved_hosts == {"dead::beef"}
     assert dns_names_by_host["fdsa.www.test.evilcorp.com"].tags == {"subdomain", "in-scope", "txt-record"}
     assert dns_names_by_host["fdsa.www.test.evilcorp.com"].resolved_hosts == set()
-    assert dns_names_by_host["bbot.fdsa.www.test.evilcorp.com"].tags == {
+    assert dns_names_by_host["saudit.fdsa.www.test.evilcorp.com"].tags == {
         "target",
         "subdomain",
         "in-scope",
         "txt-record",
     }
-    assert dns_names_by_host["bbot.fdsa.www.test.evilcorp.com"].resolved_hosts == set()
+    assert dns_names_by_host["saudit.fdsa.www.test.evilcorp.com"].resolved_hosts == set()
 
     raw_records_by_host = {e.host: e for e in events if e.type == "RAW_DNS_RECORD"}
     assert raw_records_by_host["test.evilcorp.com"].tags == {"subdomain", "in-scope", "txt-record"}
@@ -304,13 +304,13 @@ def custom_lookup(query, rdtype):
     assert raw_records_by_host["www.test.evilcorp.com"].resolved_hosts == {"dead::beef"}
     assert raw_records_by_host["fdsa.www.test.evilcorp.com"].tags == {"subdomain", "in-scope", "txt-record"}
     assert raw_records_by_host["fdsa.www.test.evilcorp.com"].resolved_hosts == set()
-    assert raw_records_by_host["bbot.fdsa.www.test.evilcorp.com"].tags == {"subdomain", "in-scope", "txt-record"}
-    assert raw_records_by_host["bbot.fdsa.www.test.evilcorp.com"].resolved_hosts == set()
+    assert raw_records_by_host["saudit.fdsa.www.test.evilcorp.com"].tags == {"subdomain", "in-scope", "txt-record"}
+    assert raw_records_by_host["saudit.fdsa.www.test.evilcorp.com"].resolved_hosts == set()
 
     # then we run it again with wildcard detection enabled
 
-    scan = bbot_scanner(
-        "bbot.fdsa.www.test.evilcorp.com",
+    scan = saudit_scanner(
+        "saudit.fdsa.www.test.evilcorp.com",
         whitelist=["evilcorp.com"],
         config={
             "dns": {"minimal": False, "disable": False, "search_distance": 5, "wildcard_ignore": []},
@@ -325,7 +325,7 @@ def custom_lookup(query, rdtype):
     assert len([e for e in events if e.type == "RAW_DNS_RECORD"]) == 4
     assert sorted([e.data for e in events if e.type == "DNS_NAME"]) == [
         "_wildcard.test.evilcorp.com",
-        "bbot.fdsa.www.test.evilcorp.com",
+        "saudit.fdsa.www.test.evilcorp.com",
         "evilcorp.com",
         "test.evilcorp.com",
         "www.test.evilcorp.com",
@@ -359,7 +359,7 @@ def custom_lookup(query, rdtype):
         "wildcard",
     }
     assert dns_names_by_host["www.test.evilcorp.com"].resolved_hosts == {"dead::beef"}
-    assert dns_names_by_host["bbot.fdsa.www.test.evilcorp.com"].tags == {
+    assert dns_names_by_host["saudit.fdsa.www.test.evilcorp.com"].tags == {
         "target",
         "subdomain",
         "in-scope",
@@ -367,7 +367,7 @@ def custom_lookup(query, rdtype):
         "txt-wildcard",
         "wildcard",
     }
-    assert dns_names_by_host["bbot.fdsa.www.test.evilcorp.com"].resolved_hosts == set()
+    assert dns_names_by_host["saudit.fdsa.www.test.evilcorp.com"].resolved_hosts == set()
 
     raw_records_by_host = {e.host: e for e in events if e.type == "RAW_DNS_RECORD"}
     assert raw_records_by_host["test.evilcorp.com"].tags == {"subdomain", "in-scope", "txt-record"}
@@ -381,13 +381,13 @@ def custom_lookup(query, rdtype):
         "txt-wildcard",
     }
     assert raw_records_by_host["_wildcard.test.evilcorp.com"].resolved_hosts == set()
-    assert raw_records_by_host["bbot.fdsa.www.test.evilcorp.com"].tags == {
+    assert raw_records_by_host["saudit.fdsa.www.test.evilcorp.com"].tags == {
         "subdomain",
         "in-scope",
         "txt-record",
         "txt-wildcard",
     }
-    assert raw_records_by_host["bbot.fdsa.www.test.evilcorp.com"].resolved_hosts == set()
+    assert raw_records_by_host["saudit.fdsa.www.test.evilcorp.com"].resolved_hosts == set()
 
     ### runaway SRV wildcard ###
 
@@ -402,7 +402,7 @@ def custom_lookup(query, rdtype):
         "test.evilcorp.com": {"AAAA": ["dead::beef"]},
     }
 
-    scan = bbot_scanner(
+    scan = saudit_scanner(
         "evilcorp.com",
         config={
             "dns": {
@@ -490,7 +490,7 @@ def custom_lookup(query, rdtype):
         "subdomain",
     }
 
-    scan = bbot_scanner("1.1.1.1")
+    scan = saudit_scanner("1.1.1.1")
     helpers = scan.helpers
 
     # event resolution
@@ -632,7 +632,7 @@ def custom_lookup(query, rdtype):
 
 
 @pytest.mark.asyncio
-async def test_wildcard_deduplication(bbot_scanner):
+async def test_wildcard_deduplication(saudit_scanner):
     custom_lookup = """
 def custom_lookup(query, rdtype):
     if rdtype == "TXT" and query.strip(".").endswith("evilcorp.com"):
@@ -654,7 +654,7 @@ def custom_lookup(query, rdtype):
                 await self.emit_event(f"www{i}.evilcorp.com", "DNS_NAME", parent=event)
 
     # scan without omitted event type
-    scan = bbot_scanner(
+    scan = saudit_scanner(
         "evilcorp.com", config={"dns": {"minimal": False, "wildcard_ignore": []}, "omit_event_types": []}
     )
     await scan.helpers.dns._mock_dns(mock_data, custom_lookup_fn=custom_lookup)
@@ -667,7 +667,7 @@ def custom_lookup(query, rdtype):
 
 
 @pytest.mark.asyncio
-async def test_dns_raw_records(bbot_scanner):
+async def test_dns_raw_records(saudit_scanner):
     from saudit.modules.base import BaseModule
 
     class DummyModule(BaseModule):
@@ -681,7 +681,7 @@ async def test_dns_raw_records(bbot_scanner):
             self.events.append(event)
 
     # scan without omitted event type
-    scan = bbot_scanner("one.one.one.one", "1.1.1.1", config={"dns": {"minimal": False}, "omit_event_types": []})
+    scan = saudit_scanner("one.one.one.one", "1.1.1.1", config={"dns": {"minimal": False}, "omit_event_types": []})
     await scan.helpers.dns._mock_dns(mock_records)
     dummy_module = DummyModule(scan)
     scan.modules["dummy_module"] = dummy_module
@@ -714,7 +714,7 @@ async def test_dns_raw_records(bbot_scanner):
         ]
     )
     # scan with omitted event type
-    scan = bbot_scanner("one.one.one.one", config={"dns": {"minimal": False}, "omit_event_types": ["RAW_DNS_RECORD"]})
+    scan = saudit_scanner("one.one.one.one", config={"dns": {"minimal": False}, "omit_event_types": ["RAW_DNS_RECORD"]})
     await scan.helpers.dns._mock_dns(mock_records)
     dummy_module = DummyModule(scan)
     scan.modules["dummy_module"] = dummy_module
@@ -725,7 +725,7 @@ async def test_dns_raw_records(bbot_scanner):
 
     # scan with watching module
     DummyModule.watched_events = ["RAW_DNS_RECORD"]
-    scan = bbot_scanner("one.one.one.one", config={"dns": {"minimal": False}, "omit_event_types": ["RAW_DNS_RECORD"]})
+    scan = saudit_scanner("one.one.one.one", config={"dns": {"minimal": False}, "omit_event_types": ["RAW_DNS_RECORD"]})
     await scan.helpers.dns._mock_dns(mock_records)
     dummy_module = DummyModule(scan)
     scan.modules["dummy_module"] = dummy_module
@@ -749,8 +749,8 @@ async def test_dns_raw_records(bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_dns_graph_structure(bbot_scanner):
-    scan = bbot_scanner("https://evilcorp.com", config={"dns": {"search_distance": 1, "minimal": False}})
+async def test_dns_graph_structure(saudit_scanner):
+    scan = saudit_scanner("https://evilcorp.com", config={"dns": {"search_distance": 1, "minimal": False}})
     await scan.helpers.dns._mock_dns(
         {
             "evilcorp.com": {
@@ -777,8 +777,8 @@ async def test_dns_graph_structure(bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_hostname_extraction(bbot_scanner):
-    scan = bbot_scanner("evilcorp.com", config={"dns": {"minimal": False}})
+async def test_hostname_extraction(saudit_scanner):
+    scan = saudit_scanner("evilcorp.com", config={"dns": {"minimal": False}})
     await scan.helpers.dns._mock_dns(
         {
             "evilcorp.com": {
@@ -810,7 +810,7 @@ async def test_hostname_extraction(bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_dns_helpers(bbot_scanner):
+async def test_dns_helpers(saudit_scanner):
     assert service_record("") is False
     assert service_record("localhost") is False
     assert service_record("www.example.com") is False
@@ -824,7 +824,7 @@ async def test_dns_helpers(bbot_scanner):
 
     # make sure system nameservers are excluded from use by DNS brute force
     brute_nameservers = tempwordlist(["1.2.3.4", "8.8.4.4", "4.3.2.1", "8.8.8.8"])
-    scan = bbot_scanner(config={"dns": {"brute_nameservers": brute_nameservers}})
+    scan = saudit_scanner(config={"dns": {"brute_nameservers": brute_nameservers}})
     scan.helpers.dns.system_resolvers = ["8.8.8.8", "8.8.4.4"]
     resolver_file = await scan.helpers.dns.brute.resolver_file()
     resolvers = set(scan.helpers.read_file(resolver_file))

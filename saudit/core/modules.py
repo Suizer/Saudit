@@ -13,7 +13,7 @@ from omegaconf import OmegaConf
 from contextlib import suppress
 
 from saudit.core import CORE
-from saudit.errors import BBOTError
+from saudit.errors import SAUDITError
 from saudit.logger import log_to_stderr
 
 from .flags import flag_descriptions
@@ -36,7 +36,7 @@ saudit_code_dir = Path(__file__).parent.parent
 
 class ModuleLoader:
     """
-    Main class responsible for preloading BBOT modules.
+    Main class responsible for preloading SAUDIT modules.
 
     This class is in charge of preloading modules to determine their dependencies.
     Once dependencies are identified, they are installed before the actual module is imported.
@@ -109,20 +109,20 @@ class ModuleLoader:
         return file.suffix.lower() == ".py" and file.stem not in ["base", "__init__"]
 
     def preload(self, module_dirs=None):
-        """Preloads all BBOT modules.
+        """Preloads all SAUDIT modules.
 
         This function recursively iterates through each file in the module directories
-        and preloads each BBOT module to gather its meta-information and dependencies.
+        and preloads each SAUDIT module to gather its meta-information and dependencies.
 
         Args:
-            module_dir (str or Path): Directory containing BBOT modules to be preloaded.
+            module_dir (str or Path): Directory containing SAUDIT modules to be preloaded.
 
         Returns:
             dict: A dictionary where keys are the names of the preloaded modules and
             values are their respective preloaded data.
 
         Examples:
-            >>> preload("/path/to/bbot_modules/")
+            >>> preload("/path/to/saudit_modules/")
             {
                 "module1": {...},
                 "module2": {...},
@@ -270,19 +270,19 @@ class ModuleLoader:
 
     def preload_module(self, module_file):
         """
-        Preloads a BBOT module to gather its meta-information and dependencies.
+        Preloads a SAUDIT module to gather its meta-information and dependencies.
 
-        This function reads a BBOT module file, extracts its attributes such as
+        This function reads a SAUDIT module file, extracts its attributes such as
         events watched and produced, flags, meta-information, and dependencies.
 
         Args:
-            module_file (str): Path to the BBOT module file.
+            module_file (str): Path to the SAUDIT module file.
 
         Returns:
             dict: A dictionary containing meta-information and dependencies for the module.
 
         Examples:
-            >>> preload_module("bbot/modules/wappalyzer.py")
+            >>> preload_module("saudit/modules/wappalyzer.py")
             {
                 "watched_events": [
                     "HTTP_RESPONSE"
@@ -336,19 +336,19 @@ class ModuleLoader:
         module_hash = sha1(python_code).hexdigest()
         parsed_code = ast.parse(python_code)
 
-        # discard if the module isn't a valid BBOT module
-        is_bbot_module = False
+        # discard if the module isn't a valid SAUDIT module
+        is_saudit_module = False
         for root_element in parsed_code.body:
             if type(root_element) == ast.ClassDef:
                 for class_attr in root_element.body:
                     if type(class_attr) == ast.Assign and any(
                         target.id in ("watched_events", "produced_events") for target in class_attr.targets
                     ):
-                        is_bbot_module = True
+                        is_saudit_module = True
                         break
 
-        if not is_bbot_module:
-            log.debug(f"Skipping {module_file} as it is not a valid BBOT module")
+        if not is_saudit_module:
+            log.debug(f"Skipping {module_file} as it is not a valid SAUDIT module")
             return
 
         for root_element in parsed_code.body:
@@ -388,7 +388,7 @@ class ModuleLoader:
                                 if type(event_type.value) == str:
                                     produced_events.add(event_type.value)
 
-                        # bbot module dependencies
+                        # saudit module dependencies
                         elif any(target.id == "deps_modules" for target in class_attr.targets):
                             for dep_module in class_attr.value.elts:
                                 if type(dep_module.value) == str:
@@ -460,7 +460,7 @@ class ModuleLoader:
                 ansible_task_list.extend(self._shared_deps[dep_common])
             except KeyError:
                 common_choices = ",".join(self._shared_deps)
-                raise BBOTError(
+                raise SAUDITError(
                     f'Error while preloading module "{module_file}": No shared dependency named "{dep_common}" (choices: {common_choices})'
                 )
         for ansible_task in ansible_task_list:
@@ -476,14 +476,14 @@ class ModuleLoader:
             try:
                 module = self.load_module(module_name)
             except ModuleNotFoundError as e:
-                raise BBOTError(
-                    f"Error loading module {module_name}: {e}. You may have leftover artifacts from an older version of BBOT. Try deleting/renaming your '~/.bbot' directory."
+                raise SAUDITError(
+                    f"Error loading module {module_name}: {e}. You may have leftover artifacts from an older version of SAUDIT. Try deleting/renaming your '~/.saudit' directory."
                 ) from e
             modules[module_name] = module
         return modules
 
     def load_module(self, module_name):
-        """Loads a BBOT module by its name.
+        """Loads a SAUDIT module by its name.
 
         Imports the module from its namespace, locates its class, and returns it.
         Identifies modules based on the presence of `watched_events` and `produced_events` attributes.
@@ -695,9 +695,9 @@ class ModuleLoader:
 
         config_obj = OmegaConf.to_object(self.core.default_config)
 
-        # ensure bbot.yml
+        # ensure saudit.yml
         if not files.config_filename.exists():
-            log_to_stderr(f"Creating BBOT config at {files.config_filename}")
+            log_to_stderr(f"Creating SAUDIT config at {files.config_filename}")
             no_secrets_config = self.core.no_secrets_config(config_obj)
             yaml = OmegaConf.to_yaml(no_secrets_config)
             yaml = comment_notice + "\n".join(f"# {line}" for line in yaml.splitlines())
@@ -706,7 +706,7 @@ class ModuleLoader:
 
         # ensure secrets.yml
         if not files.secrets_filename.exists():
-            log_to_stderr(f"Creating BBOT secrets at {files.secrets_filename}")
+            log_to_stderr(f"Creating SAUDIT secrets at {files.secrets_filename}")
             secrets_only_config = self.core.secrets_only_config(config_obj)
             yaml = OmegaConf.to_yaml(secrets_only_config)
             yaml = comment_notice + "\n".join(f"# {line}" for line in yaml.splitlines())

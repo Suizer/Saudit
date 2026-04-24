@@ -5,8 +5,8 @@ from pathlib import Path
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
-ENV_VAR_NAME = "BBOT_SUDO_PASS"
-KEY_ENV_VAR_PATH = "BBOT_SUDO_KEYFILE"
+ENV_VAR_NAME = "SAUDIT_SUDO_PASS"
+KEY_ENV_VAR_PATH = "SAUDIT_SUDO_KEYFILE"
 
 
 def decrypt_password(encrypted_data, key):

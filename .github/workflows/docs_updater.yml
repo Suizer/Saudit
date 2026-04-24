@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          token: ${{ secrets.BBOT_DOCS_UPDATER_PAT }}
+          token: ${{ secrets.SAUDIT_DOCS_UPDATER_PAT }}
           ref: dev  # Checkout the dev branch
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -23,11 +23,11 @@ jobs:
           poetry install
       - name: Generate docs
         run: |
-          poetry run bbot/scripts/docs.py
+          poetry run saudit/scripts/docs.py
       - name: Create or Update Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.BBOT_DOCS_UPDATER_PAT }}
+          token: ${{ secrets.SAUDIT_DOCS_UPDATER_PAT }}
           branch: update-docs
           base: dev
           title: "Automated Docs Update"

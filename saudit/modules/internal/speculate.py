@@ -78,7 +78,7 @@ class speculate(BaseInternalModule):
 
     async def handle_event(self, event):
         ### BEGIN ESSENTIAL SPECULATION ###
-        # These features are required for smooth operation of bbot
+        # These features are required for smooth operation of saudit
         # I.e. they are not "osinty" or intended to discover anything, they only compliment other modules
 
         # we speculate on distance-1 stuff too, because distance-1 open ports are needed by certain modules like sslcert

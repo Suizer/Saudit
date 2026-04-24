@@ -1,6 +1,6 @@
 import re
 
-from ..bbot_fixtures import *
+from ..saudit_fixtures import *
 
 from saudit.modules.base import BaseModule
 from saudit.modules.output.base import BaseOutputModule
@@ -203,15 +203,15 @@ async def test_modules_basic_checks(events, httpx_mock):
     from saudit.core.flags import flag_descriptions
 
     for flag in all_flags:
-        assert flag in flag_descriptions, f'Flag "{flag}" not listed in bbot/core/flags.py'
+        assert flag in flag_descriptions, f'Flag "{flag}" not listed in saudit/core/flags.py'
         description = flag_descriptions.get(flag, "")
-        assert description, f'Flag "{flag}" has no description in bbot/core/flags.py'
+        assert description, f'Flag "{flag}" has no description in saudit/core/flags.py'
 
     await scan._cleanup()
 
 
 @pytest.mark.asyncio
-async def test_modules_basic_perhostonly(bbot_scanner):
+async def test_modules_basic_perhostonly(saudit_scanner):
     from saudit.modules.base import BaseModule
 
     class mod_normal(BaseModule):
@@ -233,7 +233,7 @@ async def test_modules_basic_perhostonly(bbot_scanner):
         watched_events = ["*"]
         per_domain_only = True
 
-    scan = bbot_scanner(
+    scan = saudit_scanner(
         "evilcorp.com",
         force_start=True,
     )
@@ -300,8 +300,8 @@ async def test_modules_basic_perhostonly(bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_modules_basic_perdomainonly(bbot_scanner, monkeypatch):
-    per_domain_scan = bbot_scanner(
+async def test_modules_basic_perdomainonly(saudit_scanner, monkeypatch):
+    per_domain_scan = saudit_scanner(
         "evilcorp.com",
         modules=list(available_modules),
         config={i: True for i in available_internal_modules if i != "dnsresolve"},
@@ -343,7 +343,7 @@ async def test_modules_basic_perdomainonly(bbot_scanner, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_modules_basic_setup_deps(bbot_scanner):
+async def test_modules_basic_setup_deps(saudit_scanner):
     from saudit.modules.base import BaseModule
 
     class dummy(BaseModule):
@@ -359,7 +359,7 @@ async def test_modules_basic_setup_deps(bbot_scanner):
             self.setup_ran = True
             return True
 
-    scan = bbot_scanner()
+    scan = saudit_scanner()
     scan.modules["dummy"] = dummy(scan)
     await scan.setup_modules(deps_only=True)
     assert scan.modules["dummy"].deps_ran
@@ -368,7 +368,7 @@ async def test_modules_basic_setup_deps(bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_modules_basic_stats(helpers, events, bbot_scanner, httpx_mock, monkeypatch):
+async def test_modules_basic_stats(helpers, events, saudit_scanner, httpx_mock, monkeypatch):
     from saudit.modules.base import BaseModule
 
     class dummy(BaseModule):
@@ -383,7 +383,7 @@ async def test_modules_basic_stats(helpers, events, bbot_scanner, httpx_mock, mo
             )
             await self.emit_event("https://asdf.evilcorp.com", "URL", event, tags=["status-200"])
 
-    scan = bbot_scanner(
+    scan = saudit_scanner(
         "evilcorp.com",
         config={"speculate": True, "dns": {"minimal": False}},
         output_modules=["python"],
@@ -466,8 +466,8 @@ async def test_modules_basic_stats(helpers, events, bbot_scanner, httpx_mock, mo
 
 
 @pytest.mark.asyncio
-async def test_module_loading(bbot_scanner):
-    scan2 = bbot_scanner(
+async def test_module_loading(saudit_scanner):
+    scan2 = saudit_scanner(
         modules=list(available_modules),
         output_modules=list(available_output_modules),
         config={i: True for i in available_internal_modules if i != "dnsresolve"},

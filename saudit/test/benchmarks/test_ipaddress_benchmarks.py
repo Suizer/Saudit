@@ -8,7 +8,7 @@ class TestIPAddressBenchmarks:
     """
     Benchmark tests for IP address processing operations.
 
-    These tests measure the performance of BBOT-level IP functions which are
+    These tests measure the performance of SAUDIT-level IP functions which are
     critical for network scanning efficiency and could benefit from different
     underlying implementations.
     """

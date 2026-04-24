@@ -1,4 +1,4 @@
-from ...bbot_fixtures import *
+from ...saudit_fixtures import *
 from saudit.modules.base import BaseModule
 from .base import ModuleTestBase, tempwordlist
 
@@ -1278,7 +1278,7 @@ class TestExcavateRAWTEXT(ModuleTestBase):
         "scope": {"report_distance": 1},
         "web": {"spider_distance": 2, "spider_depth": 2},
         "modules": {
-            "filedownload": {"output_folder": str(bbot_test_dir / "filedownload")},
+            "filedownload": {"output_folder": str(saudit_test_dir / "filedownload")},
         },
     }
 

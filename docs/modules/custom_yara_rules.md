@@ -1,14 +1,14 @@
 # Custom Yara Rules
 
 ### Overview
-Through the `excavate` internal module, BBOT supports searching through HTTP response data using custom YARA rules.
+Through the `excavate` internal module, SAUDIT supports searching through HTTP response data using custom YARA rules.
 
 This feature can be utilized with the command line option `--custom-yara-rules` or `-cy`, followed by a file containing the YARA rules.
 
 Example:
 
 ```
-bbot -m httpx --custom-yara-rules=test.yara -t http://example.com/
+saudit -m httpx --custom-yara-rules=test.yara -t http://example.com/
 ```
 
 Where `test.yara` is a file on the filesystem. The file can contain multiple YARA rules, separated by lines.
@@ -59,7 +59,7 @@ The YARA engine provides plenty of room to make highly complex signatures possib
 
 ### Custom options
 
-BBOT supports the use of a few custom `meta` attributes within YARA rules, which will alter the behavior of the rule and the post-processing of the results.
+SAUDIT supports the use of a few custom `meta` attributes within YARA rules, which will alter the behavior of the rule and the post-processing of the results.
 
 #### description
 
@@ -110,7 +110,7 @@ rule AAAABBBB {
 }
 ```
 
-Now, the BBOT FINDING includes these custom tags, as with the following output:
+Now, the SAUDIT FINDING includes these custom tags, as with the following output:
 
 ```
 [FINDING] {"description": "Custom Yara Rule [AAAABBBB] with description: [contains our test string] Matched via identifier [str1]", "host": "example.com", "url": "http://example.com/"} excavate   (tag1, tag2, tag3)
@@ -135,10 +135,10 @@ rule ContainsTitle
 }
 ```
 
-When run against the Black Lantern Security homepage with the following BBOT command:
+When run against the Black Lantern Security homepage with the following SAUDIT command:
 
 ```
-bbot -m httpx --custom-yara-rules=substack.yara -t http://www.blacklanternsecurity.com/
+saudit -m httpx --custom-yara-rules=substack.yara -t http://www.blacklanternsecurity.com/
 
 ```
 

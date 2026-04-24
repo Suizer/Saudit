@@ -647,13 +647,13 @@ class DNSEngine(EngineServer):
 
     @property
     def in_tests(self):
-        return os.getenv("BBOT_TESTING", "") == "True"
+        return os.getenv("SAUDIT_TESTING", "") == "True"
 
     async def _mock_dns(self, mock_data, custom_lookup_fn=None):
         from .mock import MockResolver
 
         def deserialize_function(func_source):
-            assert self.in_tests, "Can only mock when BBOT_TESTING=True"
+            assert self.in_tests, "Can only mock when SAUDIT_TESTING=True"
             if func_source is None:
                 return None
             namespace = {}

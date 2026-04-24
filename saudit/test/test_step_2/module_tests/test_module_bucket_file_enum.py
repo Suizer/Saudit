@@ -1,12 +1,12 @@
 from .base import ModuleTestBase
-from saudit.test.bbot_fixtures import bbot_test_dir
+from saudit.test.saudit_fixtures import saudit_test_dir
 
 
 class TestBucket_File_Enum(ModuleTestBase):
     targets = ["http://127.0.0.1:8888"]
     modules_overrides = ["bucket_file_enum", "filedownload", "httpx", "excavate", "cloudcheck"]
 
-    download_dir = bbot_test_dir / "test_bucket_file_enum"
+    download_dir = saudit_test_dir / "test_bucket_file_enum"
     config_overrides = {
         "scope": {"report_distance": 5},
         "modules": {"filedownload": {"output_folder": str(download_dir)}},

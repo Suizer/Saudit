@@ -1,4 +1,4 @@
-# This file contains SQLModel (Pydantic + SQLAlchemy) models for BBOT events, scans, and targets.
+# This file contains SQLModel (Pydantic + SQLAlchemy) models for SAUDIT events, scans, and targets.
 # Used by the SQL output modules, but portable for outside use.
 
 import json
@@ -35,7 +35,7 @@ class CustomJSONEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-class BBOTBaseModel(SQLModel):
+class SAUDITBaseModel(SQLModel):
     model_config = ConfigDict(extra="ignore")
 
     def __init__(self, *args, **kwargs):
@@ -68,7 +68,7 @@ class BBOTBaseModel(SQLModel):
 ### EVENT ###
 
 
-class Event(BBOTBaseModel, table=True):
+class Event(SAUDITBaseModel, table=True):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         data = self._get_data(self.data, self.type)
@@ -119,7 +119,7 @@ class Event(BBOTBaseModel, table=True):
 ### SCAN ###
 
 
-class Scan(BBOTBaseModel, table=True):
+class Scan(SAUDITBaseModel, table=True):
     id: str = Field(primary_key=True)
     name: str
     status: str
@@ -134,7 +134,7 @@ class Scan(BBOTBaseModel, table=True):
 ### TARGET ###
 
 
-class Target(BBOTBaseModel, table=True):
+class Target(SAUDITBaseModel, table=True):
     name: str = "Default Target"
     strict_scope: bool = False
     seeds: List = Field(default=[], sa_type=JSON)

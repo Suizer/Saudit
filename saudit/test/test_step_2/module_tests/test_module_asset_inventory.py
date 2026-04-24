@@ -2,7 +2,7 @@ from .base import ModuleTestBase
 
 
 class TestAsset_Inventory(ModuleTestBase):
-    targets = ["127.0.0.1", "bbottest.notreal"]
+    targets = ["127.0.0.1", "saudittest.notreal"]
     scan_name = "asset_inventory_test"
     config_overrides = {"dns": {"minimal": False}, "modules": {"portscan": {"ports": "9999"}}}
     modules_overrides = ["asset_inventory", "portscan", "sslcert"]
@@ -26,25 +26,25 @@ class TestAsset_Inventory(ModuleTestBase):
 
         await module_test.mock_dns(
             {
-                "1.0.0.127.in-addr.arpa": {"PTR": ["www.bbottest.notreal"]},
-                "www.bbottest.notreal": {"A": ["127.0.0.1"]},
+                "1.0.0.127.in-addr.arpa": {"PTR": ["www.saudittest.notreal"]},
+                "www.saudittest.notreal": {"A": ["127.0.0.1"]},
             }
         )
 
     def check(self, module_test, events):
         assert any(e.data == "127.0.0.1:9999" for e in events), "No open port found"
-        assert any(e.data == "www.bbottest.notreal" for e in events), "No DNS name found"
+        assert any(e.data == "www.saudittest.notreal" for e in events), "No DNS name found"
         filename = next(module_test.scan.home.glob("asset-inventory.csv"))
         with open(filename) as f:
             content = f.read()
-            assert "www.bbottest.notreal,,,127.0.0.1" in content
+            assert "www.saudittest.notreal,,,127.0.0.1" in content
         filename = next(module_test.scan.home.glob("asset-inventory-ip-addresses-table*.txt"))
         with open(filename) as f:
             assert "127.0.0.0/16" in f.read()
         filename = next(module_test.scan.home.glob("asset-inventory-domains-table*.txt"))
         with open(filename) as f:
             content = f.read()
-            assert "bbottest.notreal" in content
+            assert "saudittest.notreal" in content
 
 
 class TestAsset_InventoryEmitPrevious(TestAsset_Inventory):
@@ -52,19 +52,19 @@ class TestAsset_InventoryEmitPrevious(TestAsset_Inventory):
     modules_overrides = ["asset_inventory"]
 
     def check(self, module_test, events):
-        assert any(e.data == "www.bbottest.notreal:9999" for e in events), "No open port found"
-        assert any(e.data == "www.bbottest.notreal" for e in events), "No DNS name found"
+        assert any(e.data == "www.saudittest.notreal:9999" for e in events), "No open port found"
+        assert any(e.data == "www.saudittest.notreal" for e in events), "No DNS name found"
         filename = next(module_test.scan.home.glob("asset-inventory.csv"))
         with open(filename) as f:
             content = f.read()
-            assert "www.bbottest.notreal,,,127.0.0.1" in content
+            assert "www.saudittest.notreal,,,127.0.0.1" in content
         filename = next(module_test.scan.home.glob("asset-inventory-ip-addresses-table*.txt"))
         with open(filename) as f:
             assert "127.0.0.0/16" in f.read()
         filename = next(module_test.scan.home.glob("asset-inventory-domains-table*.txt"))
         with open(filename) as f:
             content = f.read()
-            assert "bbottest.notreal" in content
+            assert "saudittest.notreal" in content
 
 
 class TestAsset_InventoryRecheck(TestAsset_Inventory):
@@ -76,8 +76,8 @@ class TestAsset_InventoryRecheck(TestAsset_Inventory):
 
     def check(self, module_test, events):
         assert not any(e.type == "OPEN_TCP_PORT" for e in events), "Open port was emitted"
-        assert any(e.data == "www.bbottest.notreal" for e in events), "No DNS name found"
+        assert any(e.data == "www.saudittest.notreal" for e in events), "No DNS name found"
         filename = next(module_test.scan.home.glob("asset-inventory.csv"))
         with open(filename) as f:
             content = f.read()
-            assert "www.bbottest.notreal,,,127.0.0.1" in content
+            assert "www.saudittest.notreal,,,127.0.0.1" in content

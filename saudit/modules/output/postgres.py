@@ -10,10 +10,10 @@ class Postgres(SQLTemplate):
     }
     options = {
         "username": "postgres",
-        "password": "bbotislife",
+        "password": "sauditislife",
         "host": "localhost",
         "port": 5432,
-        "database": "bbot",
+        "database": "saudit",
     }
     options_desc = {
         "username": "The username to connect to Postgres",

@@ -10,7 +10,7 @@ from saudit.modules.output.base import BaseOutputModule
 class SQLTemplate(BaseOutputModule):
     meta = {"description": "SQL output module template"}
     options = {
-        "database": "bbot",
+        "database": "saudit",
         "username": "",
         "password": "",
         "host": "127.0.0.1",
@@ -27,7 +27,7 @@ class SQLTemplate(BaseOutputModule):
     protocol = ""
 
     async def setup(self):
-        self.database = self.config.get("database", "bbot")
+        self.database = self.config.get("database", "saudit")
         self.username = self.config.get("username", "")
         self.password = self.config.get("password", "")
         self.host = self.config.get("host", "127.0.0.1")

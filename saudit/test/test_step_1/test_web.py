@@ -1,21 +1,21 @@
 import re
 import httpx
 
-from ..bbot_fixtures import *
+from ..saudit_fixtures import *
 
 
 @pytest.mark.asyncio
-async def test_web_engine(bbot_scanner, bbot_httpserver, httpx_mock):
+async def test_web_engine(saudit_scanner, saudit_httpserver, httpx_mock):
     from werkzeug.wrappers import Response
 
     def server_handler(request):
         return Response(f"{request.url}: {request.headers}")
 
-    base_url = bbot_httpserver.url_for("/test/")
-    bbot_httpserver.expect_request(uri=re.compile(r"/test/\d+")).respond_with_handler(server_handler)
-    bbot_httpserver.expect_request(uri=re.compile(r"/nope")).respond_with_data("nope", status=500)
+    base_url = saudit_httpserver.url_for("/test/")
+    saudit_httpserver.expect_request(uri=re.compile(r"/test/\d+")).respond_with_handler(server_handler)
+    saudit_httpserver.expect_request(uri=re.compile(r"/nope")).respond_with_data("nope", status=500)
 
-    scan = bbot_scanner()
+    scan = saudit_scanner()
 
     # request
     response = await scan.helpers.request(f"{base_url}1")
@@ -59,10 +59,10 @@ async def test_web_engine(bbot_scanner, bbot_httpserver, httpx_mock):
         assert hasattr(e, "response")
         assert e.response is None
     with pytest.raises(httpx.HTTPStatusError):
-        response = await scan.helpers.request(bbot_httpserver.url_for("/nope"), raise_error=True)
+        response = await scan.helpers.request(saudit_httpserver.url_for("/nope"), raise_error=True)
         response.raise_for_status()
     try:
-        response = await scan.helpers.request(bbot_httpserver.url_for("/nope"), raise_error=True)
+        response = await scan.helpers.request(saudit_httpserver.url_for("/nope"), raise_error=True)
         response.raise_for_status()
     except httpx.HTTPStatusError as e:
         assert hasattr(e, "response")
@@ -83,9 +83,9 @@ async def test_web_engine(bbot_scanner, bbot_httpserver, httpx_mock):
         assert hasattr(e, "response")
         assert e.response is None
     with pytest.raises(WebError):
-        await scan.helpers.download(bbot_httpserver.url_for("/nope"), raise_error=True)
+        await scan.helpers.download(saudit_httpserver.url_for("/nope"), raise_error=True)
     try:
-        await scan.helpers.download(bbot_httpserver.url_for("/nope"), raise_error=True)
+        await scan.helpers.download(saudit_httpserver.url_for("/nope"), raise_error=True)
     except WebError as e:
         assert hasattr(e, "response")
         assert e.response.status_code == 500
@@ -94,7 +94,7 @@ async def test_web_engine(bbot_scanner, bbot_httpserver, httpx_mock):
 
 
 @pytest.mark.asyncio
-async def test_request_batch_cancellation(bbot_scanner, bbot_httpserver, httpx_mock):
+async def test_request_batch_cancellation(saudit_scanner, saudit_httpserver, httpx_mock):
     import time
     from werkzeug.wrappers import Response
 
@@ -105,10 +105,10 @@ async def test_request_batch_cancellation(bbot_scanner, bbot_httpserver, httpx_m
         urls_requested.append(request.url.split("/")[-1])
         return Response(f"{request.url}: {request.headers}")
 
-    base_url = bbot_httpserver.url_for("/test/")
-    bbot_httpserver.expect_request(uri=re.compile(r"/test/\d+")).respond_with_handler(server_handler)
+    base_url = saudit_httpserver.url_for("/test/")
+    saudit_httpserver.expect_request(uri=re.compile(r"/test/\d+")).respond_with_handler(server_handler)
 
-    scan = bbot_scanner()
+    scan = saudit_scanner()
 
     urls = [f"{base_url}{i}" for i in range(100)]
 
@@ -132,9 +132,9 @@ async def test_request_batch_cancellation(bbot_scanner, bbot_httpserver, httpx_m
 
 
 @pytest.mark.asyncio
-async def test_web_helpers(bbot_scanner, bbot_httpserver, httpx_mock):
+async def test_web_helpers(saudit_scanner, saudit_httpserver, httpx_mock):
     # json conversion
-    scan = bbot_scanner("evilcorp.com")
+    scan = saudit_scanner("evilcorp.com")
     url = "http://www.evilcorp.com/json_test?a=b"
     httpx_mock.add_response(url=url, text="hello\nworld")
     response = await scan.helpers.web.request(url)
@@ -151,8 +151,8 @@ async def test_web_helpers(bbot_scanner, bbot_httpserver, httpx_mock):
 
     await scan._cleanup()
 
-    scan1 = bbot_scanner("8.8.8.8", modules=["ipneighbor"])
-    scan2 = bbot_scanner("127.0.0.1")
+    scan1 = saudit_scanner("8.8.8.8", modules=["ipneighbor"])
+    scan2 = saudit_scanner("127.0.0.1")
 
     await scan1._prep()
     module = scan1.modules["ipneighbor"]
@@ -164,9 +164,9 @@ async def test_web_helpers(bbot_scanner, bbot_httpserver, httpx_mock):
     headers.update(custom_headers)
     assert headers["test"] == "header"
 
-    url = bbot_httpserver.url_for("/test_http_helpers")
+    url = saudit_httpserver.url_for("/test_http_helpers")
     # test user agent + custom headers
-    bbot_httpserver.expect_request(uri="/test_http_helpers", headers=headers).respond_with_data(
+    saudit_httpserver.expect_request(uri="/test_http_helpers", headers=headers).respond_with_data(
         "test_http_helpers_yep"
     )
     response = await scan1.helpers.request(url)
@@ -179,15 +179,15 @@ async def test_web_helpers(bbot_scanner, bbot_httpserver, httpx_mock):
 
     # download file
     path = "/test_http_helpers_download"
-    url = bbot_httpserver.url_for(path)
+    url = saudit_httpserver.url_for(path)
     download_content = "test_http_helpers_download_yep"
-    bbot_httpserver.expect_request(uri=path).respond_with_data(download_content)
+    saudit_httpserver.expect_request(uri=path).respond_with_data(download_content)
     filename = await scan1.helpers.download(url)
     assert Path(str(filename)).is_file()
     assert scan1.helpers.is_cached(url)
     with open(filename) as f:
         assert f.read() == download_content
-    filename = Path("/tmp/bbot_download_test_file")
+    filename = Path("/tmp/saudit_download_test_file")
     filename.unlink(missing_ok=True)
     filename2 = await scan1.helpers.download(url, filename=filename)
     assert filename2 == filename
@@ -206,8 +206,8 @@ async def test_web_helpers(bbot_scanner, bbot_httpserver, httpx_mock):
     """
 
     path = "/test_http_helpers_beautifulsoup"
-    url = bbot_httpserver.url_for(path)
-    bbot_httpserver.expect_request(uri=path).respond_with_data(download_content, status=200)
+    url = saudit_httpserver.url_for(path)
+    saudit_httpserver.expect_request(uri=path).respond_with_data(download_content, status=200)
     webpage = await scan1.helpers.request(url)
     assert webpage, "Webpage is False"
     soup = scan1.helpers.beautifulsoup(webpage, "html.parser")
@@ -220,9 +220,9 @@ async def test_web_helpers(bbot_scanner, bbot_httpserver, httpx_mock):
 
     # 404
     path = "/test_http_helpers_download_404"
-    url = bbot_httpserver.url_for(path)
+    url = saudit_httpserver.url_for(path)
     download_content = "404"
-    bbot_httpserver.expect_request(uri=path).respond_with_data(download_content, status=404)
+    saudit_httpserver.expect_request(uri=path).respond_with_data(download_content, status=404)
     filename = await scan1.helpers.download(url)
     assert filename is None
     assert not scan1.helpers.is_cached(url)
@@ -231,9 +231,9 @@ async def test_web_helpers(bbot_scanner, bbot_httpserver, httpx_mock):
 
     # wordlist
     path = "/test_http_helpers_wordlist"
-    url = bbot_httpserver.url_for(path)
+    url = saudit_httpserver.url_for(path)
     download_content = "a\ncool\nword\nlist"
-    bbot_httpserver.expect_request(uri=path).respond_with_data(download_content)
+    saudit_httpserver.expect_request(uri=path).respond_with_data(download_content)
     filename = await scan1.helpers.wordlist(url)
     assert Path(str(filename)).is_file()
     assert scan1.helpers.is_cached(url)
@@ -242,14 +242,14 @@ async def test_web_helpers(bbot_scanner, bbot_httpserver, httpx_mock):
     # page iteration
     base_path = "/test_http_page_iteration"
     template_path = base_path + "/{page}?page_size={page_size}&offset={offset}"
-    template_url = bbot_httpserver.url_for(template_path)
-    bbot_httpserver.expect_request(
+    template_url = saudit_httpserver.url_for(template_path)
+    saudit_httpserver.expect_request(
         uri=f"{base_path}/1", query_string={"page_size": "100", "offset": "0"}
     ).respond_with_data("page1")
-    bbot_httpserver.expect_request(
+    saudit_httpserver.expect_request(
         uri=f"{base_path}/2", query_string={"page_size": "100", "offset": "100"}
     ).respond_with_data("page2")
-    bbot_httpserver.expect_request(
+    saudit_httpserver.expect_request(
         uri=f"{base_path}/3", query_string={"page_size": "100", "offset": "200"}
     ).respond_with_data("page3")
     results = []
@@ -279,7 +279,7 @@ async def test_web_helpers(bbot_scanner, bbot_httpserver, httpx_mock):
 
 
 @pytest.mark.asyncio
-async def test_web_interactsh(bbot_scanner, bbot_httpserver):
+async def test_web_interactsh(saudit_scanner, saudit_httpserver):
     from saudit.core.helpers.interactsh import server_list
 
     sync_called = False
@@ -288,7 +288,7 @@ async def test_web_interactsh(bbot_scanner, bbot_httpserver):
     sync_correct_url = False
     async_correct_url = False
 
-    scan1 = bbot_scanner("8.8.8.8")
+    scan1 = saudit_scanner("8.8.8.8")
     scan1.status = "RUNNING"
 
     interactsh_client = scan1.helpers.interactsh(poll_interval=3)
@@ -299,7 +299,7 @@ async def test_web_interactsh(bbot_scanner, bbot_httpserver):
         nonlocal async_correct_url
         async_called = True
         d = data.get("raw-request", "")
-        async_correct_url |= "bbot_interactsh_test" in d
+        async_correct_url |= "saudit_interactsh_test" in d
         log.debug(f"interactsh poll (async): {d}")
 
     def sync_callback(data):
@@ -307,17 +307,17 @@ async def test_web_interactsh(bbot_scanner, bbot_httpserver):
         nonlocal sync_correct_url
         sync_called = True
         d = data.get("raw-request", "")
-        sync_correct_url |= "bbot_interactsh_test" in d
+        sync_correct_url |= "saudit_interactsh_test" in d
         log.debug(f"interactsh poll (sync): {d}")
 
     interactsh_domain = await interactsh_client.register(callback=async_callback)
-    url = f"http://{interactsh_domain}/bbot_interactsh_test"
+    url = f"http://{interactsh_domain}/saudit_interactsh_test"
     response = await scan1.helpers.request(url)
     assert response.status_code == 200
     assert any(interactsh_domain.endswith(f"{s}") for s in server_list)
 
     interactsh_domain2 = await interactsh_client2.register(callback=sync_callback)
-    url2 = f"http://{interactsh_domain2}/bbot_interactsh_test"
+    url2 = f"http://{interactsh_domain2}/saudit_interactsh_test"
     response2 = await scan1.helpers.request(url2)
     assert response2.status_code == 200
     assert any(interactsh_domain2.endswith(f"{s}") for s in server_list)
@@ -342,14 +342,14 @@ async def test_web_interactsh(bbot_scanner, bbot_httpserver):
 
 
 @pytest.mark.asyncio
-async def test_web_curl(bbot_scanner, bbot_httpserver):
-    scan = bbot_scanner("127.0.0.1")
+async def test_web_curl(saudit_scanner, saudit_httpserver):
+    scan = saudit_scanner("127.0.0.1")
     helpers = scan.helpers
-    url = bbot_httpserver.url_for("/curl")
-    bbot_httpserver.expect_request(uri="/curl").respond_with_data("curl_yep")
-    bbot_httpserver.expect_request(uri="/index.html").respond_with_data("curl_yep_index")
+    url = saudit_httpserver.url_for("/curl")
+    saudit_httpserver.expect_request(uri="/curl").respond_with_data("curl_yep")
+    saudit_httpserver.expect_request(uri="/index.html").respond_with_data("curl_yep_index")
     assert await helpers.curl(url=url) == "curl_yep"
-    assert await helpers.curl(url=url, ignore_bbot_global_settings=True) == "curl_yep"
+    assert await helpers.curl(url=url, ignore_saudit_global_settings=True) == "curl_yep"
     assert (await helpers.curl(url=url, head_mode=True)).startswith("HTTP/")
     assert await helpers.curl(url=url, raw_body="body") == "curl_yep"
     assert (
@@ -357,7 +357,7 @@ async def test_web_curl(bbot_scanner, bbot_httpserver):
             url=url,
             raw_path=True,
             headers={"test": "test", "test2": ["test2"]},
-            ignore_bbot_global_settings=False,
+            ignore_saudit_global_settings=False,
             post_data={"test": "test"},
             method="POST",
             cookies={"test": "test"},
@@ -366,10 +366,10 @@ async def test_web_curl(bbot_scanner, bbot_httpserver):
         == "curl_yep_index"
     )
     # test custom headers
-    bbot_httpserver.expect_request("/test-custom-http-headers-curl", headers={"test": "header"}).respond_with_data(
+    saudit_httpserver.expect_request("/test-custom-http-headers-curl", headers={"test": "header"}).respond_with_data(
         "curl_yep_headers"
     )
-    headers_url = bbot_httpserver.url_for("/test-custom-http-headers-curl")
+    headers_url = saudit_httpserver.url_for("/test-custom-http-headers-curl")
     curl_result = await helpers.curl(url=headers_url)
     assert curl_result == "curl_yep_headers"
 
@@ -377,8 +377,8 @@ async def test_web_curl(bbot_scanner, bbot_httpserver):
 
 
 @pytest.mark.asyncio
-async def test_web_http_compare(httpx_mock, bbot_scanner):
-    scan = bbot_scanner()
+async def test_web_http_compare(httpx_mock, saudit_scanner):
+    scan = saudit_scanner()
     helpers = scan.helpers
     httpx_mock.add_response(url=re.compile(r"http://www\.example\.com.*"), text="wat")
     compare_helper = helpers.http_compare("http://www.example.com")
@@ -393,15 +393,15 @@ async def test_web_http_compare(httpx_mock, bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_http_proxy(bbot_scanner, bbot_httpserver, proxy_server):
+async def test_http_proxy(saudit_scanner, saudit_httpserver, proxy_server):
     endpoint = "/test_http_proxy"
-    url = bbot_httpserver.url_for(endpoint)
+    url = saudit_httpserver.url_for(endpoint)
     # test user agent + custom headers
-    bbot_httpserver.expect_request(uri=endpoint).respond_with_data("test_http_proxy_yep")
+    saudit_httpserver.expect_request(uri=endpoint).respond_with_data("test_http_proxy_yep")
 
     proxy_address = f"http://127.0.0.1:{proxy_server.server_address[1]}"
 
-    scan = bbot_scanner("127.0.0.1", config={"web": {"http_proxy": proxy_address}})
+    scan = saudit_scanner("127.0.0.1", config={"web": {"http_proxy": proxy_address}})
 
     assert len(proxy_server.RequestHandlerClass.urls) == 0
 
@@ -418,14 +418,14 @@ async def test_http_proxy(bbot_scanner, bbot_httpserver, proxy_server):
 
 
 @pytest.mark.asyncio
-async def test_http_ssl(bbot_scanner, bbot_httpserver_ssl):
+async def test_http_ssl(saudit_scanner, saudit_httpserver_ssl):
     endpoint = "/test_http_ssl"
-    url = bbot_httpserver_ssl.url_for(endpoint)
+    url = saudit_httpserver_ssl.url_for(endpoint)
     # test user agent + custom headers
-    bbot_httpserver_ssl.expect_request(uri=endpoint).respond_with_data("test_http_ssl_yep")
+    saudit_httpserver_ssl.expect_request(uri=endpoint).respond_with_data("test_http_ssl_yep")
 
-    scan1 = bbot_scanner("127.0.0.1", config={"web": {"ssl_verify": True, "debug": True}})
-    scan2 = bbot_scanner("127.0.0.1", config={"web": {"ssl_verify": False, "debug": True}})
+    scan1 = saudit_scanner("127.0.0.1", config={"web": {"ssl_verify": True, "debug": True}})
+    scan2 = saudit_scanner("127.0.0.1", config={"web": {"ssl_verify": False, "debug": True}})
 
     r1 = await scan1.helpers.request(url)
     assert r1 is None, "Request to self-signed SSL server went through even with ssl_verify=True"
@@ -438,15 +438,15 @@ async def test_http_ssl(bbot_scanner, bbot_httpserver_ssl):
 
 
 @pytest.mark.asyncio
-async def test_web_cookies(bbot_scanner, httpx_mock):
+async def test_web_cookies(saudit_scanner, httpx_mock):
     import httpx
-    from saudit.core.helpers.web.client import BBOTAsyncClient
+    from saudit.core.helpers.web.client import SAUDITAsyncClient
 
     # make sure cookies work when enabled
     httpx_mock.add_response(url="http://www.evilcorp.com/cookies", headers=[("set-cookie", "wat=asdf; path=/")])
-    scan = bbot_scanner()
+    scan = saudit_scanner()
 
-    client = BBOTAsyncClient(persist_cookies=True, _config=scan.config, _target=scan.target)
+    client = SAUDITAsyncClient(persist_cookies=True, _config=scan.config, _target=scan.target)
     r = await client.get(url="http://www.evilcorp.com/cookies")
     assert r.cookies["wat"] == "asdf"
     httpx_mock.add_response(url="http://www.evilcorp.com/cookies/test", match_headers={"Cookie": "wat=asdf"})
@@ -460,8 +460,8 @@ async def test_web_cookies(bbot_scanner, httpx_mock):
 
     # make sure they don't when they're not
     httpx_mock.add_response(url="http://www2.evilcorp.com/cookies", headers=[("set-cookie", "wats=fdsa; path=/")])
-    scan = bbot_scanner()
-    client2 = BBOTAsyncClient(persist_cookies=False, _config=scan.config, _target=scan.target)
+    scan = saudit_scanner()
+    client2 = SAUDITAsyncClient(persist_cookies=False, _config=scan.config, _target=scan.target)
     r = await client2.get(url="http://www2.evilcorp.com/cookies")
     # make sure we can access the cookies
     assert "wats" in r.cookies
@@ -481,9 +481,9 @@ async def test_web_cookies(bbot_scanner, httpx_mock):
 
 
 @pytest.mark.asyncio
-async def test_http_sendcookies(bbot_scanner, bbot_httpserver):
+async def test_http_sendcookies(saudit_scanner, saudit_httpserver):
     endpoint = "/"
-    url = bbot_httpserver.url_for(endpoint)
+    url = saudit_httpserver.url_for(endpoint)
     from werkzeug.wrappers import Response
 
     def echo_cookies_handler(request):
@@ -491,8 +491,8 @@ async def test_http_sendcookies(bbot_scanner, bbot_httpserver):
         cookie_str = "; ".join([f"{key}={value}" for key, value in cookies.items()])
         return Response(f"Echoed Cookies: {cookie_str}\nEchoed Headers: {request.headers}")
 
-    bbot_httpserver.expect_request(uri=endpoint).respond_with_handler(echo_cookies_handler)
-    scan1 = bbot_scanner("127.0.0.1", config={"web": {"debug": True}})
+    saudit_httpserver.expect_request(uri=endpoint).respond_with_handler(echo_cookies_handler)
+    scan1 = saudit_scanner("127.0.0.1", config={"web": {"debug": True}})
     r1 = await scan1.helpers.request(url, cookies={"foo": "bar"})
 
     assert r1 is not None, "Request to self-signed SSL server went through even with ssl_verify=True"
@@ -501,12 +501,12 @@ async def test_http_sendcookies(bbot_scanner, bbot_httpserver):
 
 
 @pytest.mark.asyncio
-async def test_api_download_api_key_cycle(bbot_scanner, bbot_httpserver):
+async def test_api_download_api_key_cycle(saudit_scanner, saudit_httpserver):
     from werkzeug.wrappers import Response
     from saudit.modules.base import BaseModule
 
     endpoint = "/api_download_cycle_one_test"
-    url = bbot_httpserver.url_for(endpoint)
+    url = saudit_httpserver.url_for(endpoint)
 
     seen_auth = []
     n_request = 0
@@ -525,9 +525,9 @@ async def test_api_download_api_key_cycle(bbot_scanner, bbot_httpserver):
             return Response("ok_k2", status=200)
         return Response("unexpected_key", status=400)
 
-    bbot_httpserver.expect_request(uri=endpoint).respond_with_handler(handler)
+    saudit_httpserver.expect_request(uri=endpoint).respond_with_handler(handler)
 
-    scan = bbot_scanner("127.0.0.1")
+    scan = saudit_scanner("127.0.0.1")
     module = BaseModule(scan)
     module.api_key = ["k1", "k2"]
 

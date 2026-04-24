@@ -10,10 +10,10 @@ class MySQL(SQLTemplate):
     }
     options = {
         "username": "root",
-        "password": "bbotislife",
+        "password": "sauditislife",
         "host": "localhost",
         "port": 3306,
-        "database": "bbot",
+        "database": "saudit",
     }
     options_desc = {
         "username": "The username to connect to MySQL",

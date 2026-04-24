@@ -50,7 +50,7 @@ async def _main():
         # parse command line arguments and merge into preset
         try:
             preset.parse_args()
-        except BBOTArgumentError as e:
+        except SAUDITArgumentError as e:
             log_to_stderr(str(e), level="WARNING")
             log.trace(traceback.format_exc())
             return
@@ -291,7 +291,7 @@ async def _main():
 
         return True
 
-    except BBOTError as e:
+    except SAUDITError as e:
         log.error(str(e))
         log.trace(traceback.format_exc())
 

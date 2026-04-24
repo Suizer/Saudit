@@ -6,7 +6,7 @@
 
 ### What is Lightfuzz?
 
-Lightfuzz is a lightweight web vulnerability scanner built into BBOT. It is designed to find "low-hanging fruit" type vulnerabilities without much overhead and at massive scale. 
+Lightfuzz is a lightweight web vulnerability scanner built into SAUDIT. It is designed to find "low-hanging fruit" type vulnerabilities without much overhead and at massive scale. 
 
 ### What is Lightfuzz NOT?
 
@@ -49,9 +49,9 @@ Lightfuzz is divided into numerous "submodules". These would typically be ran al
     - Can find a variety of XSS types, across several different contexts (between-tags, attribute, Javascript-based)
 ## Presets 
 
-Lightfuzz comes with a few pre-defined presets. The first thing to know is that, unless you really know BBOT inside and out, we recommend using one of them. This is because to be successful, Lightfuzz needs to change a lot of very important BBOT settings. These include:
+Lightfuzz comes with a few pre-defined presets. The first thing to know is that, unless you really know SAUDIT inside and out, we recommend using one of them. This is because to be successful, Lightfuzz needs to change a lot of very important SAUDIT settings. These include:
 
-* Setting `url_querystring_remove` to False. By default, BBOT strips away querystings, so in order to FUZZ GET parameters, that default has to be disabled.
+* Setting `url_querystring_remove` to False. By default, SAUDIT strips away querystings, so in order to FUZZ GET parameters, that default has to be disabled.
 ```
 url_querystring_remove: False
 ```
@@ -99,7 +99,7 @@ That can be done by simply also enabling either the `spider` or `spider-intense`
 With the presets in mind, usage is incredibly simple. In most cases you will just do the following:
 
 ```
-bbot -p lightfuzz-medium spider -t targets.txt --allow-deadly
+saudit -p lightfuzz-medium spider -t targets.txt --allow-deadly
 ```
 
 It's really that simple. Almost all output from Lightfuzz will be in the form of a `FINDING`, as opposed to a `VULNERABILITY`, with a couple of exceptions. This is because, as was explained, the nature of the findings are that they are typically unconfirmed and will require work on your part to do so.
@@ -108,12 +108,12 @@ If you wanted a specific submodule, you could make your own preset adjusting the
 
 Just XSS:
 ```
-bbot -p lightfuzz-medium -t targets.txt -c modules.lightfuzz.enabled_submodules=[xss]  --allow-deadly
+saudit -p lightfuzz-medium -t targets.txt -c modules.lightfuzz.enabled_submodules=[xss]  --allow-deadly
 ```
 
 XSS and SQLi:
 ```
-bbot -p lightfuzz-medium -t targets.txt -c modules.lightfuzz.enabled_submodules=[xss,sqli]  --allow-deadly
+saudit -p lightfuzz-medium -t targets.txt -c modules.lightfuzz.enabled_submodules=[xss,sqli]  --allow-deadly
 ```
 
 

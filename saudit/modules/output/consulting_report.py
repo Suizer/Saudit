@@ -172,7 +172,7 @@ def _section(section_id: str, heading: str, findings: list, source_tag: str) -> 
 class consulting_report(BaseOutputModule):
     watched_events = ["FINDING", "TECHNOLOGY", "VULNERABILITY"]
     meta = {
-        "description": "Generate a unified HTML consulting report from BBOT, JsFuzzer, and MendixRecon findings",
+        "description": "Generate a unified HTML consulting report from SAUDIT, JsFuzzer, and MendixRecon findings",
         "created_date": "2024-01-01",
         "author": "@consulting",
     }

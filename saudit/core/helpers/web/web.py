@@ -25,7 +25,7 @@ class WebHelper(EngineClient):
     ERROR_CLASS = WebError
 
     """
-    Main utility class for managing HTTP operations in BBOT. It serves as a wrapper around the BBOTAsyncClient,
+    Main utility class for managing HTTP operations in SAUDIT. It serves as a wrapper around the SAUDITAsyncClient,
     which itself is a subclass of httpx.AsyncClient. The class provides functionalities to make HTTP requests,
     download files, and handle cached wordlists.
 
@@ -33,7 +33,7 @@ class WebHelper(EngineClient):
         parent_helper (object): The parent helper object containing scan configurations.
         http_debug (bool): Flag to indicate whether HTTP debugging is enabled.
         ssl_verify (bool): Flag to indicate whether SSL verification is enabled.
-        web_client (BBOTAsyncClient): An instance of BBOTAsyncClient for making HTTP requests.
+        web_client (SAUDITAsyncClient): An instance of SAUDITAsyncClient for making HTTP requests.
         client_only_options (tuple): A tuple of options only applicable to the web client.
 
     Examples:
@@ -70,16 +70,16 @@ class WebHelper(EngineClient):
         try:
             return self.web_clients[retries]
         except KeyError:
-            from .client import BBOTAsyncClient
+            from .client import SAUDITAsyncClient
 
-            client = BBOTAsyncClient.from_config(self.config, self.target, *args, persist_cookies=False, **kwargs)
+            client = SAUDITAsyncClient.from_config(self.config, self.target, *args, persist_cookies=False, **kwargs)
             self.web_clients[client.retries] = client
             return client
 
     async def request(self, *args, **kwargs):
         """
         Asynchronous function for making HTTP requests, intended to be the most basic web request function
-        used widely across BBOT and within this helper class. Handles various exceptions and timeouts
+        used widely across SAUDIT and within this helper class. Handles various exceptions and timeouts
         that might occur during the request.
 
         This function automatically respects the scan's global timeout, proxy, headers, etc.
@@ -323,7 +323,7 @@ class WebHelper(EngineClient):
             url (str): The URL for the cURL request. Mandatory.
             raw_path (bool, optional): If True, activates '--path-as-is' in cURL. Defaults to False.
             headers (dict, optional): A dictionary of HTTP headers to include in the request.
-            ignore_bbot_global_settings (bool, optional): If True, ignores the global settings of BBOT. Defaults to False.
+            ignore_saudit_global_settings (bool, optional): If True, ignores the global settings of SAUDIT. Defaults to False.
             post_data (dict, optional): A dictionary containing data to be sent in the request body.
             method (str, optional): The HTTP method to use for the request (e.g., 'GET', 'POST').
             cookies (dict, optional): A dictionary of cookies to include in the request.
@@ -360,14 +360,14 @@ class WebHelper(EngineClient):
         headers = kwargs.get("headers", {})
         cookies = kwargs.get("cookies", {})
 
-        ignore_bbot_global_settings = kwargs.get("ignore_bbot_global_settings", False)
+        ignore_saudit_global_settings = kwargs.get("ignore_saudit_global_settings", False)
 
-        if ignore_bbot_global_settings:
+        if ignore_saudit_global_settings:
             http_timeout = 20  # setting 20 as a worse-case setting
-            log.debug("ignore_bbot_global_settings enabled. Global settings will not be applied")
+            log.debug("ignore_saudit_global_settings enabled. Global settings will not be applied")
         else:
             http_timeout = self.parent_helper.web_config.get("http_timeout", 20)
-            user_agent = self.parent_helper.web_config.get("user_agent", "BBOT")
+            user_agent = self.parent_helper.web_config.get("user_agent", "SAUDIT")
 
             if "User-Agent" not in headers:
                 headers["User-Agent"] = user_agent

@@ -5,14 +5,14 @@ from contextlib import suppress
 
 class SharedInterpreterState:
     """
-    A class to track the primary BBOT process.
+    A class to track the primary SAUDIT process.
 
     Used to prevent spawning multiple unwanted processes with multiprocessing.
     """
 
     def __init__(self):
-        self.main_process_var_name = "_BBOT_MAIN_PID"
-        self.scan_process_var_name = "_BBOT_SCAN_PID"
+        self.main_process_var_name = "_SAUDIT_MAIN_PID"
+        self.scan_process_var_name = "_SAUDIT_SCAN_PID"
         atexit.register(self.cleanup)
 
     @property

@@ -5,5 +5,5 @@ We welcome contributions! If you have an idea for a new module, or are a Python 
 To get started devving, see the following links:
 
 - [Setting up a Dev Environment](./dev/dev_environment.md)
-- [How to Write a BBOT Module](./dev/module_howto.md)
+- [How to Write a SAUDIT Module](./dev/module_howto.md)
 - [Discord Bot Example](./dev/discord_bot.md)

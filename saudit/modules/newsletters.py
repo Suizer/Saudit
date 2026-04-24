@@ -1,5 +1,5 @@
 # Created a new module called 'newsletters' that will scrape the websites (or recursive websites,
-# thanks to BBOT's sub-domain enumeration) looking for the presence of an 'email type' that also
+# thanks to SAUDIT's sub-domain enumeration) looking for the presence of an 'email type' that also
 # contains a 'placeholder'. The combination of these two HTML items usually signify the presence
 # of an "Enter Your Email Here" type Newsletter Subscription service. This module could be used
 # to find newsletters for a future email bombing attack.
@@ -39,7 +39,7 @@ class newsletters(BaseModule):
         _event = event
 
         # Call find_type Function if Webpage return Status Code 200 && "body" is found in event.data
-        # Ex: 'bbot -m httpx newsletters -t https://apf-api.eng.vn.cloud.tesla.com' returns
+        # Ex: 'saudit -m httpx newsletters -t https://apf-api.eng.vn.cloud.tesla.com' returns
         #     Status Code 200 but does NOT have event.data["body"]
         if _event.data["status_code"] == 200:
             if "body" in _event.data:

@@ -7,7 +7,7 @@ class TestIP2Location(ModuleTestBase):
 
     async def setup_before_prep(self, module_test):
         module_test.httpx_mock.add_response(
-            url="http://api.ip2location.io/?key=asdf&ip=8.8.8.8&format=json&source=bbot",
+            url="http://api.ip2location.io/?key=asdf&ip=8.8.8.8&format=json&source=saudit",
             json={
                 "ip": "8.8.8.8",
                 "country_code": "US",

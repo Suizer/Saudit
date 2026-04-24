@@ -1,26 +1,26 @@
-# BBOT Developer Reference
+# SAUDIT Developer Reference
 
-BBOT exposes a Python API that allows you to create, start, and stop scans.
+SAUDIT exposes a Python API that allows you to create, start, and stop scans.
 
-Documented in this section are commonly-used classes and functions within BBOT, along with usage examples.
+Documented in this section are commonly-used classes and functions within SAUDIT, along with usage examples.
 
-## Adding BBOT to Your Python Project
+## Adding SAUDIT to Your Python Project
 
-If you are using Poetry, you can add BBOT to your python environment like this:
+If you are using Poetry, you can add SAUDIT to your python environment like this:
 
 ```bash
 # stable
-poetry add bbot
+poetry add saudit
 
 # bleeding-edge (dev branch)
-poetry add bbot --allow-prereleases
+poetry add saudit --allow-prereleases
 ```
 
-## Running a BBOT Scan from Python
+## Running a SAUDIT Scan from Python
 
 #### Synchronous
 ```python
-from bbot.scanner import Scanner
+from saudit.scanner import Scanner
 
 if __name__ == "__main__":
     scan = Scanner("evilcorp.com", presets=["subdomain-enum"])
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
 #### Asynchronous
 ```python
-from bbot.scanner import Scanner
+from saudit.scanner import Scanner
 
 async def main():
     scan = Scanner("evilcorp.com", presets=["subdomain-enum"])

@@ -6,7 +6,7 @@ import inspect
 import regex as re
 from pathlib import Path
 from saudit.errors import ExcavateError, ValidationError
-import saudit.core.helpers.regexes as bbot_regexes
+import saudit.core.helpers.regexes as saudit_regexes
 from saudit.modules.base import BaseInterceptModule
 from saudit.modules.internal.base import BaseInternalModule
 from urllib.parse import urlparse, urljoin, parse_qs, urlunparse, urldefrag
@@ -113,7 +113,7 @@ class YaraRuleSettings:
 
 class ExcavateRule:
     """
-    The BBOT Regex Commandments:
+    The SAUDIT Regex Commandments:
 
     1) Thou shalt employ YARA regexes in place of Python regexes, save when necessity doth compel otherwise.
     2) Thou shalt ne'er wield a Python regex against a vast expanse of text.
@@ -417,7 +417,7 @@ class excavate(BaseInternalModule, BaseInterceptModule):
         class HtmlTags(ParameterExtractorRule):
             name = "HTML Tags"
             discovery_regex = r'/<[^>]+(href|src|action)=["\']?[^"\'>\s]*["\']?[^>]*>/ nocase'
-            extraction_regex = bbot_regexes.tag_attribute_regex
+            extraction_regex = saudit_regexes.tag_attribute_regex
             output_type = "GETPARAM"
 
             async def extract(self):
@@ -494,17 +494,17 @@ class excavate(BaseInternalModule, BaseInterceptModule):
             name = "GET Form"
             discovery_regex = r'/<form[^>]*\bmethod=["\']?get["\']?[^>]*>.*<\/form>/s nocase'
             form_content_regexes = {
-                "input_tag_regex": bbot_regexes.input_tag_regex,
-                "input_tag_regex2": bbot_regexes.input_tag_regex2,
-                "select_tag_regex": bbot_regexes.select_tag_regex,
-                "textarea_tag_regex": bbot_regexes.textarea_tag_regex,
-                "textarea_tag_regex2": bbot_regexes.textarea_tag_regex2,
-                "textarea_tag_novalue_regex": bbot_regexes.textarea_tag_novalue_regex,
-                "button_tag_regex": bbot_regexes.button_tag_regex,
-                "button_tag_regex2": bbot_regexes.button_tag_regex2,
-                "_input_tag_novalue_regex": bbot_regexes.input_tag_novalue_regex,
+                "input_tag_regex": saudit_regexes.input_tag_regex,
+                "input_tag_regex2": saudit_regexes.input_tag_regex2,
+                "select_tag_regex": saudit_regexes.select_tag_regex,
+                "textarea_tag_regex": saudit_regexes.textarea_tag_regex,
+                "textarea_tag_regex2": saudit_regexes.textarea_tag_regex2,
+                "textarea_tag_novalue_regex": saudit_regexes.textarea_tag_novalue_regex,
+                "button_tag_regex": saudit_regexes.button_tag_regex,
+                "button_tag_regex2": saudit_regexes.button_tag_regex2,
+                "_input_tag_novalue_regex": saudit_regexes.input_tag_novalue_regex,
             }
-            extraction_regex = bbot_regexes.get_form_regex
+            extraction_regex = saudit_regexes.get_form_regex
             output_type = "GETPARAM"
 
             async def extract(self):
@@ -545,27 +545,27 @@ class excavate(BaseInternalModule, BaseInterceptModule):
                         )
 
         class GetForm2(GetForm):
-            extraction_regex = bbot_regexes.get_form_regex2
+            extraction_regex = saudit_regexes.get_form_regex2
 
         class PostForm(GetForm):
             name = "POST Form"
             discovery_regex = r'/<form[^>]*\bmethod=["\']?post["\']?[^>]*>.*<\/form>/s nocase'
-            extraction_regex = bbot_regexes.post_form_regex
+            extraction_regex = saudit_regexes.post_form_regex
             output_type = "POSTPARAM"
 
         class PostForm2(PostForm):
-            extraction_regex = bbot_regexes.post_form_regex2
+            extraction_regex = saudit_regexes.post_form_regex2
 
         class PostForm_NoAction(PostForm):
             name = "POST Form (no action)"
-            extraction_regex = bbot_regexes.post_form_regex_noaction
+            extraction_regex = saudit_regexes.post_form_regex_noaction
 
         # underscore ensure generic forms runs last, so it doesn't cause dedupe to stop full form detection
         class _GenericForm(GetForm):
             name = "Generic Form"
             discovery_regex = r"/<form[^>]*>.*<\/form>/s nocase"
 
-            extraction_regex = bbot_regexes.generic_form_regex
+            extraction_regex = saudit_regexes.generic_form_regex
             output_type = "GETPARAM"
 
         def __init__(self, excavate):
@@ -842,7 +842,7 @@ class excavate(BaseInternalModule, BaseInterceptModule):
         }
         full_url_regex = re.compile(r"(https?)://(\w(?:[\w-]+\.?)+(?::\d{1,5})?(?:/[-\w\.\(\)]*[-\w\.]+)*/?)")
         full_url_regex_strict = re.compile(r"^(https?):\/\/([\w.-]+)(?::\d{1,5})?(\/[\w\/\.-]*)?(\?[^\s]+)?$")
-        tag_attribute_regex = bbot_regexes.tag_attribute_regex
+        tag_attribute_regex = saudit_regexes.tag_attribute_regex
 
         async def process(self, yara_results, event, yara_rule_settings, discovery_context):
             for identifier, results in yara_results.items():

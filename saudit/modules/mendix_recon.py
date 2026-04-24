@@ -24,7 +24,7 @@ class mendix_recon(BaseModule):
     Integration module: detects Mendix low-code applications in HTTP responses
     and automatically runs MendixRecon against them.
 
-    Detection is passive (signature matching on responses BBOT already fetched).
+    Detection is passive (signature matching on responses SAUDIT already fetched).
     The MendixRecon subprocess is spawned only once per unique host.
 
     Requires MendixRecon to be present on disk. Set the path via:
@@ -143,7 +143,7 @@ class mendix_recon(BaseModule):
 
         for sig in MENDIX_SIGNATURES:
             sig_lower = sig.lower()
-            # Check response headers (keys are lowercased by BBOT)
+            # Check response headers (keys are lowercased by SAUDIT)
             for hk, hv in headers.items():
                 if sig_lower in hk.lower() or sig_lower in str(hv).lower():
                     return True

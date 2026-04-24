@@ -13,7 +13,7 @@ jobs:
         with:
           ref: dev
           fetch-depth: 0
-          token: ${{ secrets.BBOT_DOCS_UPDATER_PAT }}
+          token: ${{ secrets.SAUDIT_DOCS_UPDATER_PAT }}
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -36,21 +36,21 @@ jobs:
       - name: Get current version
         id: get-current-version
         run: |
-          version=$(grep -m 1 -oP '(?<=version": ")[^"]*' bbot/modules/nuclei.py)
+          version=$(grep -m 1 -oP '(?<=version": ")[^"]*' saudit/modules/nuclei.py)
           echo "current_version=$version" >> $GITHUB_ENV
       - name: Update version
         id: update-version
         if: env.latest_version != env.current_version
-        run: "sed -i '0,/\"version\": \".*\",/ s/\"version\": \".*\",/\"version\": \"${{ env.latest_version }}\",/g' bbot/modules/nuclei.py"
+        run: "sed -i '0,/\"version\": \".*\",/ s/\"version\": \".*\",/\"version\": \"${{ env.latest_version }}\",/g' saudit/modules/nuclei.py"
       - name: Create pull request to update the version
         if: steps.update-version.outcome == 'success'
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.BBOT_DOCS_UPDATER_PAT }}
+          token: ${{ secrets.SAUDIT_DOCS_UPDATER_PAT }}
           commit-message: "Update nuclei"
           title: "Update nuclei to ${{ env.latest_version }}"
           body: |
-            This PR uses https://api.github.com/repos/projectdiscovery/nuclei/releases/latest to obtain the latest version of nuclei and update the version in bbot/modules/nuclei.py."
+            This PR uses https://api.github.com/repos/projectdiscovery/nuclei/releases/latest to obtain the latest version of nuclei and update the version in saudit/modules/nuclei.py."
 
             # Release notes:
             ${{ env.release_notes }}
@@ -65,7 +65,7 @@ jobs:
         with:
           ref: dev
           fetch-depth: 0
-          token: ${{ secrets.BBOT_DOCS_UPDATER_PAT }}
+          token: ${{ secrets.SAUDIT_DOCS_UPDATER_PAT }}
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -88,21 +88,21 @@ jobs:
       - name: Get current version
         id: get-current-version
         run: |
-          version=$(grep -m 1 -oP '(?<=version": ")[^"]*' bbot/modules/trufflehog.py)
+          version=$(grep -m 1 -oP '(?<=version": ")[^"]*' saudit/modules/trufflehog.py)
           echo "current_version=$version" >> $GITHUB_ENV
       - name: Update version
         id: update-version
         if: env.latest_version != env.current_version
-        run: "sed -i '0,/\"version\": \".*\",/ s/\"version\": \".*\",/\"version\": \"${{ env.latest_version }}\",/g' bbot/modules/trufflehog.py"
+        run: "sed -i '0,/\"version\": \".*\",/ s/\"version\": \".*\",/\"version\": \"${{ env.latest_version }}\",/g' saudit/modules/trufflehog.py"
       - name: Create pull request to update the version
         if: steps.update-version.outcome == 'success'
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.BBOT_DOCS_UPDATER_PAT }}
+          token: ${{ secrets.SAUDIT_DOCS_UPDATER_PAT }}
           commit-message: "Update trufflehog"
           title: "Update trufflehog to ${{ env.latest_version }}"
           body: |
-            This PR uses https://api.github.com/repos/trufflesecurity/trufflehog/releases/latest to obtain the latest version of trufflehog and update the version in bbot/modules/trufflehog.py.
+            This PR uses https://api.github.com/repos/trufflesecurity/trufflehog/releases/latest to obtain the latest version of trufflehog and update the version in saudit/modules/trufflehog.py.
 
             # Release notes:
             ${{ env.release_notes }}

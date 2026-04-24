@@ -17,13 +17,13 @@ from saudit.core.helpers.names_generator import random_name
 from saudit.core.config.logger import GzipRotatingFileHandler
 from saudit.core.multiprocess import SHARED_INTERPRETER_STATE
 from saudit.core.helpers.async_helpers import async_to_sync_gen
-from saudit.errors import BBOTError, ScanError, ValidationError
+from saudit.errors import SAUDITError, ScanError, ValidationError
 
 log = logging.getLogger("saudit.scanner")
 
 
 class Scanner:
-    """A class representing a single BBOT scan
+    """A class representing a single SAUDIT scan
 
     Examples:
         Create scan with multiple targets:
@@ -63,7 +63,7 @@ class Scanner:
         _status_code (int): The numerical representation of the current scan status, stored for internal use. It is mapped according to the values in `_status_codes`.
         target (Target): Target of scan (alias to `self.preset.target`).
         preset (Preset): The main scan Preset in its baked form.
-        config (omegaconf.dictconfig.DictConfig): BBOT config (alias to `self.preset.config`).
+        config (omegaconf.dictconfig.DictConfig): SAUDIT config (alias to `self.preset.config`).
         whitelist (Target): Scan whitelist (by default this is the same as `target`) (alias to `self.preset.whitelist`).
         blacklist (Target): Scan blacklist (this takes ultimate precedence) (alias to `self.preset.blacklist`).
         helpers (ConfigAwareHelper): Helper containing various reusable functions, regexes, etc. (alias to `self.preset.helpers`).
@@ -72,7 +72,7 @@ class Scanner:
         dispatcher (Dispatcher): Triggers certain events when the scan `status` changes.
         modules (dict): Holds all loaded modules in this format: `{"module_name": Module()}`.
         stats (ScanStats): Holds high-level scan statistics such as how many events have been produced and consumed by each module.
-        home (pathlib.Path): Base output directory of the scan (default: `~/.bbot/scans/<scan_name>`).
+        home (pathlib.Path): Base output directory of the scan (default: `~/.saudit/scans/<scan_name>`).
         running (bool): Whether the scan is currently running.
         stopping (bool): Whether the scan is currently stopping.
         stopped (bool): Whether the scan is currently stopped.
@@ -215,7 +215,7 @@ class Scanner:
         self.httpx_timeout = self.web_config.get("httpx_timeout", 5)
         self.http_retries = self.web_config.get("http_retries", 1)
         self.httpx_retries = self.web_config.get("httpx_retries", 1)
-        self.useragent = self.web_config.get("user_agent", "BBOT")
+        self.useragent = self.web_config.get("user_agent", "SAUDIT")
         # custom HTTP headers warning
         self.custom_http_headers = self.web_config.get("http_headers", {})
         if self.custom_http_headers:
@@ -348,7 +348,7 @@ class Scanner:
             await self._prep()
 
             self._start_log_handlers()
-            self.trace(f"Ran BBOT {__version__} at {self.start_time}, command: {' '.join(sys.argv)}")
+            self.trace(f"Ran SAUDIT {__version__} at {self.start_time}, command: {' '.join(sys.argv)}")
             self.trace(f"Target: {self.preset.target.json}")
             self.trace(f"Preset: {self.preset.to_dict(redact_secrets=True)}")
 
@@ -419,7 +419,7 @@ class Scanner:
                 except ScanError as e:
                     self.error(f"{e}")
 
-                except BBOTError as e:
+                except SAUDITError as e:
                     self.critical(f"Error during scan: {e}")
 
                 except Exception:

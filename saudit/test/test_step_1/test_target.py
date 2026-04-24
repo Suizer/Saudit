@@ -1,20 +1,20 @@
-from ..bbot_fixtures import *  # noqa: F401
+from ..saudit_fixtures import *  # noqa: F401
 
 
 @pytest.mark.asyncio
-async def test_target_basic(bbot_scanner):
+async def test_target_basic(saudit_scanner):
     from radixtarget import RadixTarget
     from ipaddress import ip_address, ip_network
-    from saudit.scanner.target import BBOTTarget, ScanSeeds
+    from saudit.scanner.target import SAUDITTarget, ScanSeeds
 
-    scan1 = bbot_scanner("api.publicapis.org", "8.8.8.8/30", "2001:4860:4860::8888/126")
-    scan2 = bbot_scanner("8.8.8.8/29", "publicapis.org", "2001:4860:4860::8888/125")
-    scan3 = bbot_scanner("8.8.8.8/29", "publicapis.org", "2001:4860:4860::8888/125")
-    scan4 = bbot_scanner("8.8.8.8/29")
-    scan5 = bbot_scanner()
+    scan1 = saudit_scanner("api.publicapis.org", "8.8.8.8/30", "2001:4860:4860::8888/126")
+    scan2 = saudit_scanner("8.8.8.8/29", "publicapis.org", "2001:4860:4860::8888/125")
+    scan3 = saudit_scanner("8.8.8.8/29", "publicapis.org", "2001:4860:4860::8888/125")
+    scan4 = saudit_scanner("8.8.8.8/29")
+    scan5 = saudit_scanner()
 
     # test different types of inputs
-    target = BBOTTarget("evilcorp.com", "1.2.3.4/8")
+    target = SAUDITTarget("evilcorp.com", "1.2.3.4/8")
     assert "www.evilcorp.com" in target.seeds
     assert "www.evilcorp.com:80" in target.seeds
     assert "http://www.evilcorp.com:80" in target.seeds
@@ -127,7 +127,7 @@ async def test_target_basic(bbot_scanner):
 
     # test target hashing
 
-    target1 = BBOTTarget()
+    target1 = SAUDITTarget()
     target1.whitelist.add("evilcorp.com")
     target1.whitelist.add("1.2.3.4/24")
     target1.whitelist.add("https://evilcorp.net:8080")
@@ -135,7 +135,7 @@ async def test_target_basic(bbot_scanner):
     target1.seeds.add("1.2.3.4/24")
     target1.seeds.add("https://evilcorp.net:8080")
 
-    target2 = BBOTTarget()
+    target2 = SAUDITTarget()
     target2.whitelist.add("bob@evilcorp.org")
     target2.whitelist.add("evilcorp.com")
     target2.whitelist.add("1.2.3.4/24")
@@ -161,92 +161,92 @@ async def test_target_basic(bbot_scanner):
     assert target1.hash == target2.hash
 
     # test default whitelist
-    bbottarget = BBOTTarget("http://1.2.3.4:8443", "bob@evilcorp.com")
-    assert bbottarget.seeds.hosts == {ip_network("1.2.3.4"), "evilcorp.com"}
-    assert bbottarget.whitelist.hosts == {ip_network("1.2.3.4"), "evilcorp.com"}
-    assert {e.data for e in bbottarget.seeds.event_seeds} == {"http://1.2.3.4:8443/", "bob@evilcorp.com"}
-    assert {e.data for e in bbottarget.whitelist.event_seeds} == {"1.2.3.4/32", "evilcorp.com"}
+    saudittarget = SAUDITTarget("http://1.2.3.4:8443", "bob@evilcorp.com")
+    assert saudittarget.seeds.hosts == {ip_network("1.2.3.4"), "evilcorp.com"}
+    assert saudittarget.whitelist.hosts == {ip_network("1.2.3.4"), "evilcorp.com"}
+    assert {e.data for e in saudittarget.seeds.event_seeds} == {"http://1.2.3.4:8443/", "bob@evilcorp.com"}
+    assert {e.data for e in saudittarget.whitelist.event_seeds} == {"1.2.3.4/32", "evilcorp.com"}
 
-    bbottarget1 = BBOTTarget("evilcorp.com", "evilcorp.net", whitelist=["1.2.3.4/24"], blacklist=["1.2.3.4"])
-    bbottarget2 = BBOTTarget("evilcorp.com", "evilcorp.net", whitelist=["1.2.3.0/24"], blacklist=["1.2.3.4"])
-    bbottarget3 = BBOTTarget("evilcorp.com", whitelist=["1.2.3.4/24"], blacklist=["1.2.3.4"])
-    bbottarget5 = BBOTTarget("evilcorp.com", "evilcorp.net", whitelist=["1.2.3.0/24"], blacklist=["1.2.3.4"])
-    bbottarget6 = BBOTTarget(
+    saudittarget1 = SAUDITTarget("evilcorp.com", "evilcorp.net", whitelist=["1.2.3.4/24"], blacklist=["1.2.3.4"])
+    saudittarget2 = SAUDITTarget("evilcorp.com", "evilcorp.net", whitelist=["1.2.3.0/24"], blacklist=["1.2.3.4"])
+    saudittarget3 = SAUDITTarget("evilcorp.com", whitelist=["1.2.3.4/24"], blacklist=["1.2.3.4"])
+    saudittarget5 = SAUDITTarget("evilcorp.com", "evilcorp.net", whitelist=["1.2.3.0/24"], blacklist=["1.2.3.4"])
+    saudittarget6 = SAUDITTarget(
         "evilcorp.com", "evilcorp.net", whitelist=["1.2.3.0/24"], blacklist=["1.2.3.4"], strict_scope=True
     )
-    bbottarget8 = BBOTTarget("1.2.3.0/24", whitelist=["evilcorp.com", "evilcorp.net"], blacklist=["1.2.3.4"])
-    bbottarget9 = BBOTTarget("evilcorp.com", "evilcorp.net", whitelist=["1.2.3.0/24"], blacklist=["1.2.3.4"])
+    saudittarget8 = SAUDITTarget("1.2.3.0/24", whitelist=["evilcorp.com", "evilcorp.net"], blacklist=["1.2.3.4"])
+    saudittarget9 = SAUDITTarget("evilcorp.com", "evilcorp.net", whitelist=["1.2.3.0/24"], blacklist=["1.2.3.4"])
 
     # make sure it's a sha1 hash
-    assert isinstance(bbottarget1.hash, bytes)
-    assert len(bbottarget1.hash) == 20
+    assert isinstance(saudittarget1.hash, bytes)
+    assert len(saudittarget1.hash) == 20
 
-    assert bbottarget1 == bbottarget2
-    assert bbottarget2 == bbottarget1
+    assert saudittarget1 == saudittarget2
+    assert saudittarget2 == saudittarget1
     # 1 and 3 have different seeds
-    assert bbottarget1 != bbottarget3
-    assert bbottarget3 != bbottarget1
+    assert saudittarget1 != saudittarget3
+    assert saudittarget3 != saudittarget1
     # until we make them the same
-    bbottarget3.seeds.add("evilcorp.net")
-    assert bbottarget1 == bbottarget3
-    assert bbottarget3 == bbottarget1
+    saudittarget3.seeds.add("evilcorp.net")
+    assert saudittarget1 == saudittarget3
+    assert saudittarget3 == saudittarget1
 
     # adding different events (but with same host) to whitelist should not change hash (since only hosts matter)
-    bbottarget1.whitelist.add("http://evilcorp.co.nz")
-    bbottarget2.whitelist.add("evilcorp.co.nz")
-    assert bbottarget1 == bbottarget2
-    assert bbottarget2 == bbottarget1
+    saudittarget1.whitelist.add("http://evilcorp.co.nz")
+    saudittarget2.whitelist.add("evilcorp.co.nz")
+    assert saudittarget1 == saudittarget2
+    assert saudittarget2 == saudittarget1
 
     # but seeds should change hash
-    bbottarget1.seeds.add("http://evilcorp.co.nz")
-    bbottarget2.seeds.add("evilcorp.co.nz")
-    assert bbottarget1 != bbottarget2
-    assert bbottarget2 != bbottarget1
+    saudittarget1.seeds.add("http://evilcorp.co.nz")
+    saudittarget2.seeds.add("evilcorp.co.nz")
+    assert saudittarget1 != saudittarget2
+    assert saudittarget2 != saudittarget1
 
     # make sure strict_scope is considered in hash
-    assert bbottarget5 != bbottarget6
-    assert bbottarget6 != bbottarget5
+    assert saudittarget5 != saudittarget6
+    assert saudittarget6 != saudittarget5
 
     # make sure swapped target <--> whitelist result in different hash
-    assert bbottarget8 != bbottarget9
-    assert bbottarget9 != bbottarget8
+    assert saudittarget8 != saudittarget9
+    assert saudittarget9 != saudittarget8
 
     # make sure duplicate events don't change hash
-    target1 = BBOTTarget("https://evilcorp.com")
-    target2 = BBOTTarget("https://evilcorp.com")
+    target1 = SAUDITTarget("https://evilcorp.com")
+    target2 = SAUDITTarget("https://evilcorp.com")
     assert target1 == target2
     target1.seeds.add("https://evilcorp.com:443")
     assert target1 == target2
 
     # make sure hosts are collapsed in whitelist and blacklist
-    bbottarget = BBOTTarget(
+    saudittarget = SAUDITTarget(
         "http://evilcorp.com:8080",
         whitelist=["evilcorp.net:443", "http://evilcorp.net:8080"],
         blacklist=["http://evilcorp.org:8080", "evilcorp.org:443"],
     )
     # base class is not iterable
     with pytest.raises(TypeError):
-        assert list(bbottarget) == ["http://evilcorp.com:8080/"]
-    assert {e.data for e in bbottarget.seeds} == {"http://evilcorp.com:8080/"}
-    assert {e.data for e in bbottarget.whitelist} == {"evilcorp.net:443", "http://evilcorp.net:8080/"}
-    assert {e.data for e in bbottarget.blacklist} == {"http://evilcorp.org:8080/", "evilcorp.org:443"}
+        assert list(saudittarget) == ["http://evilcorp.com:8080/"]
+    assert {e.data for e in saudittarget.seeds} == {"http://evilcorp.com:8080/"}
+    assert {e.data for e in saudittarget.whitelist} == {"evilcorp.net:443", "http://evilcorp.net:8080/"}
+    assert {e.data for e in saudittarget.blacklist} == {"http://evilcorp.org:8080/", "evilcorp.org:443"}
 
     # test org stub as target
     for org_target in ("ORG:evilcorp", "ORG_STUB:evilcorp"):
-        scan = bbot_scanner(org_target)
+        scan = saudit_scanner(org_target)
         events = [e async for e in scan.async_start()]
         assert len(events) == 3
         assert {e.type for e in events} == {"SCAN", "ORG_STUB"}
 
     # test username as target
     for user_target in ("USER:vancerefrigeration", "USERNAME:vancerefrigeration"):
-        scan = bbot_scanner(user_target)
+        scan = saudit_scanner(user_target)
         events = [e async for e in scan.async_start()]
         assert len(events) == 3
         assert {e.type for e in events} == {"SCAN", "USERNAME"}
 
     # users + orgs + domains
-    scan = bbot_scanner("USER:evilcorp", "ORG:evilcorp", "evilcorp.com")
+    scan = saudit_scanner("USER:evilcorp", "ORG:evilcorp", "evilcorp.com")
     await scan.helpers.dns._mock_dns(
         {
             "evilcorp.com": {"A": ["1.2.3.4"]},
@@ -257,39 +257,39 @@ async def test_target_basic(bbot_scanner):
     assert {e.type for e in events} == {"SCAN", "USERNAME", "ORG_STUB", "DNS_NAME"}
 
     # verify hash values
-    bbottarget = BBOTTarget(
+    saudittarget = SAUDITTarget(
         "1.2.3.0/24",
         "http://www.evilcorp.net",
         "bob@fdsa.evilcorp.net",
         whitelist=["evilcorp.com", "bob@www.evilcorp.com", "evilcorp.net"],
         blacklist=["1.2.3.4", "4.3.2.1/24", "http://1.2.3.4", "bob@asdf.evilcorp.net"],
     )
-    assert {e.data for e in bbottarget.seeds.event_seeds} == {
+    assert {e.data for e in saudittarget.seeds.event_seeds} == {
         "1.2.3.0/24",
         "http://www.evilcorp.net/",
         "bob@fdsa.evilcorp.net",
     }
-    assert {e.data for e in bbottarget.whitelist.event_seeds} == {
+    assert {e.data for e in saudittarget.whitelist.event_seeds} == {
         "evilcorp.com",
         "evilcorp.net",
         "bob@www.evilcorp.com",
     }
-    assert {e.data for e in bbottarget.blacklist.event_seeds} == {
+    assert {e.data for e in saudittarget.blacklist.event_seeds} == {
         "1.2.3.4",
         "4.3.2.0/24",
         "http://1.2.3.4/",
         "bob@asdf.evilcorp.net",
     }
-    assert set(bbottarget.seeds.hosts) == {ip_network("1.2.3.0/24"), "www.evilcorp.net", "fdsa.evilcorp.net"}
-    assert set(bbottarget.whitelist.hosts) == {"evilcorp.com", "evilcorp.net"}
-    assert set(bbottarget.blacklist.hosts) == {ip_network("1.2.3.4/32"), ip_network("4.3.2.0/24"), "asdf.evilcorp.net"}
-    assert bbottarget.hash == b"\xb3iU\xa8#\x8aq\x84/\xc5\xf2;\x11\x11\x0c&\xea\x07\xd4Q"
-    assert bbottarget.scope_hash == b"f\xe1\x01c^3\xf5\xd24B\x87P\xa0Glq0p3J"
-    assert bbottarget.seeds.hash == b"V\n\xf5\x1d\x1f=i\xbc\\\x15o\xc2p\xb2\x84\x97\xfeR\xde\xc1"
-    assert bbottarget.whitelist.hash == b"\x8e\xd0\xa76\x8em4c\x0e\x1c\xfdA\x9d*sv}\xeb\xc4\xc4"
-    assert bbottarget.blacklist.hash == b'\xf7\xaf\xa1\xda4"C:\x13\xf42\xc3,\xc3\xa9\x9f\x15\x15n\\'
+    assert set(saudittarget.seeds.hosts) == {ip_network("1.2.3.0/24"), "www.evilcorp.net", "fdsa.evilcorp.net"}
+    assert set(saudittarget.whitelist.hosts) == {"evilcorp.com", "evilcorp.net"}
+    assert set(saudittarget.blacklist.hosts) == {ip_network("1.2.3.4/32"), ip_network("4.3.2.0/24"), "asdf.evilcorp.net"}
+    assert saudittarget.hash == b"\xb3iU\xa8#\x8aq\x84/\xc5\xf2;\x11\x11\x0c&\xea\x07\xd4Q"
+    assert saudittarget.scope_hash == b"f\xe1\x01c^3\xf5\xd24B\x87P\xa0Glq0p3J"
+    assert saudittarget.seeds.hash == b"V\n\xf5\x1d\x1f=i\xbc\\\x15o\xc2p\xb2\x84\x97\xfeR\xde\xc1"
+    assert saudittarget.whitelist.hash == b"\x8e\xd0\xa76\x8em4c\x0e\x1c\xfdA\x9d*sv}\xeb\xc4\xc4"
+    assert saudittarget.blacklist.hash == b'\xf7\xaf\xa1\xda4"C:\x13\xf42\xc3,\xc3\xa9\x9f\x15\x15n\\'
 
-    scan = bbot_scanner(
+    scan = saudit_scanner(
         "http://www.evilcorp.net",
         "1.2.3.0/24",
         "bob@fdsa.evilcorp.net",
@@ -347,7 +347,7 @@ async def test_target_basic(bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_blacklist_regex(bbot_scanner, bbot_httpserver):
+async def test_blacklist_regex(saudit_scanner, saudit_httpserver):
     from saudit.scanner.target import ScanBlacklist
 
     blacklist = ScanBlacklist("evilcorp.com")
@@ -379,17 +379,17 @@ async def test_blacklist_regex(bbot_scanner, bbot_httpserver):
     assert "http://test.com/asdf/123456.aspx#asdf" in blacklist
     assert "http://test.com/asdf/123456.aspx" in blacklist
 
-    bbot_httpserver.expect_request(uri="/").respond_with_data(
+    saudit_httpserver.expect_request(uri="/").respond_with_data(
         """
         <a href='http://127.0.0.1:8888/asdfevil333asdf'/>
         <a href='http://127.0.0.1:8888/logout.aspx'/>
     """
     )
-    bbot_httpserver.expect_request(uri="/asdfevilasdf").respond_with_data("")
-    bbot_httpserver.expect_request(uri="/logout.aspx").respond_with_data("")
+    saudit_httpserver.expect_request(uri="/asdfevilasdf").respond_with_data("")
+    saudit_httpserver.expect_request(uri="/logout.aspx").respond_with_data("")
 
     # make sure URL is detected normally
-    scan = bbot_scanner("http://127.0.0.1:8888/", presets=["spider"], config={"excavate": True}, debug=True)
+    scan = saudit_scanner("http://127.0.0.1:8888/", presets=["spider"], config={"excavate": True}, debug=True)
     assert {r.pattern for r in scan.target.blacklist.blacklist_regexes} == {r"/.*(sign|log)[_-]?out"}
     events = [e async for e in scan.async_start()]
     urls = [e.data for e in events if e.type == "URL"]
@@ -397,7 +397,7 @@ async def test_blacklist_regex(bbot_scanner, bbot_httpserver):
     assert set(urls) == {"http://127.0.0.1:8888/", "http://127.0.0.1:8888/asdfevil333asdf"}
 
     # same scan again but with blacklist regex
-    scan = bbot_scanner(
+    scan = saudit_scanner(
         "http://127.0.0.1:8888/",
         blacklist=[r"RE:evil[0-9]{3}"],
         presets=["spider"],

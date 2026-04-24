@@ -299,7 +299,7 @@ def _prepare_command_kwargs(self, command, kwargs):
     if sudo and os.geteuid() != 0:
         self.depsinstaller.ensure_root()
         env["SUDO_ASKPASS"] = str((self.tools_dir / self.depsinstaller.askpass_filename).resolve())
-        env["BBOT_SUDO_PASS"] = self.depsinstaller.encrypted_sudo_pw
+        env["SAUDIT_SUDO_PASS"] = self.depsinstaller.encrypted_sudo_pw
         kwargs["env"] = env
 
         PATH = os.environ.get("PATH", "")

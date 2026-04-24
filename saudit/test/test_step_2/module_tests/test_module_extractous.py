@@ -2,7 +2,7 @@ import base64
 from pathlib import Path
 from .base import ModuleTestBase
 
-from ...bbot_fixtures import *
+from ...saudit_fixtures import *
 
 
 class TestExtractous(ModuleTestBase):
@@ -15,7 +15,7 @@ class TestExtractous(ModuleTestBase):
         },
         "modules": {
             "filedownload": {
-                "output_folder": bbot_test_dir / "filedownload",
+                "output_folder": saudit_test_dir / "filedownload",
             },
         },
     }

@@ -43,8 +43,8 @@ class retirejs(BaseModule):
         {
             "name": "Download Node.js binary (Linux x64)",
             "get_url": {
-                "url": "https://nodejs.org/dist/v#{BBOT_MODULES_RETIREJS_NODE_VERSION}/node-v#{BBOT_MODULES_RETIREJS_NODE_VERSION}-linux-x64.tar.xz",
-                "dest": "#{BBOT_TEMP}/node-v#{BBOT_MODULES_RETIREJS_NODE_VERSION}-linux-x64.tar.xz",
+                "url": "https://nodejs.org/dist/v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-linux-x64.tar.xz",
+                "dest": "#{SAUDIT_TEMP}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-linux-x64.tar.xz",
                 "mode": "0644",
             },
         },
@@ -52,58 +52,58 @@ class retirejs(BaseModule):
         {
             "name": "Extract Node.js binary (x64)",
             "unarchive": {
-                "src": "#{BBOT_TEMP}/node-v#{BBOT_MODULES_RETIREJS_NODE_VERSION}-linux-x64.tar.xz",
-                "dest": "#{BBOT_TOOLS}",
+                "src": "#{SAUDIT_TEMP}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-linux-x64.tar.xz",
+                "dest": "#{SAUDIT_TOOLS}",
                 "remote_src": True,
             },
         },
         # Remove existing node directory if it exists
         {
             "name": "Remove existing node directory",
-            "file": {"path": "#{BBOT_TOOLS}/node", "state": "absent"},
+            "file": {"path": "#{SAUDIT_TOOLS}/node", "state": "absent"},
         },
         # Rename extracted directory to 'node' (x64)
         {
             "name": "Rename Node.js directory (x64)",
-            "command": "mv #{BBOT_TOOLS}/node-v#{BBOT_MODULES_RETIREJS_NODE_VERSION}-linux-x64 #{BBOT_TOOLS}/node",
+            "command": "mv #{SAUDIT_TOOLS}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-linux-x64 #{SAUDIT_TOOLS}/node",
         },
         # Set permissions on entire Node.js bin directory
         {
             "name": "Set permissions on Node.js bin directory",
-            "file": {"path": "#{BBOT_TOOLS}/node/bin", "mode": "0755", "recurse": "yes"},
+            "file": {"path": "#{SAUDIT_TOOLS}/node/bin", "mode": "0755", "recurse": "yes"},
         },
         # Make Node.js binary executable
         {
             "name": "Make Node.js binary executable",
-            "file": {"path": "#{BBOT_TOOLS}/node/bin/node", "mode": "0755"},
+            "file": {"path": "#{SAUDIT_TOOLS}/node/bin/node", "mode": "0755"},
         },
         # Remove existing retirejs directory if it exists
         {
             "name": "Remove existing retirejs directory",
-            "file": {"path": "#{BBOT_TOOLS}/retirejs", "state": "absent"},
+            "file": {"path": "#{SAUDIT_TOOLS}/retirejs", "state": "absent"},
         },
         # Create retire.js local directory
         {
-            "name": "Create retire.js directory in BBOT_TOOLS",
-            "file": {"path": "#{BBOT_TOOLS}/retirejs", "state": "directory", "mode": "0755"},
+            "name": "Create retire.js directory in SAUDIT_TOOLS",
+            "file": {"path": "#{SAUDIT_TOOLS}/retirejs", "state": "directory", "mode": "0755"},
         },
         # Install retire.js locally using local Node.js
         {
             "name": "Install retire.js locally",
-            "shell": "cd #{BBOT_TOOLS}/retirejs && #{BBOT_TOOLS}/node/bin/node #{BBOT_TOOLS}/node/lib/node_modules/npm/bin/npm-cli.js install --prefix . retire@#{BBOT_MODULES_RETIREJS_VERSION} --no-fund --no-audit --silent --no-optional",
-            "args": {"creates": "#{BBOT_TOOLS}/retirejs/node_modules/.bin/retire"},
+            "shell": "cd #{SAUDIT_TOOLS}/retirejs && #{SAUDIT_TOOLS}/node/bin/node #{SAUDIT_TOOLS}/node/lib/node_modules/npm/bin/npm-cli.js install --prefix . retire@#{SAUDIT_MODULES_RETIREJS_VERSION} --no-fund --no-audit --silent --no-optional",
+            "args": {"creates": "#{SAUDIT_TOOLS}/retirejs/node_modules/.bin/retire"},
             "timeout": 600,
             "ignore_errors": False,
         },
         # Make retire script executable
         {
             "name": "Make retire script executable",
-            "file": {"path": "#{BBOT_TOOLS}/retirejs/node_modules/.bin/retire", "mode": "0755"},
+            "file": {"path": "#{SAUDIT_TOOLS}/retirejs/node_modules/.bin/retire", "mode": "0755"},
         },
         # Create retire cache directory
         {
             "name": "Create retire cache directory",
-            "file": {"path": "#{BBOT_CACHE}/retire_cache", "state": "directory", "mode": "0755"},
+            "file": {"path": "#{SAUDIT_CACHE}/retire_cache", "state": "directory", "mode": "0755"},
         },
     ]
 

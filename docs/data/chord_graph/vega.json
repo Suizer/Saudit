@@ -1,6 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "description": "BBOT",
+  "description": "Saudit",
   "padding": 20,
   "width": 800,
   "height": 800,

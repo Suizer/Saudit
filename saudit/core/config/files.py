@@ -9,7 +9,7 @@ from ...errors import ConfigLoadError
 saudit_code_dir = Path(__file__).parent.parent.parent
 
 
-class BBOTConfigFiles:
+class SAUDITConfigFiles:
     config_dir = (Path.home() / ".config" / "saudit").resolve()
     defaults_filename = (saudit_code_dir / "defaults.yml").resolve()
     config_filename = (config_dir / "saudit.yml").resolve()

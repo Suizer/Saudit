@@ -50,7 +50,7 @@ class medusa(BaseModule):
             "name": "Get medusa repo",
             "git": {
                 "repo": "https://github.com/jmk-foofus/medusa",
-                "dest": "#{BBOT_TEMP}/medusa/gitrepo",
+                "dest": "#{SAUDIT_TEMP}/medusa/gitrepo",
                 "version": "2.3",  # Newest stable, 2025-05-15
             },
         },
@@ -58,44 +58,44 @@ class medusa(BaseModule):
             # The git repo will be copied because during build, files and subfolders get created. That prevents the Ansible git module to cache the repo.
             "name": "Copy medusa repo",
             "copy": {
-                "src": "#{BBOT_TEMP}/medusa/gitrepo/",
-                "dest": "#{BBOT_TEMP}/medusa/workdir/",
+                "src": "#{SAUDIT_TEMP}/medusa/gitrepo/",
+                "dest": "#{SAUDIT_TEMP}/medusa/workdir/",
             },
         },
         {
             "name": "Build medusa: autoreconf",
             "command": {
-                "chdir": "#{BBOT_TEMP}/medusa/workdir",
+                "chdir": "#{SAUDIT_TEMP}/medusa/workdir",
                 "cmd": "autoreconf -f -i",
             },
         },
         {
             "name": "Build medusa: configure",
             "command": {
-                "chdir": "#{BBOT_TEMP}/medusa/workdir",
-                "cmd": "./configure --prefix=#{BBOT_TEMP}/medusa/build",
+                "chdir": "#{SAUDIT_TEMP}/medusa/workdir",
+                "cmd": "./configure --prefix=#{SAUDIT_TEMP}/medusa/build",
             },
         },
         {
             "name": "Build medusa: make",
             "command": {
-                "chdir": "#{BBOT_TEMP}/medusa/workdir",
+                "chdir": "#{SAUDIT_TEMP}/medusa/workdir",
                 "cmd": "make",
             },
         },
         {
             "name": "Build medusa: make install",
             "command": {
-                "chdir": "#{BBOT_TEMP}/medusa/workdir",
+                "chdir": "#{SAUDIT_TEMP}/medusa/workdir",
                 "cmd": "make install",
-                "creates": "#{BBOT_TEMP}/medusa/build/bin/medusa",
+                "creates": "#{SAUDIT_TEMP}/medusa/build/bin/medusa",
             },
         },
         {
             "name": "Install medusa",
             "copy": {
-                "src": "#{BBOT_TEMP}/medusa/build/bin/medusa",
-                "dest": "#{BBOT_TOOLS}/",
+                "src": "#{SAUDIT_TEMP}/medusa/build/bin/medusa",
+                "dest": "#{SAUDIT_TOOLS}/",
                 "mode": "u+x,g+x,o+x",
             },
         },

@@ -1,9 +1,9 @@
-from ..bbot_fixtures import *
+from ..saudit_fixtures import *
 
 
 @pytest.mark.asyncio
 async def test_python_api():
-    from bbot import Scanner
+    from saudit import Scanner
 
     # make sure events are properly yielded
     scan1 = Scanner("127.0.0.1")
@@ -41,9 +41,9 @@ async def test_python_api():
     assert "scan_logging_test" in open(debug_log).read()
 
     # make sure config loads properly
-    bbot_home = "/tmp/.bbot_python_api_test"
-    Scanner("127.0.0.1", config={"home": bbot_home})
-    assert os.environ["BBOT_TOOLS"] == str(Path(bbot_home) / "tools")
+    saudit_home = "/tmp/.saudit_python_api_test"
+    Scanner("127.0.0.1", config={"home": saudit_home})
+    assert os.environ["SAUDIT_TOOLS"] == str(Path(saudit_home) / "tools")
 
     # output modules override
     scan4 = Scanner()
@@ -76,9 +76,9 @@ def test_python_api_sync():
     out_file = scan2.helpers.scans_dir / "python_api_test" / "output.json"
     assert list(scan2.helpers.read_file(out_file))
     # make sure config loads properly
-    bbot_home = "/tmp/.bbot_python_api_test"
-    Scanner("127.0.0.1", config={"home": bbot_home})
-    assert os.environ["BBOT_TOOLS"] == str(Path(bbot_home) / "tools")
+    saudit_home = "/tmp/.saudit_python_api_test"
+    Scanner("127.0.0.1", config={"home": saudit_home})
+    assert os.environ["SAUDIT_TOOLS"] == str(Path(saudit_home) / "tools")
 
 
 def test_python_api_validation():

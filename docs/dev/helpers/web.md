@@ -8,7 +8,7 @@ Note that these helpers can be invoked directly from `self.helpers`, e.g.:
 self.helpers.request("https://www.evilcorp.com")
 ```
 
-::: bbot.core.helpers.web
+::: saudit.core.helpers.web
     options:
       show_root_heading: false
       members:

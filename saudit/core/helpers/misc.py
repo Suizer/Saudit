@@ -20,7 +20,7 @@ from urllib.parse import urlparse, quote, unquote, urlunparse, urljoin  # noqa F
 from .git import *  # noqa F401
 from .url import *  # noqa F401
 from ... import errors
-from . import regexes as bbot_regexes
+from . import regexes as saudit_regexes
 from .names_generator import random_name, names, adjectives  # noqa F401
 
 log = logging.getLogger("saudit.core.helpers.misc")
@@ -116,7 +116,7 @@ def is_ptr(d):
         >>> is_ptr("www2.evilcorp.com")
         False
     """
-    return bool(bbot_regexes.ptr_regex.search(str(d)))
+    return bool(saudit_regexes.ptr_regex.search(str(d)))
 
 
 def is_url(u):
@@ -140,7 +140,7 @@ def is_url(u):
         False
     """
     u = str(u)
-    for r in bbot_regexes.event_type_regexes["URL"]:
+    for r in saudit_regexes.event_type_regexes["URL"]:
         if r.match(u):
             return True
     return False
@@ -223,7 +223,7 @@ def split_host_port(d):
         return make_ip_type(d), port
 
     # if not an IP address, try to parse as a host:port
-    match = bbot_regexes.split_host_port_regex.match(d)
+    match = saudit_regexes.split_host_port_regex.match(d)
     if match is None:
         raise ValueError(f'split_host_port() failed to parse "{d}"')
     scheme = match.group("scheme")
@@ -231,7 +231,7 @@ def split_host_port(d):
     if netloc is None:
         raise ValueError(f'split_host_port() failed to parse "{d}"')
 
-    match = bbot_regexes.extract_open_port_regex.match(netloc)
+    match = saudit_regexes.extract_open_port_regex.match(netloc)
     if match is None:
         raise ValueError(f'split_host_port() failed to parse netloc "{netloc}" (original value: {d})')
 
@@ -586,7 +586,7 @@ def is_dns_name(d):
     if is_ip(d):
         return False
     d = smart_decode(d)
-    if bbot_regexes.dns_name_validation_regex.match(d):
+    if saudit_regexes.dns_name_validation_regex.match(d):
         return True
     return False
 
@@ -973,7 +973,7 @@ def extract_words(data, acronyms=True, wordninja=True, model=None, max_length=10
     import wordninja as _wordninja
 
     if word_regexes is None:
-        word_regexes = bbot_regexes.word_regexes
+        word_regexes = saudit_regexes.word_regexes
     words = set()
     data = smart_decode(data)
     for r in word_regexes:
@@ -1616,7 +1616,7 @@ def latest_mtime(d):
         float: The latest modified time in Unix timestamp format.
 
     Examples:
-        >>> latest_mtime("~/.bbot/scans/mushy_susan")
+        >>> latest_mtime("~/.saudit/scans/mushy_susan")
         1659016928.2848816
     """
     d = Path(d).resolve()
@@ -1683,7 +1683,7 @@ def clean_old(d, keep=10, filter=lambda x: True, key=latest_mtime, reverse=True,
         raise_error (bool): Whether to raise an error if directory deletion fails. Defaults to False.
 
     Examples:
-        >>> clean_old("~/.bbot/scans", filter=lambda x: x.is_dir() and scan_name_regex.match(x.name))
+        >>> clean_old("~/.saudit/scans", filter=lambda x: x.is_dir() and scan_name_regex.match(x.name))
     """
     d = Path(d)
     if not d.is_dir():
@@ -1719,7 +1719,7 @@ def extract_emails(s):
         >>> list(extract_emails("Contact us at info@evilcorp.com and support@evilcorp.com"))
         ['info@evilcorp.com', 'support@evilcorp.com']
     """
-    for email in bbot_regexes.email_regex.findall(smart_decode(s)):
+    for email in saudit_regexes.email_regex.findall(smart_decode(s)):
         yield email.lower()
 
 
@@ -1755,7 +1755,7 @@ def extract_host(s):
         )
     """
     s = smart_decode(s)
-    match = bbot_regexes.extract_host_regex.search(s)
+    match = saudit_regexes.extract_host_regex.search(s)
 
     if match:
         hostname = match.group(1)
@@ -1899,7 +1899,7 @@ def make_table(rows, header, **kwargs):
     # fix IndexError: list index out of range
     if not rows:
         rows = [[]]
-    tablefmt = os.environ.get("BBOT_TABLE_FORMAT", None)
+    tablefmt = os.environ.get("SAUDIT_TABLE_FORMAT", None)
     defaults = {"tablefmt": "grid", "disable_numparse": True, "maxcolwidths": None}
     if tablefmt is None:
         defaults.update({"maxcolwidths": 40})
@@ -2859,7 +2859,7 @@ def get_python_constraints():
 
     from importlib.metadata import distribution, PackageNotFoundError
 
-    for pkg_name in ("saudit", "bbot"):
+    for pkg_name in ("saudit", "saudit"):
         try:
             dist = distribution(pkg_name)
             return [clean_requirement(r) for r in (dist.requires or [])]

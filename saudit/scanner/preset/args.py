@@ -16,7 +16,7 @@ universal_module_options = {
 }
 
 
-class BBOTArgs:
+class SAUDITArgs:
     # module config options to exclude from validation
     exclude_from_validation = re.compile(
         r".*modules\.[a-z0-9_]+\.(?:" + "|".join(universal_module_options.keys()) + ")$"
@@ -26,28 +26,28 @@ class BBOTArgs:
         (
             "Subdomains",
             "Perform a full subdomain enumeration on evilcorp.com",
-            "bbot -t evilcorp.com -p subdomain-enum",
+            "saudit -t evilcorp.com -p subdomain-enum",
         ),
         (
             "Subdomains (passive only)",
             "Perform a passive-only subdomain enumeration on evilcorp.com",
-            "bbot -t evilcorp.com -p subdomain-enum -rf passive",
+            "saudit -t evilcorp.com -p subdomain-enum -rf passive",
         ),
 
         (
             "Subdomains + basic web scan",
             "A basic web scan includes robots.txt, storage buckets, IIS shortnames, and other non-intrusive web modules",
-            "bbot -t evilcorp.com -p subdomain-enum web-basic",
+            "saudit -t evilcorp.com -p subdomain-enum web-basic",
         ),
         (
             "Web spider",
             "Crawl www.evilcorp.com up to a max depth of 2, automatically extracting emails, secrets, etc.",
-            "bbot -t www.evilcorp.com -p spider -c web.spider_distance=2 web.spider_depth=2",
+            "saudit -t www.evilcorp.com -p spider -c web.spider_distance=2 web.spider_depth=2",
         ),
         (
             "Everything everywhere all at once",
             "Subdomains, emails, cloud buckets, port scan, basic web, web screenshots, nuclei",
-            "bbot -t evilcorp.com -p kitchen-sink",
+            "saudit -t evilcorp.com -p kitchen-sink",
         ),
     ]
 
@@ -55,27 +55,27 @@ class BBOTArgs:
         (
             "List modules",
             "",
-            "bbot -l",
+            "saudit -l",
         ),
         (
             "List output modules",
             "",
-            "bbot -lo",
+            "saudit -lo",
         ),
         (
             "List presets",
             "",
-            "bbot -lp",
+            "saudit -lp",
         ),
         (
             "List flags",
             "",
-            "bbot -lf",
+            "saudit -lf",
         ),
         (
             "Show help for a specific module",
             "",
-            "bbot -mh <module_name>",
+            "saudit -mh <module_name>",
         ),
     ]
 
@@ -113,10 +113,10 @@ class BBOTArgs:
         for preset_arg in self.parsed.preset:
             try:
                 args_preset.include_preset(preset_arg)
-            except BBOTArgumentError:
+            except SAUDITArgumentError:
                 raise
             except Exception as e:
-                raise BBOTArgumentError(f'Error parsing preset "{preset_arg}": {e}')
+                raise SAUDITArgumentError(f'Error parsing preset "{preset_arg}": {e}')
 
         # then we set verbosity levels (so if the user enables -d they can see debug output)
         if self.parsed.silent:
@@ -202,7 +202,7 @@ class BBOTArgs:
                 # if that fails, try to parse as key=value syntax
                 args_preset.core.merge_custom(OmegaConf.from_cli([config_arg]))
             except Exception as e:
-                raise BBOTArgumentError(f'Error parsing command-line config option: "{config_arg}": {e}')
+                raise SAUDITArgumentError(f'Error parsing command-line config option: "{config_arg}": {e}')
 
         # strict scope
         if self.parsed.strict_scope:
@@ -242,7 +242,7 @@ class BBOTArgs:
             "-p",
             "--preset",
             nargs="*",
-            help="Enable BBOT preset(s)",
+            help="Enable SAUDIT preset(s)",
             metavar="PRESET",
             default=[],
         )
@@ -374,7 +374,7 @@ class BBOTArgs:
         g2.add_argument("--install-all-deps", action="store_true", help="Install dependencies for all modules")
 
         misc = p.add_argument_group(title="Misc")
-        misc.add_argument("--version", action="store_true", help="show BBOT version and exit")
+        misc.add_argument("--version", action="store_true", help="show SAUDIT version and exit")
         misc.add_argument("--proxy", help="Use this proxy for all HTTP requests", metavar="HTTP_PROXY")
         misc.add_argument(
             "-H",

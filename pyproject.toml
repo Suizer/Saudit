@@ -1,14 +1,14 @@
 [tool.poetry]
 name = "saudit"
 version = "1.0.0"
-description = "SuizerAudit — autonomous web reconnaissance tool."
+description = "Saudit — autonomous web reconnaissance tool."
 authors = [
     "Suizer <matias.fajardom@gmail.com>",
 ]
 license = "GPL-3.0"
 readme = "README.md"
-repository = "https://github.com/Suizer/SuizerAudit"
-homepage = "https://github.com/Suizer/SuizerAudit"
+repository = "https://github.com/Suizer/Saudit"
+homepage = "https://github.com/Suizer/Saudit"
 keywords = ["python", "cli", "automation", "recon", "pentesting", "security-tools", "web-recon", "bugbounty"]
 classifiers = [
     "Operating System :: POSIX :: Linux",
@@ -18,7 +18,7 @@ classifiers = [
 packages = [{include = "saudit"}]
 
 [tool.poetry.urls]
-"GitHub" = "https://github.com/Suizer/SuizerAudit"
+"GitHub" = "https://github.com/Suizer/Saudit"
 
 [tool.poetry.scripts]
 saudit = 'saudit.cli:main'
@@ -90,7 +90,7 @@ mike = "^2.1.3"
 
 [tool.pytest.ini_options]
 env = [
-    "BBOT_TESTING = True",
+    "SAUDIT_TESTING = True",
 ]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"

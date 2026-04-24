@@ -48,12 +48,12 @@ log = logging.getLogger("saudit.core.event")
 
 class BaseEvent:
     """
-    Represents a piece of data discovered during a BBOT scan.
+    Represents a piece of data discovered during a SAUDIT scan.
 
     An Event contains various attributes that provide metadata about the discovered data.
     The attributes assist in understanding the context of the Event and facilitate further
     filtering and querying. Events are integral in the construction of visual graphs and
-    are the cornerstone of data exchange between BBOT modules.
+    are the cornerstone of data exchange between SAUDIT modules.
 
     You can inherit from this class when creating a new event type. However, it's not always
     necessary. You only need to subclass if you want to layer additional functionality on
@@ -195,7 +195,7 @@ class BaseEvent:
             event_type (str, optional): Type of the event, e.g., 'IP_ADDRESS'.
             parent (BaseEvent, optional): Parent event that led to this event's discovery. Defaults to None.
             module (str, optional): Module that discovered the event. Defaults to None.
-            scan (Scan, optional): BBOT Scan object. Required unless _dummy is True. Defaults to None.
+            scan (Scan, optional): SAUDIT Scan object. Required unless _dummy is True. Defaults to None.
             tags (list of str, optional): Descriptive tags for the event. Defaults to None.
             confidence (int, optional): Confidence level for the event, on a scale of 1-100. Defaults to 100.
             timestamp (datetime, optional): Time of event discovery. Defaults to current UTC time.
@@ -1779,7 +1779,7 @@ def update_event(
         parent (BaseEvent, optional): New parent event.
         context (str, optional): Discovery context to set.
         module (str or BaseModule, optional): Module that discovered the event.
-        scan (Scan, optional): BBOT Scan object associated with the event.
+        scan (Scan, optional): SAUDIT Scan object associated with the event.
         tags (Union[str, List[str]], optional): Tags to merge into the event.
         internal (Any, optional): Marks the event as internal if True.
 
@@ -1835,8 +1835,8 @@ def make_event(
         parent (BaseEvent, optional): Parent event leading to this event's discovery.
         context (str, optional): Description of circumstances leading to event's discovery.
         module (str, optional): Module that discovered the event.
-        scan (Scan, optional): BBOT Scan object associated with the event.
-        scans (List[Scan], optional): Multiple BBOT Scan objects, primarily used for unserialization.
+        scan (Scan, optional): SAUDIT Scan object associated with the event.
+        scans (List[Scan], optional): Multiple SAUDIT Scan objects, primarily used for unserialization.
         tags (Union[str, List[str]], optional): Descriptive tags for the event, as a list or a single string.
         confidence (int, optional): Confidence level for the event, on a scale of 1-100. Defaults to 100.
         dummy (bool, optional): Disables data validations if set to True. Defaults to False.

@@ -2,9 +2,9 @@ DEP_FFUF = [
     {
         "name": "Download ffuf",
         "unarchive": {
-            "src": "https://github.com/ffuf/ffuf/releases/download/v#{BBOT_DEPS_FFUF_VERSION}/ffuf_#{BBOT_DEPS_FFUF_VERSION}_#{BBOT_OS}_#{BBOT_CPU_ARCH_GOLANG}.tar.gz",
+            "src": "https://github.com/ffuf/ffuf/releases/download/v#{SAUDIT_DEPS_FFUF_VERSION}/ffuf_#{SAUDIT_DEPS_FFUF_VERSION}_#{SAUDIT_OS}_#{SAUDIT_CPU_ARCH_GOLANG}.tar.gz",
             "include": "ffuf",
-            "dest": "#{BBOT_TOOLS}",
+            "dest": "#{SAUDIT_TOOLS}",
             "remote_src": True,
         },
     }
@@ -45,28 +45,28 @@ DEP_MASSDNS = [
         "name": "Download massdns source code",
         "git": {
             "repo": "https://github.com/blechschmidt/massdns.git",
-            "dest": "#{BBOT_TEMP}/massdns",
+            "dest": "#{SAUDIT_TEMP}/massdns",
             "single_branch": True,
             "version": "master",
         },
     },
     {
         "name": "Build massdns (Linux)",
-        "command": {"chdir": "#{BBOT_TEMP}/massdns", "cmd": "make", "creates": "#{BBOT_TEMP}/massdns/bin/massdns"},
+        "command": {"chdir": "#{SAUDIT_TEMP}/massdns", "cmd": "make", "creates": "#{SAUDIT_TEMP}/massdns/bin/massdns"},
         "when": "ansible_facts['system'] == 'Linux'",
     },
     {
         "name": "Build massdns (non-Linux)",
         "command": {
-            "chdir": "#{BBOT_TEMP}/massdns",
+            "chdir": "#{SAUDIT_TEMP}/massdns",
             "cmd": "make nolinux",
-            "creates": "#{BBOT_TEMP}/massdns/bin/massdns",
+            "creates": "#{SAUDIT_TEMP}/massdns/bin/massdns",
         },
         "when": "ansible_facts['system'] != 'Linux'",
     },
     {
         "name": "Install massdns",
-        "copy": {"src": "#{BBOT_TEMP}/massdns/bin/massdns", "dest": "#{BBOT_TOOLS}/", "mode": "u+x,g+x,o+x"},
+        "copy": {"src": "#{SAUDIT_TEMP}/massdns/bin/massdns", "dest": "#{SAUDIT_TOOLS}/", "mode": "u+x,g+x,o+x"},
     },
 ]
 
@@ -131,8 +131,8 @@ DEP_CHROMIUM = [
         "unarchive": {
             "src": "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F{{ chromium_version.content }}%2Fchrome-linux.zip?alt=media",
             "remote_src": True,
-            "dest": "#{BBOT_TOOLS}",
-            "creates": "#{BBOT_TOOLS}/chrome-linux",
+            "dest": "#{SAUDIT_TOOLS}",
+            "creates": "#{SAUDIT_TOOLS}/chrome-linux",
         },
         "when": "ansible_facts['os_family'] == 'Debian'",
         "ignore_errors": True,
@@ -142,8 +142,8 @@ DEP_CHROMIUM = [
         "unarchive": {
             "src": "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Mac%2F{{ chromium_version_darwin_x86_64.content }}%2Fchrome-mac.zip?alt=media",
             "remote_src": True,
-            "dest": "#{BBOT_TOOLS}",
-            "creates": "#{BBOT_TOOLS}/chrome-mac",
+            "dest": "#{SAUDIT_TOOLS}",
+            "creates": "#{SAUDIT_TOOLS}/chrome-mac",
         },
         "when": "ansible_facts['os_family'] == 'Darwin' and ansible_facts['architecture'] == 'x86_64'",
     },
@@ -152,8 +152,8 @@ DEP_CHROMIUM = [
         "unarchive": {
             "src": "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Mac_Arm%2F{{ chromium_version_darwin_arm64.content }}%2Fchrome-mac.zip?alt=media",
             "remote_src": True,
-            "dest": "#{BBOT_TOOLS}",
-            "creates": "#{BBOT_TOOLS}/chrome-mac",
+            "dest": "#{SAUDIT_TOOLS}",
+            "creates": "#{SAUDIT_TOOLS}/chrome-mac",
         },
         "when": "ansible_facts['os_family'] == 'Darwin' and ansible_facts['architecture'] == 'arm64'",
     },
@@ -161,13 +161,13 @@ DEP_CHROMIUM = [
     # see https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md
     {
         "name": "Chown chrome_sandbox to root:root",
-        "command": {"cmd": "chown -R root:root #{BBOT_TOOLS}/chrome-linux/chrome_sandbox"},
+        "command": {"cmd": "chown -R root:root #{SAUDIT_TOOLS}/chrome-linux/chrome_sandbox"},
         "when": "ansible_facts['os_family'] == 'Debian'",
         "become": True,
     },
     {
         "name": "Chmod chrome_sandbox to 4755",
-        "command": {"cmd": "chmod -R 4755 #{BBOT_TOOLS}/chrome-linux/chrome_sandbox"},
+        "command": {"cmd": "chmod -R 4755 #{SAUDIT_TOOLS}/chrome-linux/chrome_sandbox"},
         "when": "ansible_facts['os_family'] == 'Debian'",
         "become": True,
     },
@@ -192,7 +192,7 @@ DEP_MASSCAN = [
         "name": "Download masscan source code",
         "git": {
             "repo": "https://github.com/robertdavidgraham/masscan.git",
-            "dest": "#{BBOT_TEMP}/masscan",
+            "dest": "#{SAUDIT_TEMP}/masscan",
             "single_branch": True,
             "version": "master",
         },
@@ -200,14 +200,14 @@ DEP_MASSCAN = [
     {
         "name": "Build masscan",
         "command": {
-            "chdir": "#{BBOT_TEMP}/masscan",
+            "chdir": "#{SAUDIT_TEMP}/masscan",
             "cmd": "make -j",
-            "creates": "#{BBOT_TEMP}/masscan/bin/masscan",
+            "creates": "#{SAUDIT_TEMP}/masscan/bin/masscan",
         },
     },
     {
         "name": "Install masscan",
-        "copy": {"src": "#{BBOT_TEMP}/masscan/bin/masscan", "dest": "#{BBOT_TOOLS}/", "mode": "u+x,g+x,o+x"},
+        "copy": {"src": "#{SAUDIT_TEMP}/masscan/bin/masscan", "dest": "#{SAUDIT_TOOLS}/", "mode": "u+x,g+x,o+x"},
     },
 ]
 

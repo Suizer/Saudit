@@ -2,12 +2,12 @@
 
 ## Overview
 
-BBOT integrates with [Nuclei](https://github.com/projectdiscovery/nuclei), an open-source web vulnerability scanner by Project Discovery. This is one of the ways BBOT makes it possible to go from a single target domain/IP all the way to confirmed vulnerabilities, in one scan.
+SAUDIT integrates with [Nuclei](https://github.com/projectdiscovery/nuclei), an open-source web vulnerability scanner by Project Discovery. This is one of the ways SAUDIT makes it possible to go from a single target domain/IP all the way to confirmed vulnerabilities, in one scan.
 
-![Nuclei Killchain](https://github.com/blacklanternsecurity/bbot/assets/24899338/7174c4ba-4a6e-4596-bb89-5a0c5f5abe74)
+![Nuclei Killchain](https://github.com/blacklanternsecurity/saudit/assets/24899338/7174c4ba-4a6e-4596-bb89-5a0c5f5abe74)
 
 
-* The BBOT Nuclei module ingests **[URL]** events and emits events of type **[VULNERABILITY]** or **[FINDING]**
+* The SAUDIT Nuclei module ingests **[URL]** events and emits events of type **[VULNERABILITY]** or **[FINDING]**
 * Vulnerabilities will inherit their severity from the Nuclei templates
 * Nuclei templates of severity INFO will be emitted as **[FINDINGS]**
 
@@ -21,7 +21,7 @@ BBOT integrates with [Nuclei](https://github.com/projectdiscovery/nuclei), an op
 You can specify individual nuclei templates by setting the `modules.nuclei.templates` to their comma-separated filenames:
 
 ```bash
-bbot -m nuclei -c modules.nuclei.templates=http/takeovers/airee-takeover.yaml,http/takeovers/cargo-takeover.yaml
+saudit -m nuclei -c modules.nuclei.templates=http/takeovers/airee-takeover.yaml,http/takeovers/cargo-takeover.yaml
 ```
 
 ...or via the config:
@@ -36,7 +36,7 @@ modules:
 
 The Nuclei module has many configuration options:
 
-<!-- BBOT MODULE OPTIONS NUCLEI -->
+<!-- SAUDIT MODULE OPTIONS NUCLEI -->
 | Config Option                 | Type   | Description                                                                                                                                                                                                                                                                                                                    | Default   |
 |-------------------------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
 | modules.nuclei.batch_size     | int    | Number of targets to send to Nuclei per batch (default 200)                                                                                                                                                                                                                                                                    | 200       |
@@ -53,11 +53,11 @@ The Nuclei module has many configuration options:
 | modules.nuclei.tags           | str    | execute a subset of templates that contain the provided tags                                                                                                                                                                                                                                                                   |           |
 | modules.nuclei.templates      | str    | template or template directory paths to include in the scan                                                                                                                                                                                                                                                                    |           |
 | modules.nuclei.version        | str    | nuclei version                                                                                                                                                                                                                                                                                                                 | 3.7.1     |
-<!-- END BBOT MODULE OPTIONS NUCLEI -->
+<!-- END SAUDIT MODULE OPTIONS NUCLEI -->
 
-Most of these you probably will **NOT** want to change. In particular, we advise against changing the version of Nuclei, as it's possible the latest version won't work right with BBOT.
+Most of these you probably will **NOT** want to change. In particular, we advise against changing the version of Nuclei, as it's possible the latest version won't work right with SAUDIT.
 
-We also do not recommend changing **directory_only** mode. This will cause Nuclei to process every URL. Because BBOT is recursive, this can get very out-of-hand very quickly, depending on which other modules are in use.
+We also do not recommend changing **directory_only** mode. This will cause Nuclei to process every URL. Because SAUDIT is recursive, this can get very out-of-hand very quickly, depending on which other modules are in use.
 
 ### Modes ###
 
@@ -77,7 +77,7 @@ This is equivalent to the Nuclei '-as' scan option. It only use templates that m
 
 #### Budget
 
-Budget mode is unique to BBOT.
+Budget mode is unique to SAUDIT.
 
 For larger scans with thousands of targets, doing a FULL Nuclei scan (1000s of Requests) for each is not realistic.
 As an alternative to the other modes, you can take advantage of Nuclei's "collapsible" template feature.
@@ -89,7 +89,7 @@ For those times when vulnerability scanning isn't the main focus, but you want t
 
 Of course, there is a rapidly diminishing return when you set he value to more than a handful. Eventually, this becomes 1 template per 1 budget value increase. However, in the 1-10 range there is a lot of value. This graphic should give you a rough visual idea of this concept.
 
-![Nuclei Budget Mode](https://github.com/blacklanternsecurity/bbot/assets/24899338/08a3429c-5a73-437b-84de-27c07d85a529)
+![Nuclei Budget Mode](https://github.com/blacklanternsecurity/saudit/assets/24899338/08a3429c-5a73-437b-84de-27c07d85a529)
 
 
 ### Nuclei pass-through options
@@ -98,26 +98,26 @@ Most of the rest of the options are usually passed straight through to Nuclei wh
 
 The **ratelimit** and **concurrency** settings default to the same defaults that Nuclei does. These are relatively sane settings, but if you are in a sensitive environment it can certainly help to turn them down.
 
-**templates** will allow you to set your own templates directory. This can be very useful if you have your own custom templates that you want to use with BBOT.
+**templates** will allow you to set your own templates directory. This can be very useful if you have your own custom templates that you want to use with SAUDIT.
 
 ### Example Commands
 
 ```bash
 # Scan a SINGLE target with a basic port scan and web modules
-bbot -f web-basic -m portscan nuclei --allow-deadly -t app.evilcorp.com
+saudit -f web-basic -m portscan nuclei --allow-deadly -t app.evilcorp.com
 ```
 
 ```bash
 # Scanning MULTIPLE targets
-bbot -f web-basic -m portscan nuclei --allow-deadly -t app1.evilcorp.com app2.evilcorp.com app3.evilcorp.com
+saudit -f web-basic -m portscan nuclei --allow-deadly -t app1.evilcorp.com app2.evilcorp.com app3.evilcorp.com
 ```
 
 ```bash
 # Scanning MULTIPLE targets while performing subdomain enumeration
-bbot -f subdomain-enum web-basic -m portscan nuclei --allow-deadly -t app1.evilcorp.com app2.evilcorp.com app3.evilcorp.com
+saudit -f subdomain-enum web-basic -m portscan nuclei --allow-deadly -t app1.evilcorp.com app2.evilcorp.com app3.evilcorp.com
 ```
 
 ```bash
 # Scanning MULTIPLE targets on a BUDGET
-bbot -f subdomain-enum web-basic -m portscan nuclei --allow-deadly -c modules.nuclei.mode=budget -t app1.evilcorp.com app2.evilcorp.com app3.evilcorp.com
+saudit -f subdomain-enum web-basic -m portscan nuclei --allow-deadly -c modules.nuclei.mode=budget -t app1.evilcorp.com app2.evilcorp.com app3.evilcorp.com
 ```

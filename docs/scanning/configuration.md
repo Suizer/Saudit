@@ -1,8 +1,8 @@
 # Configuration Overview
 
-Normally, [Presets](presets.md) are used to configure a scan. However, there may be cases where you want to change BBOT's global defaults so a certain option is always set, even if it's not specified in a preset.
+Normally, [Presets](presets.md) are used to configure a scan. However, there may be cases where you want to change SAUDIT's global defaults so a certain option is always set, even if it's not specified in a preset.
 
-BBOT has a YAML config at `~/.config/bbot.yml`. This is the first config that BBOT loads, so it's a good place to put default settings like `http_proxy`, `max_threads`, or `http_user_agent`. You can also put any module settings here, including **API keys**.
+SAUDIT has a YAML config at `~/.config/saudit.yml`. This is the first config that SAUDIT loads, so it's a good place to put default settings like `http_proxy`, `max_threads`, or `http_user_agent`. You can also put any module settings here, including **API keys**.
 
 For a list of all possible config options, see:
 
@@ -13,54 +13,54 @@ For examples of common config changes, see [Tips and Tricks](tips_and_tricks.md)
 
 ## Configuration Files
 
-BBOT loads its config from the following files, in this order (last one loaded == highest priority):
+SAUDIT loads its config from the following files, in this order (last one loaded == highest priority):
 
-- `~/.config/bbot/bbot.yml`  <-- Global BBOT config
+- `~/.config/saudit/saudit.yml`  <-- Global SAUDIT config
 - presets (`-p`)             <-- Presets are good for scan-specific settings
 - command line (`-c`)        <-- CLI overrides everything
 
-`bbot.yml` will be automatically created for you when you first run BBOT.
+`saudit.yml` will be automatically created for you when you first run SAUDIT.
 
 ## YAML Config vs Command Line
 
-You can specify config options either via the command line or the config. For example, if you want to proxy your BBOT scan through a local proxy like [Burp Suite](https://portswigger.net/burp), you could either do:
+You can specify config options either via the command line or the config. For example, if you want to proxy your SAUDIT scan through a local proxy like [Burp Suite](https://portswigger.net/burp), you could either do:
 
 ```bash
-# send BBOT traffic through an HTTP proxy
-bbot -t evilcorp.com -c http_proxy=http://127.0.0.1:8080
+# send SAUDIT traffic through an HTTP proxy
+saudit -t evilcorp.com -c http_proxy=http://127.0.0.1:8080
 ```
 
-Or, in `~/.config/bbot/config.yml`:
+Or, in `~/.config/saudit/config.yml`:
 
-```yaml title="~/.bbot/config/bbot.yml"
+```yaml title="~/.saudit/config/saudit.yml"
 http_proxy: http://127.0.0.1:8080
 ```
 
 These two are equivalent.
 
-Config options specified via the command-line take precedence over all others. You can give BBOT a custom config file with `-c myconf.yml`, or individual arguments like this: `-c modules.shodan_dns.api_key=deadbeef`. To display the full and current BBOT config, including any command-line arguments, use `bbot -c`.
+Config options specified via the command-line take precedence over all others. You can give SAUDIT a custom config file with `-c myconf.yml`, or individual arguments like this: `-c modules.shodan_dns.api_key=deadbeef`. To display the full and current SAUDIT config, including any command-line arguments, use `saudit -c`.
 
-Note that placing the following in `bbot.yml`:
-```yaml title="~/.bbot/config/bbot.yml"
+Note that placing the following in `saudit.yml`:
+```yaml title="~/.saudit/config/saudit.yml"
 modules:
   shodan_dns:
     api_key: deadbeef
 ```
 Is the same as:
 ```bash
-bbot -c modules.shodan_dns.api_key=deadbeef
+saudit -c modules.shodan_dns.api_key=deadbeef
 ```
 
 ## Global Config Options
 
 Below is a full list of the config options supported, along with their defaults.
 
-<!-- BBOT DEFAULT CONFIG -->
+<!-- SAUDIT DEFAULT CONFIG -->
 ```yaml title="defaults.yml"
 ### BASIC OPTIONS ###
 
-# BBOT working directory
-home: ~/.bbot
+# SAUDIT working directory
+home: ~/.saudit
 # How many scan results to keep before cleaning up the older ones
 keep_scans: 20
 # Interval for displaying status messages
@@ -108,12 +108,12 @@ dns:
   timeout: 5
   # How many times to retry DNS queries
   retries: 1
-  # Completely disable BBOT's DNS wildcard detection
+  # Completely disable SAUDIT's DNS wildcard detection
   wildcard_disable: False
-  # Disable BBOT's DNS wildcard detection for select domains
+  # Disable SAUDIT's DNS wildcard detection for select domains
   wildcard_ignore: []
   # How many sanity checks to make when verifying wildcard DNS
-  # Increase this value if BBOT's wildcard detection isn't working
+  # Increase this value if SAUDIT's wildcard detection isn't working
   wildcard_tests: 10
   # Skip DNS requests for a certain domain and rdtype after encountering this many timeouts or SERVFAILs
   # This helps prevent faulty DNS servers from hanging up the scan
@@ -184,12 +184,12 @@ deps:
   #  - abort_on_failure (default) - if a module dependency fails to install, abort the scan
   #  - retry_failed - try again to install failed dependencies
   #  - ignore_failed - run the scan regardless of what happens with dependency installation
-  #  - disable - completely disable BBOT's dependency system (you are responsible for installing tools, pip packages, etc.)
+  #  - disable - completely disable SAUDIT's dependency system (you are responsible for installing tools, pip packages, etc.)
   behavior: abort_on_failure
 
 ### ADVANCED OPTIONS ###
 
-# Load BBOT modules from these custom paths
+# Load SAUDIT modules from these custom paths
 module_dirs: []
 
 # maximum runtime in seconds for each module's handle_event() is 60 minutes
@@ -337,7 +337,7 @@ interactsh_token: null
 interactsh_disable: false
 
 ```
-<!-- END BBOT DEFAULT CONFIG -->
+<!-- END SAUDIT DEFAULT CONFIG -->
 
 ## Module Config Options
 
@@ -347,16 +347,16 @@ Many modules accept their own configuration options. These options have the abil
 
 In addition to the stated options for each module, the following universal options are also accepted:
 
-<!-- BBOT UNIVERSAL MODULE OPTIONS -->
+<!-- SAUDIT UNIVERSAL MODULE OPTIONS -->
 **batch_size**: The number of events to process in a single batch (only applies to batch modules)
 **module_threads**: How many event handlers to run in parallel
 **module_timeout**: Max time in seconds to spend handling each event or batch of events
 
-<!-- END BBOT UNIVERSAL MODULE OPTIONS -->
+<!-- END SAUDIT UNIVERSAL MODULE OPTIONS -->
 
 ### Module Options
 
-<!-- BBOT MODULE OPTIONS -->
+<!-- SAUDIT MODULE OPTIONS -->
 | Config Option                                       | Type     | Description                                                                                                                                                                                                                                                                                                                    | Default                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |-----------------------------------------------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | modules.baddns.custom_nameservers                   | list     | Force BadDNS to use a list of custom nameservers                                                                                                                                                                                                                                                                               | []                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -598,17 +598,17 @@ In addition to the stated options for each module, the following universal optio
 | modules.http.username                               | str      | Username (basic auth)                                                                                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | modules.json.output_file                            | str      | Output to file                                                                                                                                                                                                                                                                                                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | modules.json.siem_friendly                          | bool     | Output JSON in a SIEM-friendly format for ingestion into Elastic, Splunk, etc.                                                                                                                                                                                                                                                 | False                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| modules.mysql.database                              | str      | The database name to connect to                                                                                                                                                                                                                                                                                                | bbot                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| modules.mysql.database                              | str      | The database name to connect to                                                                                                                                                                                                                                                                                                | saudit                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | modules.mysql.host                                  | str      | The server running MySQL                                                                                                                                                                                                                                                                                                       | localhost                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| modules.mysql.password                              | str      | The password to connect to MySQL                                                                                                                                                                                                                                                                                               | bbotislife                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| modules.mysql.password                              | str      | The password to connect to MySQL                                                                                                                                                                                                                                                                                               | sauditislife                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | modules.mysql.port                                  | int      | The port to connect to MySQL                                                                                                                                                                                                                                                                                                   | 3306                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | modules.mysql.username                              | str      | The username to connect to MySQL                                                                                                                                                                                                                                                                                               | root                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| modules.neo4j.password                              | str      | Neo4j password                                                                                                                                                                                                                                                                                                                 | bbotislife                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| modules.neo4j.password                              | str      | Neo4j password                                                                                                                                                                                                                                                                                                                 | sauditislife                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | modules.neo4j.uri                                   | str      | Neo4j server + port                                                                                                                                                                                                                                                                                                            | bolt://localhost:7687                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | modules.neo4j.username                              | str      | Neo4j username                                                                                                                                                                                                                                                                                                                 | neo4j                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| modules.postgres.database                           | str      | The database name to connect to                                                                                                                                                                                                                                                                                                | bbot                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| modules.postgres.database                           | str      | The database name to connect to                                                                                                                                                                                                                                                                                                | saudit                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | modules.postgres.host                               | str      | The server running Postgres                                                                                                                                                                                                                                                                                                    | localhost                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| modules.postgres.password                           | str      | The password to connect to Postgres                                                                                                                                                                                                                                                                                            | bbotislife                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| modules.postgres.password                           | str      | The password to connect to Postgres                                                                                                                                                                                                                                                                                            | sauditislife                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | modules.postgres.port                               | int      | The port to connect to Postgres                                                                                                                                                                                                                                                                                                | 5432                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | modules.postgres.username                           | str      | The username to connect to Postgres                                                                                                                                                                                                                                                                                            | postgres                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | modules.slack.event_types                           | list     | Types of events to send                                                                                                                                                                                                                                                                                                        | ['VULNERABILITY', 'FINDING']                                                                                                                                                                                                                                                                                                                                                                                                                            |
@@ -647,4 +647,4 @@ In addition to the stated options for each module, the following universal optio
 | modules.speculate.essential_only                    | bool     | Only enable essential speculate features (no extra discovery)                                                                                                                                                                                                                                                                  | False                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | modules.speculate.max_hosts                         | int      | Max number of IP_RANGE hosts to convert into IP_ADDRESS events                                                                                                                                                                                                                                                                 | 65536                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | modules.speculate.ports                             | str      | The set of ports to speculate on                                                                                                                                                                                                                                                                                               | 80,443                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-<!-- END BBOT MODULE OPTIONS -->
+<!-- END SAUDIT MODULE OPTIONS -->

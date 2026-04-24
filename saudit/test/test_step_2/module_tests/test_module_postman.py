@@ -75,7 +75,7 @@ class TestPostman(ModuleTestBase):
                             "publishertype": "team",
                             "publisherHandle": "blacklanternsecurity",
                             "id": "11498add-357d-4bc5-a008-0a2d44fb8829",
-                            "slug": "bbot-public",
+                            "slug": "saudit-public",
                             "updatedAt": "2024-07-30T11:00:35",
                             "entityType": "workspace",
                             "visibilityStatus": "public",
@@ -84,7 +84,7 @@ class TestPostman(ModuleTestBase):
                             "createdat": "2021-06-15T14:03:51",
                             "forkLabel": "",
                             "publisherName": "blacklanternsecurity",
-                            "name": "BlackLanternSecurity BBOT [Public]",
+                            "name": "BlackLanternSecurity SAUDIT [Public]",
                             "dependencyCount": 7,
                             "collectionCount": 6,
                             "warehouse__updated_at": "2024-07-30 11:00:00",
@@ -112,7 +112,7 @@ class TestPostman(ModuleTestBase):
                             "updatedat": "2021-10-20T16:19:29",
                             "documentType": "workspace",
                         },
-                        "highlight": {"summary": "<b>BLS</b> BBOT api test."},
+                        "highlight": {"summary": "<b>BLS</b> SAUDIT api test."},
                     },
                     {
                         "score": 611.41156,
@@ -126,7 +126,7 @@ class TestPostman(ModuleTestBase):
                             "publishertype": "team",
                             "publisherHandle": "testteam",
                             "id": "11498add-357d-4bc5-a008-0a2d44fb8829",
-                            "slug": "testing-bbot-api",
+                            "slug": "testing-saudit-api",
                             "updatedAt": "2024-07-30T11:00:35",
                             "entityType": "workspace",
                             "visibilityStatus": "public",
@@ -153,7 +153,7 @@ class TestPostman(ModuleTestBase):
                             "categories": [],
                             "universaltags": "",
                             "views": 5788,
-                            "summary": "Private test of BBOTs public API",
+                            "summary": "Private test of SAUDITs public API",
                             "memberCount": 2,
                             "isBlacklisted": False,
                             "publisherid": "299401",
@@ -163,7 +163,7 @@ class TestPostman(ModuleTestBase):
                             "updatedat": "2021-10-20T16:19:29",
                             "documentType": "workspace",
                         },
-                        "highlight": {"summary": "Private test of BBOTs Public API"},
+                        "highlight": {"summary": "Private test of SAUDITs Public API"},
                     },
                 ],
                 "meta": {
@@ -195,14 +195,14 @@ class TestPostman(ModuleTestBase):
             match_json={
                 "service": "workspaces",
                 "method": "GET",
-                "path": "/workspaces?handle=blacklanternsecurity&slug=bbot-public",
+                "path": "/workspaces?handle=blacklanternsecurity&slug=saudit-public",
             },
             json={
                 "meta": {"model": "workspace", "action": "find", "nextCursor": ""},
                 "data": [
                     {
                         "id": "3a7e4bdc-7ff7-4dd4-8eaa-61ddce1c3d1b",
-                        "name": "BlackLanternSecurity BBOT [Public]",
+                        "name": "BlackLanternSecurity SAUDIT [Public]",
                         "description": None,
                         "summary": "BLS public workspaces.",
                         "createdBy": "299401",
@@ -212,7 +212,7 @@ class TestPostman(ModuleTestBase):
                         "updatedAt": "2021-10-20T16:19:29",
                         "visibilityStatus": "public",
                         "profileInfo": {
-                            "slug": "bbot-public",
+                            "slug": "saudit-public",
                             "profileType": "team",
                             "profileId": "000000",
                             "publicHandle": "https://www.postman.com/blacklanternsecurity",
@@ -229,7 +229,7 @@ class TestPostman(ModuleTestBase):
             match_json={
                 "service": "workspaces",
                 "method": "GET",
-                "path": "/workspaces?handle=testteam&slug=testing-bbot-api",
+                "path": "/workspaces?handle=testteam&slug=testing-saudit-api",
             },
             json={
                 "meta": {"model": "workspace", "action": "find", "nextCursor": ""},
@@ -238,7 +238,7 @@ class TestPostman(ModuleTestBase):
                         "id": "a4dfe981-2593-4f0b-b4c3-5145e8640f7d",
                         "name": "Test BlackLanternSecurity API Team Workspace",
                         "description": None,
-                        "summary": "Private test of BBOTs public API",
+                        "summary": "Private test of SAUDITs public API",
                         "createdBy": "299401",
                         "updatedBy": "299401",
                         "team": None,
@@ -246,7 +246,7 @@ class TestPostman(ModuleTestBase):
                         "updatedAt": "2021-10-20T16:19:29",
                         "visibilityStatus": "public",
                         "profileInfo": {
-                            "slug": "bbot-public",
+                            "slug": "saudit-public",
                             "profileType": "team",
                             "profileId": "000000",
                             "publicHandle": "https://www.postman.com/testteam",
@@ -264,7 +264,7 @@ class TestPostman(ModuleTestBase):
             json={
                 "workspace": {
                     "id": "3a7e4bdc-7ff7-4dd4-8eaa-61ddce1c3d1b",
-                    "name": "BlackLanternSecurity BBOT [Public]",
+                    "name": "BlackLanternSecurity SAUDIT [Public]",
                     "type": "personal",
                     "description": None,
                     "visibility": "public",
@@ -275,14 +275,14 @@ class TestPostman(ModuleTestBase):
                     "collections": [
                         {
                             "id": "2aab9fd0-3715-4abe-8bb0-8cb0264d023f",
-                            "name": "BBOT Public",
+                            "name": "SAUDIT Public",
                             "uid": "10197090-2aab9fd0-3715-4abe-8bb0-8cb0264d023f",
                         },
                     ],
                     "environments": [
                         {
                             "id": "f770f816-9c6a-40f7-bde3-c0855d2a1089",
-                            "name": "BBOT Test",
+                            "name": "SAUDIT Test",
                             "uid": "10197090-f770f816-9c6a-40f7-bde3-c0855d2a1089",
                         }
                     ],
@@ -306,7 +306,7 @@ class TestPostman(ModuleTestBase):
                     "collections": [
                         {
                             "id": "f46bebfd-420a-4adf-97d1-6fb5a02cf7fc",
-                            "name": "BBOT Public",
+                            "name": "SAUDIT Public",
                             "uid": "10197090-f46bebfd-420a-4adf-97d1-6fb5a02cf7fc",
                         },
                     ],
@@ -359,7 +359,7 @@ class TestPostman(ModuleTestBase):
             json={
                 "environment": {
                     "id": "f770f816-9c6a-40f7-bde3-c0855d2a1089",
-                    "name": "BBOT Test",
+                    "name": "SAUDIT Test",
                     "owner": "00000000",
                     "createdAt": "2021-11-17T06:29:54.000Z",
                     "updatedAt": "2021-11-23T07:06:53.000Z",
@@ -381,7 +381,7 @@ class TestPostman(ModuleTestBase):
                 "collection": {
                     "info": {
                         "_postman_id": "62b91565-d2e2-4bcd-8248-4dba2e3452f0",
-                        "name": "BBOT Public",
+                        "name": "SAUDIT Public",
                         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
                         "updatedAt": "2021-11-17T07:13:16.000Z",
                         "createdAt": "2021-11-17T07:13:15.000Z",
@@ -416,7 +416,7 @@ class TestPostman(ModuleTestBase):
                 "collection": {
                     "info": {
                         "_postman_id": "f46bebfd-420a-4adf-97d1-6fb5a02cf7fc",
-                        "name": "BBOT Public",
+                        "name": "SAUDIT Public",
                         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
                         "updatedAt": "2021-11-17T07:13:16.000Z",
                         "createdAt": "2021-11-17T07:13:15.000Z",
@@ -465,7 +465,7 @@ class TestPostman(ModuleTestBase):
                 for e in events
                 if e.type == "CODE_REPOSITORY"
                 and "postman" in e.tags
-                and e.data["url"] == "https://www.postman.com/blacklanternsecurity/bbot-public"
+                and e.data["url"] == "https://www.postman.com/blacklanternsecurity/saudit-public"
                 and e.scope_distance == 1
             ]
         ), "Failed to find blacklanternsecurity postman workspace"

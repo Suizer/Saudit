@@ -43,9 +43,9 @@ class HTTPEngine(EngineServer):
         try:
             return self.web_clients[retries]
         except KeyError:
-            from .client import BBOTAsyncClient
+            from .client import SAUDITAsyncClient
 
-            client = BBOTAsyncClient.from_config(self.config, self.target, *args, **kwargs)
+            client = SAUDITAsyncClient.from_config(self.config, self.target, *args, **kwargs)
             self.web_clients[client.retries] = client
             return client
 

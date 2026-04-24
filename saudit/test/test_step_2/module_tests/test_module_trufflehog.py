@@ -7,11 +7,11 @@ from copy import copy
 from pathlib import Path
 
 from .base import ModuleTestBase
-from saudit.test.bbot_fixtures import bbot_test_dir
+from saudit.test.saudit_fixtures import saudit_test_dir
 
 
 class TestTrufflehog(ModuleTestBase):
-    download_dir = bbot_test_dir / "test_trufflehog"
+    download_dir = saudit_test_dir / "test_trufflehog"
     config_overrides = {
         "modules": {
             "postman_download": {"api_key": "asdf", "output_folder": str(download_dir)},
@@ -213,8 +213,8 @@ class TestTrufflehog(ModuleTestBase):
                 {
                     "id": 459780477,
                     "node_id": "R_kgDOG2exfQ",
-                    "name": "bbot",
-                    "full_name": "blacklanternsecurity/bbot",
+                    "name": "saudit",
+                    "full_name": "blacklanternsecurity/saudit",
                     "private": False,
                     "owner": {
                         "login": "blacklanternsecurity",
@@ -236,53 +236,53 @@ class TestTrufflehog(ModuleTestBase):
                         "type": "Organization",
                         "site_admin": False,
                     },
-                    "html_url": "https://github.com/blacklanternsecurity/bbot",
+                    "html_url": "https://github.com/blacklanternsecurity/saudit",
                     "description": None,
                     "fork": False,
-                    "url": "https://api.github.com/repos/blacklanternsecurity/bbot",
-                    "forks_url": "https://api.github.com/repos/blacklanternsecurity/bbot/forks",
-                    "keys_url": "https://api.github.com/repos/blacklanternsecurity/bbot/keys{/key_id}",
-                    "collaborators_url": "https://api.github.com/repos/blacklanternsecurity/bbot/collaborators{/collaborator}",
-                    "teams_url": "https://api.github.com/repos/blacklanternsecurity/bbot/teams",
-                    "hooks_url": "https://api.github.com/repos/blacklanternsecurity/bbot/hooks",
-                    "issue_events_url": "https://api.github.com/repos/blacklanternsecurity/bbot/issues/events{/number}",
-                    "events_url": "https://api.github.com/repos/blacklanternsecurity/bbot/events",
-                    "assignees_url": "https://api.github.com/repos/blacklanternsecurity/bbot/assignees{/user}",
-                    "branches_url": "https://api.github.com/repos/blacklanternsecurity/bbot/branches{/branch}",
-                    "tags_url": "https://api.github.com/repos/blacklanternsecurity/bbot/tags",
-                    "blobs_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/blobs{/sha}",
-                    "git_tags_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/tags{/sha}",
-                    "git_refs_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/refs{/sha}",
-                    "trees_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/trees{/sha}",
-                    "statuses_url": "https://api.github.com/repos/blacklanternsecurity/bbot/statuses/{sha}",
-                    "languages_url": "https://api.github.com/repos/blacklanternsecurity/bbot/languages",
-                    "stargazers_url": "https://api.github.com/repos/blacklanternsecurity/bbot/stargazers",
-                    "contributors_url": "https://api.github.com/repos/blacklanternsecurity/bbot/contributors",
-                    "subscribers_url": "https://api.github.com/repos/blacklanternsecurity/bbot/subscribers",
-                    "subscription_url": "https://api.github.com/repos/blacklanternsecurity/bbot/subscription",
-                    "commits_url": "https://api.github.com/repos/blacklanternsecurity/bbot/commits{/sha}",
-                    "git_commits_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/commits{/sha}",
-                    "comments_url": "https://api.github.com/repos/blacklanternsecurity/bbot/comments{/number}",
-                    "issue_comment_url": "https://api.github.com/repos/blacklanternsecurity/bbot/issues/comments{/number}",
-                    "contents_url": "https://api.github.com/repos/blacklanternsecurity/bbot/contents/{+path}",
-                    "compare_url": "https://api.github.com/repos/blacklanternsecurity/bbot/compare/{base}...{head}",
-                    "merges_url": "https://api.github.com/repos/blacklanternsecurity/bbot/merges",
-                    "archive_url": "https://api.github.com/repos/blacklanternsecurity/bbot/{archive_format}{/ref}",
-                    "downloads_url": "https://api.github.com/repos/blacklanternsecurity/bbot/downloads",
-                    "issues_url": "https://api.github.com/repos/blacklanternsecurity/bbot/issues{/number}",
-                    "pulls_url": "https://api.github.com/repos/blacklanternsecurity/bbot/pulls{/number}",
-                    "milestones_url": "https://api.github.com/repos/blacklanternsecurity/bbot/milestones{/number}",
-                    "notifications_url": "https://api.github.com/repos/blacklanternsecurity/bbot/notifications{?since,all,participating}",
-                    "labels_url": "https://api.github.com/repos/blacklanternsecurity/bbot/labels{/name}",
-                    "releases_url": "https://api.github.com/repos/blacklanternsecurity/bbot/releases{/id}",
-                    "deployments_url": "https://api.github.com/repos/blacklanternsecurity/bbot/deployments",
+                    "url": "https://api.github.com/repos/blacklanternsecurity/saudit",
+                    "forks_url": "https://api.github.com/repos/blacklanternsecurity/saudit/forks",
+                    "keys_url": "https://api.github.com/repos/blacklanternsecurity/saudit/keys{/key_id}",
+                    "collaborators_url": "https://api.github.com/repos/blacklanternsecurity/saudit/collaborators{/collaborator}",
+                    "teams_url": "https://api.github.com/repos/blacklanternsecurity/saudit/teams",
+                    "hooks_url": "https://api.github.com/repos/blacklanternsecurity/saudit/hooks",
+                    "issue_events_url": "https://api.github.com/repos/blacklanternsecurity/saudit/issues/events{/number}",
+                    "events_url": "https://api.github.com/repos/blacklanternsecurity/saudit/events",
+                    "assignees_url": "https://api.github.com/repos/blacklanternsecurity/saudit/assignees{/user}",
+                    "branches_url": "https://api.github.com/repos/blacklanternsecurity/saudit/branches{/branch}",
+                    "tags_url": "https://api.github.com/repos/blacklanternsecurity/saudit/tags",
+                    "blobs_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/blobs{/sha}",
+                    "git_tags_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/tags{/sha}",
+                    "git_refs_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/refs{/sha}",
+                    "trees_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/trees{/sha}",
+                    "statuses_url": "https://api.github.com/repos/blacklanternsecurity/saudit/statuses/{sha}",
+                    "languages_url": "https://api.github.com/repos/blacklanternsecurity/saudit/languages",
+                    "stargazers_url": "https://api.github.com/repos/blacklanternsecurity/saudit/stargazers",
+                    "contributors_url": "https://api.github.com/repos/blacklanternsecurity/saudit/contributors",
+                    "subscribers_url": "https://api.github.com/repos/blacklanternsecurity/saudit/subscribers",
+                    "subscription_url": "https://api.github.com/repos/blacklanternsecurity/saudit/subscription",
+                    "commits_url": "https://api.github.com/repos/blacklanternsecurity/saudit/commits{/sha}",
+                    "git_commits_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/commits{/sha}",
+                    "comments_url": "https://api.github.com/repos/blacklanternsecurity/saudit/comments{/number}",
+                    "issue_comment_url": "https://api.github.com/repos/blacklanternsecurity/saudit/issues/comments{/number}",
+                    "contents_url": "https://api.github.com/repos/blacklanternsecurity/saudit/contents/{+path}",
+                    "compare_url": "https://api.github.com/repos/blacklanternsecurity/saudit/compare/{base}...{head}",
+                    "merges_url": "https://api.github.com/repos/blacklanternsecurity/saudit/merges",
+                    "archive_url": "https://api.github.com/repos/blacklanternsecurity/saudit/{archive_format}{/ref}",
+                    "downloads_url": "https://api.github.com/repos/blacklanternsecurity/saudit/downloads",
+                    "issues_url": "https://api.github.com/repos/blacklanternsecurity/saudit/issues{/number}",
+                    "pulls_url": "https://api.github.com/repos/blacklanternsecurity/saudit/pulls{/number}",
+                    "milestones_url": "https://api.github.com/repos/blacklanternsecurity/saudit/milestones{/number}",
+                    "notifications_url": "https://api.github.com/repos/blacklanternsecurity/saudit/notifications{?since,all,participating}",
+                    "labels_url": "https://api.github.com/repos/blacklanternsecurity/saudit/labels{/name}",
+                    "releases_url": "https://api.github.com/repos/blacklanternsecurity/saudit/releases{/id}",
+                    "deployments_url": "https://api.github.com/repos/blacklanternsecurity/saudit/deployments",
                     "created_at": "2022-02-15T23:10:51Z",
                     "updated_at": "2023-09-02T12:20:13Z",
                     "pushed_at": "2023-10-19T02:56:46Z",
-                    "git_url": "git://github.com/blacklanternsecurity/bbot.git",
-                    "ssh_url": "git@github.com:blacklanternsecurity/bbot.git",
-                    "clone_url": "https://github.com/blacklanternsecurity/bbot.git",
-                    "svn_url": "https://github.com/blacklanternsecurity/bbot",
+                    "git_url": "git://github.com/blacklanternsecurity/saudit.git",
+                    "ssh_url": "git@github.com:blacklanternsecurity/saudit.git",
+                    "clone_url": "https://github.com/blacklanternsecurity/saudit.git",
+                    "svn_url": "https://github.com/blacklanternsecurity/saudit",
                     "homepage": None,
                     "size": 2,
                     "stargazers_count": 2,
@@ -314,7 +314,7 @@ class TestTrufflehog(ModuleTestBase):
             ],
         )
         module_test.httpx_mock.add_response(
-            url="https://api.github.com/repos/blacklanternsecurity/bbot/actions/workflows?per_page=100&page=1",
+            url="https://api.github.com/repos/blacklanternsecurity/saudit/actions/workflows?per_page=100&page=1",
             match_headers={"Authorization": "token asdf"},
             json={
                 "total_count": 3,
@@ -327,15 +327,15 @@ class TestTrufflehog(ModuleTestBase):
                         "state": "active",
                         "created_at": "2022-03-23T15:09:22.000Z",
                         "updated_at": "2022-09-27T17:49:34.000Z",
-                        "url": "https://api.github.com/repos/blacklanternsecurity/bbot/actions/workflows/22452226",
-                        "html_url": "https://github.com/blacklanternsecurity/bbot/blob/stable/.github/workflows/tests.yml",
-                        "badge_url": "https://github.com/blacklanternsecurity/bbot/workflows/tests/badge.svg",
+                        "url": "https://api.github.com/repos/blacklanternsecurity/saudit/actions/workflows/22452226",
+                        "html_url": "https://github.com/blacklanternsecurity/saudit/blob/stable/.github/workflows/tests.yml",
+                        "badge_url": "https://github.com/blacklanternsecurity/saudit/workflows/tests/badge.svg",
                     },
                 ],
             },
         )
         module_test.httpx_mock.add_response(
-            url="https://api.github.com/repos/blacklanternsecurity/bbot/actions/workflows/22452226/runs?status=success&per_page=1",
+            url="https://api.github.com/repos/blacklanternsecurity/saudit/actions/workflows/22452226/runs?status=success&per_page=1",
             match_headers={"Authorization": "token asdf"},
             json={
                 "total_count": 2993,
@@ -355,11 +355,11 @@ class TestTrufflehog(ModuleTestBase):
                         "workflow_id": 22452226,
                         "check_suite_id": 23162098295,
                         "check_suite_node_id": "CS_kwDOG_O3ns8AAAAFZJGSdw",
-                        "url": "https://api.github.com/repos/blacklanternsecurity/bbot/actions/runs/8839360698",
-                        "html_url": "https://github.com/blacklanternsecurity/bbot/actions/runs/8839360698",
+                        "url": "https://api.github.com/repos/blacklanternsecurity/saudit/actions/runs/8839360698",
+                        "html_url": "https://github.com/blacklanternsecurity/saudit/actions/runs/8839360698",
                         "pull_requests": [
                             {
-                                "url": "https://api.github.com/repos/blacklanternsecurity/bbot/pulls/1303",
+                                "url": "https://api.github.com/repos/blacklanternsecurity/saudit/pulls/1303",
                                 "id": 1839332952,
                                 "number": 1303,
                                 "head": {
@@ -367,8 +367,8 @@ class TestTrufflehog(ModuleTestBase):
                                     "sha": "c5de1360e8e5ccba04b23035f675a529282b7dc2",
                                     "repo": {
                                         "id": 468957086,
-                                        "url": "https://api.github.com/repos/blacklanternsecurity/bbot",
-                                        "name": "bbot",
+                                        "url": "https://api.github.com/repos/blacklanternsecurity/saudit",
+                                        "name": "saudit",
                                     },
                                 },
                                 "base": {
@@ -376,8 +376,8 @@ class TestTrufflehog(ModuleTestBase):
                                     "sha": "7baf219c7f3a4ba165639c5ddb62322453a8aea8",
                                     "repo": {
                                         "id": 468957086,
-                                        "url": "https://api.github.com/repos/blacklanternsecurity/bbot",
-                                        "name": "bbot",
+                                        "url": "https://api.github.com/repos/blacklanternsecurity/saudit",
+                                        "name": "saudit",
                                     },
                                 },
                             }
@@ -427,14 +427,14 @@ class TestTrufflehog(ModuleTestBase):
                             "type": "User",
                             "site_admin": False,
                         },
-                        "jobs_url": "https://api.github.com/repos/blacklanternsecurity/bbot/actions/runs/8839360698/jobs",
-                        "logs_url": "https://api.github.com/repos/blacklanternsecurity/bbot/actions/runs/8839360698/logs",
-                        "check_suite_url": "https://api.github.com/repos/blacklanternsecurity/bbot/check-suites/23162098295",
-                        "artifacts_url": "https://api.github.com/repos/blacklanternsecurity/bbot/actions/runs/8839360698/artifacts",
-                        "cancel_url": "https://api.github.com/repos/blacklanternsecurity/bbot/actions/runs/8839360698/cancel",
-                        "rerun_url": "https://api.github.com/repos/blacklanternsecurity/bbot/actions/runs/8839360698/rerun",
+                        "jobs_url": "https://api.github.com/repos/blacklanternsecurity/saudit/actions/runs/8839360698/jobs",
+                        "logs_url": "https://api.github.com/repos/blacklanternsecurity/saudit/actions/runs/8839360698/logs",
+                        "check_suite_url": "https://api.github.com/repos/blacklanternsecurity/saudit/check-suites/23162098295",
+                        "artifacts_url": "https://api.github.com/repos/blacklanternsecurity/saudit/actions/runs/8839360698/artifacts",
+                        "cancel_url": "https://api.github.com/repos/blacklanternsecurity/saudit/actions/runs/8839360698/cancel",
+                        "rerun_url": "https://api.github.com/repos/blacklanternsecurity/saudit/actions/runs/8839360698/rerun",
                         "previous_attempt_url": None,
-                        "workflow_url": "https://api.github.com/repos/blacklanternsecurity/bbot/actions/workflows/22452226",
+                        "workflow_url": "https://api.github.com/repos/blacklanternsecurity/saudit/actions/workflows/22452226",
                         "head_commit": {
                             "id": "c5de1360e8e5ccba04b23035f675a529282b7dc2",
                             "tree_id": "fe9b345c0745a5bbacb806225e92e1c48fccf35c",
@@ -446,8 +446,8 @@ class TestTrufflehog(ModuleTestBase):
                         "repository": {
                             "id": 468957086,
                             "node_id": "R_kgDOG_O3ng",
-                            "name": "bbot",
-                            "full_name": "blacklanternsecurity/bbot",
+                            "name": "saudit",
+                            "full_name": "blacklanternsecurity/saudit",
                             "private": False,
                             "owner": {
                                 "login": "blacklanternsecurity",
@@ -469,52 +469,52 @@ class TestTrufflehog(ModuleTestBase):
                                 "type": "Organization",
                                 "site_admin": False,
                             },
-                            "html_url": "https://github.com/blacklanternsecurity/bbot",
+                            "html_url": "https://github.com/blacklanternsecurity/saudit",
                             "description": "A recursive internet scanner for hackers.",
                             "fork": False,
-                            "url": "https://api.github.com/repos/blacklanternsecurity/bbot",
-                            "forks_url": "https://api.github.com/repos/blacklanternsecurity/bbot/forks",
-                            "keys_url": "https://api.github.com/repos/blacklanternsecurity/bbot/keys{/key_id}",
-                            "collaborators_url": "https://api.github.com/repos/blacklanternsecurity/bbot/collaborators{/collaborator}",
-                            "teams_url": "https://api.github.com/repos/blacklanternsecurity/bbot/teams",
-                            "hooks_url": "https://api.github.com/repos/blacklanternsecurity/bbot/hooks",
-                            "issue_events_url": "https://api.github.com/repos/blacklanternsecurity/bbot/issues/events{/number}",
-                            "events_url": "https://api.github.com/repos/blacklanternsecurity/bbot/events",
-                            "assignees_url": "https://api.github.com/repos/blacklanternsecurity/bbot/assignees{/user}",
-                            "branches_url": "https://api.github.com/repos/blacklanternsecurity/bbot/branches{/branch}",
-                            "tags_url": "https://api.github.com/repos/blacklanternsecurity/bbot/tags",
-                            "blobs_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/blobs{/sha}",
-                            "git_tags_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/tags{/sha}",
-                            "git_refs_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/refs{/sha}",
-                            "trees_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/trees{/sha}",
-                            "statuses_url": "https://api.github.com/repos/blacklanternsecurity/bbot/statuses/{sha}",
-                            "languages_url": "https://api.github.com/repos/blacklanternsecurity/bbot/languages",
-                            "stargazers_url": "https://api.github.com/repos/blacklanternsecurity/bbot/stargazers",
-                            "contributors_url": "https://api.github.com/repos/blacklanternsecurity/bbot/contributors",
-                            "subscribers_url": "https://api.github.com/repos/blacklanternsecurity/bbot/subscribers",
-                            "subscription_url": "https://api.github.com/repos/blacklanternsecurity/bbot/subscription",
-                            "commits_url": "https://api.github.com/repos/blacklanternsecurity/bbot/commits{/sha}",
-                            "git_commits_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/commits{/sha}",
-                            "comments_url": "https://api.github.com/repos/blacklanternsecurity/bbot/comments{/number}",
-                            "issue_comment_url": "https://api.github.com/repos/blacklanternsecurity/bbot/issues/comments{/number}",
-                            "contents_url": "https://api.github.com/repos/blacklanternsecurity/bbot/contents/{+path}",
-                            "compare_url": "https://api.github.com/repos/blacklanternsecurity/bbot/compare/{base}...{head}",
-                            "merges_url": "https://api.github.com/repos/blacklanternsecurity/bbot/merges",
-                            "archive_url": "https://api.github.com/repos/blacklanternsecurity/bbot/{archive_format}{/ref}",
-                            "downloads_url": "https://api.github.com/repos/blacklanternsecurity/bbot/downloads",
-                            "issues_url": "https://api.github.com/repos/blacklanternsecurity/bbot/issues{/number}",
-                            "pulls_url": "https://api.github.com/repos/blacklanternsecurity/bbot/pulls{/number}",
-                            "milestones_url": "https://api.github.com/repos/blacklanternsecurity/bbot/milestones{/number}",
-                            "notifications_url": "https://api.github.com/repos/blacklanternsecurity/bbot/notifications{?since,all,participating}",
-                            "labels_url": "https://api.github.com/repos/blacklanternsecurity/bbot/labels{/name}",
-                            "releases_url": "https://api.github.com/repos/blacklanternsecurity/bbot/releases{/id}",
-                            "deployments_url": "https://api.github.com/repos/blacklanternsecurity/bbot/deployments",
+                            "url": "https://api.github.com/repos/blacklanternsecurity/saudit",
+                            "forks_url": "https://api.github.com/repos/blacklanternsecurity/saudit/forks",
+                            "keys_url": "https://api.github.com/repos/blacklanternsecurity/saudit/keys{/key_id}",
+                            "collaborators_url": "https://api.github.com/repos/blacklanternsecurity/saudit/collaborators{/collaborator}",
+                            "teams_url": "https://api.github.com/repos/blacklanternsecurity/saudit/teams",
+                            "hooks_url": "https://api.github.com/repos/blacklanternsecurity/saudit/hooks",
+                            "issue_events_url": "https://api.github.com/repos/blacklanternsecurity/saudit/issues/events{/number}",
+                            "events_url": "https://api.github.com/repos/blacklanternsecurity/saudit/events",
+                            "assignees_url": "https://api.github.com/repos/blacklanternsecurity/saudit/assignees{/user}",
+                            "branches_url": "https://api.github.com/repos/blacklanternsecurity/saudit/branches{/branch}",
+                            "tags_url": "https://api.github.com/repos/blacklanternsecurity/saudit/tags",
+                            "blobs_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/blobs{/sha}",
+                            "git_tags_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/tags{/sha}",
+                            "git_refs_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/refs{/sha}",
+                            "trees_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/trees{/sha}",
+                            "statuses_url": "https://api.github.com/repos/blacklanternsecurity/saudit/statuses/{sha}",
+                            "languages_url": "https://api.github.com/repos/blacklanternsecurity/saudit/languages",
+                            "stargazers_url": "https://api.github.com/repos/blacklanternsecurity/saudit/stargazers",
+                            "contributors_url": "https://api.github.com/repos/blacklanternsecurity/saudit/contributors",
+                            "subscribers_url": "https://api.github.com/repos/blacklanternsecurity/saudit/subscribers",
+                            "subscription_url": "https://api.github.com/repos/blacklanternsecurity/saudit/subscription",
+                            "commits_url": "https://api.github.com/repos/blacklanternsecurity/saudit/commits{/sha}",
+                            "git_commits_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/commits{/sha}",
+                            "comments_url": "https://api.github.com/repos/blacklanternsecurity/saudit/comments{/number}",
+                            "issue_comment_url": "https://api.github.com/repos/blacklanternsecurity/saudit/issues/comments{/number}",
+                            "contents_url": "https://api.github.com/repos/blacklanternsecurity/saudit/contents/{+path}",
+                            "compare_url": "https://api.github.com/repos/blacklanternsecurity/saudit/compare/{base}...{head}",
+                            "merges_url": "https://api.github.com/repos/blacklanternsecurity/saudit/merges",
+                            "archive_url": "https://api.github.com/repos/blacklanternsecurity/saudit/{archive_format}{/ref}",
+                            "downloads_url": "https://api.github.com/repos/blacklanternsecurity/saudit/downloads",
+                            "issues_url": "https://api.github.com/repos/blacklanternsecurity/saudit/issues{/number}",
+                            "pulls_url": "https://api.github.com/repos/blacklanternsecurity/saudit/pulls{/number}",
+                            "milestones_url": "https://api.github.com/repos/blacklanternsecurity/saudit/milestones{/number}",
+                            "notifications_url": "https://api.github.com/repos/blacklanternsecurity/saudit/notifications{?since,all,participating}",
+                            "labels_url": "https://api.github.com/repos/blacklanternsecurity/saudit/labels{/name}",
+                            "releases_url": "https://api.github.com/repos/blacklanternsecurity/saudit/releases{/id}",
+                            "deployments_url": "https://api.github.com/repos/blacklanternsecurity/saudit/deployments",
                         },
                         "head_repository": {
                             "id": 468957086,
                             "node_id": "R_kgDOG_O3ng",
-                            "name": "bbot",
-                            "full_name": "blacklanternsecurity/bbot",
+                            "name": "saudit",
+                            "full_name": "blacklanternsecurity/saudit",
                             "private": False,
                             "owner": {
                                 "login": "blacklanternsecurity",
@@ -536,53 +536,53 @@ class TestTrufflehog(ModuleTestBase):
                                 "type": "Organization",
                                 "site_admin": False,
                             },
-                            "html_url": "https://github.com/blacklanternsecurity/bbot",
+                            "html_url": "https://github.com/blacklanternsecurity/saudit",
                             "description": "A recursive internet scanner for hackers.",
                             "fork": False,
-                            "url": "https://api.github.com/repos/blacklanternsecurity/bbot",
-                            "forks_url": "https://api.github.com/repos/blacklanternsecurity/bbot/forks",
-                            "keys_url": "https://api.github.com/repos/blacklanternsecurity/bbot/keys{/key_id}",
-                            "collaborators_url": "https://api.github.com/repos/blacklanternsecurity/bbot/collaborators{/collaborator}",
-                            "teams_url": "https://api.github.com/repos/blacklanternsecurity/bbot/teams",
-                            "hooks_url": "https://api.github.com/repos/blacklanternsecurity/bbot/hooks",
-                            "issue_events_url": "https://api.github.com/repos/blacklanternsecurity/bbot/issues/events{/number}",
-                            "events_url": "https://api.github.com/repos/blacklanternsecurity/bbot/events",
-                            "assignees_url": "https://api.github.com/repos/blacklanternsecurity/bbot/assignees{/user}",
-                            "branches_url": "https://api.github.com/repos/blacklanternsecurity/bbot/branches{/branch}",
-                            "tags_url": "https://api.github.com/repos/blacklanternsecurity/bbot/tags",
-                            "blobs_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/blobs{/sha}",
-                            "git_tags_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/tags{/sha}",
-                            "git_refs_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/refs{/sha}",
-                            "trees_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/trees{/sha}",
-                            "statuses_url": "https://api.github.com/repos/blacklanternsecurity/bbot/statuses/{sha}",
-                            "languages_url": "https://api.github.com/repos/blacklanternsecurity/bbot/languages",
-                            "stargazers_url": "https://api.github.com/repos/blacklanternsecurity/bbot/stargazers",
-                            "contributors_url": "https://api.github.com/repos/blacklanternsecurity/bbot/contributors",
-                            "subscribers_url": "https://api.github.com/repos/blacklanternsecurity/bbot/subscribers",
-                            "subscription_url": "https://api.github.com/repos/blacklanternsecurity/bbot/subscription",
-                            "commits_url": "https://api.github.com/repos/blacklanternsecurity/bbot/commits{/sha}",
-                            "git_commits_url": "https://api.github.com/repos/blacklanternsecurity/bbot/git/commits{/sha}",
-                            "comments_url": "https://api.github.com/repos/blacklanternsecurity/bbot/comments{/number}",
-                            "issue_comment_url": "https://api.github.com/repos/blacklanternsecurity/bbot/issues/comments{/number}",
-                            "contents_url": "https://api.github.com/repos/blacklanternsecurity/bbot/contents/{+path}",
-                            "compare_url": "https://api.github.com/repos/blacklanternsecurity/bbot/compare/{base}...{head}",
-                            "merges_url": "https://api.github.com/repos/blacklanternsecurity/bbot/merges",
-                            "archive_url": "https://api.github.com/repos/blacklanternsecurity/bbot/{archive_format}{/ref}",
-                            "downloads_url": "https://api.github.com/repos/blacklanternsecurity/bbot/downloads",
-                            "issues_url": "https://api.github.com/repos/blacklanternsecurity/bbot/issues{/number}",
-                            "pulls_url": "https://api.github.com/repos/blacklanternsecurity/bbot/pulls{/number}",
-                            "milestones_url": "https://api.github.com/repos/blacklanternsecurity/bbot/milestones{/number}",
-                            "notifications_url": "https://api.github.com/repos/blacklanternsecurity/bbot/notifications{?since,all,participating}",
-                            "labels_url": "https://api.github.com/repos/blacklanternsecurity/bbot/labels{/name}",
-                            "releases_url": "https://api.github.com/repos/blacklanternsecurity/bbot/releases{/id}",
-                            "deployments_url": "https://api.github.com/repos/blacklanternsecurity/bbot/deployments",
+                            "url": "https://api.github.com/repos/blacklanternsecurity/saudit",
+                            "forks_url": "https://api.github.com/repos/blacklanternsecurity/saudit/forks",
+                            "keys_url": "https://api.github.com/repos/blacklanternsecurity/saudit/keys{/key_id}",
+                            "collaborators_url": "https://api.github.com/repos/blacklanternsecurity/saudit/collaborators{/collaborator}",
+                            "teams_url": "https://api.github.com/repos/blacklanternsecurity/saudit/teams",
+                            "hooks_url": "https://api.github.com/repos/blacklanternsecurity/saudit/hooks",
+                            "issue_events_url": "https://api.github.com/repos/blacklanternsecurity/saudit/issues/events{/number}",
+                            "events_url": "https://api.github.com/repos/blacklanternsecurity/saudit/events",
+                            "assignees_url": "https://api.github.com/repos/blacklanternsecurity/saudit/assignees{/user}",
+                            "branches_url": "https://api.github.com/repos/blacklanternsecurity/saudit/branches{/branch}",
+                            "tags_url": "https://api.github.com/repos/blacklanternsecurity/saudit/tags",
+                            "blobs_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/blobs{/sha}",
+                            "git_tags_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/tags{/sha}",
+                            "git_refs_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/refs{/sha}",
+                            "trees_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/trees{/sha}",
+                            "statuses_url": "https://api.github.com/repos/blacklanternsecurity/saudit/statuses/{sha}",
+                            "languages_url": "https://api.github.com/repos/blacklanternsecurity/saudit/languages",
+                            "stargazers_url": "https://api.github.com/repos/blacklanternsecurity/saudit/stargazers",
+                            "contributors_url": "https://api.github.com/repos/blacklanternsecurity/saudit/contributors",
+                            "subscribers_url": "https://api.github.com/repos/blacklanternsecurity/saudit/subscribers",
+                            "subscription_url": "https://api.github.com/repos/blacklanternsecurity/saudit/subscription",
+                            "commits_url": "https://api.github.com/repos/blacklanternsecurity/saudit/commits{/sha}",
+                            "git_commits_url": "https://api.github.com/repos/blacklanternsecurity/saudit/git/commits{/sha}",
+                            "comments_url": "https://api.github.com/repos/blacklanternsecurity/saudit/comments{/number}",
+                            "issue_comment_url": "https://api.github.com/repos/blacklanternsecurity/saudit/issues/comments{/number}",
+                            "contents_url": "https://api.github.com/repos/blacklanternsecurity/saudit/contents/{+path}",
+                            "compare_url": "https://api.github.com/repos/blacklanternsecurity/saudit/compare/{base}...{head}",
+                            "merges_url": "https://api.github.com/repos/blacklanternsecurity/saudit/merges",
+                            "archive_url": "https://api.github.com/repos/blacklanternsecurity/saudit/{archive_format}{/ref}",
+                            "downloads_url": "https://api.github.com/repos/blacklanternsecurity/saudit/downloads",
+                            "issues_url": "https://api.github.com/repos/blacklanternsecurity/saudit/issues{/number}",
+                            "pulls_url": "https://api.github.com/repos/blacklanternsecurity/saudit/pulls{/number}",
+                            "milestones_url": "https://api.github.com/repos/blacklanternsecurity/saudit/milestones{/number}",
+                            "notifications_url": "https://api.github.com/repos/blacklanternsecurity/saudit/notifications{?since,all,participating}",
+                            "labels_url": "https://api.github.com/repos/blacklanternsecurity/saudit/labels{/name}",
+                            "releases_url": "https://api.github.com/repos/blacklanternsecurity/saudit/releases{/id}",
+                            "deployments_url": "https://api.github.com/repos/blacklanternsecurity/saudit/deployments",
                         },
                     },
                 ],
             },
         )
         module_test.httpx_mock.add_response(
-            url="https://api.github.com/repos/blacklanternsecurity/bbot/actions/runs/8839360698/logs",
+            url="https://api.github.com/repos/blacklanternsecurity/saudit/actions/runs/8839360698/logs",
             match_headers={"Authorization": "token asdf"},
             headers={
                 "location": "https://productionresultssa10.blob.core.windows.net/actions-results/7beb304e-f42c-4830-a027-4f5dec53107d/workflow-job-run-3a559e2a-952e-58d2-b8db-2e604a9266d7/logs/steps/step-logs-0e34a19a-18b0-4208-b27a-f8c031db2d17.txt?rsct=text%2Fplain&se=2024-04-26T16%3A25%3A39Z&sig=a%2FiN8dOw0e3tiBQZAfr80veI8OYChb9edJ1eFY136B4%3D&sp=r&spr=https&sr=b&st=2024-04-26T16%3A15%3A34Z&sv=2021-12-02"
@@ -846,7 +846,7 @@ class TestTrufflehog(ModuleTestBase):
                 },
             },
         )
-        temp_path = Path("/tmp/.bbot_test")
+        temp_path = Path("/tmp/.saudit_test")
         tar_path = temp_path / "docker_pull_test.tar.gz"
         shutil.rmtree(tar_path, ignore_errors=True)
         with tarfile.open(tar_path, "w:gz") as tar:
@@ -895,7 +895,7 @@ class TestTrufflehog(ModuleTestBase):
                             "publishertype": "team",
                             "publisherHandle": "blacklanternsecurity",
                             "id": "11498add-357d-4bc5-a008-0a2d44fb8829",
-                            "slug": "bbot-public",
+                            "slug": "saudit-public",
                             "updatedAt": "2024-07-30T11:00:35",
                             "entityType": "workspace",
                             "visibilityStatus": "public",
@@ -904,7 +904,7 @@ class TestTrufflehog(ModuleTestBase):
                             "createdat": "2021-06-15T14:03:51",
                             "forkLabel": "",
                             "publisherName": "blacklanternsecurity",
-                            "name": "BlackLanternSecurity BBOT [Public]",
+                            "name": "BlackLanternSecurity SAUDIT [Public]",
                             "dependencyCount": 7,
                             "collectionCount": 6,
                             "warehouse__updated_at": "2024-07-30 11:00:00",
@@ -932,7 +932,7 @@ class TestTrufflehog(ModuleTestBase):
                             "updatedat": "2021-10-20T16:19:29",
                             "documentType": "workspace",
                         },
-                        "highlight": {"summary": "<b>BLS</b> BBOT api test."},
+                        "highlight": {"summary": "<b>BLS</b> SAUDIT api test."},
                     },
                 ],
                 "meta": {
@@ -964,14 +964,14 @@ class TestTrufflehog(ModuleTestBase):
             match_json={
                 "service": "workspaces",
                 "method": "GET",
-                "path": "/workspaces?handle=blacklanternsecurity&slug=bbot-public",
+                "path": "/workspaces?handle=blacklanternsecurity&slug=saudit-public",
             },
             json={
                 "meta": {"model": "workspace", "action": "find", "nextCursor": ""},
                 "data": [
                     {
                         "id": "3a7e4bdc-7ff7-4dd4-8eaa-61ddce1c3d1b",
-                        "name": "BlackLanternSecurity BBOT [Public]",
+                        "name": "BlackLanternSecurity SAUDIT [Public]",
                         "description": None,
                         "summary": "BLS public workspaces.",
                         "createdBy": "299401",
@@ -981,7 +981,7 @@ class TestTrufflehog(ModuleTestBase):
                         "updatedAt": "2021-10-20T16:19:29",
                         "visibilityStatus": "public",
                         "profileInfo": {
-                            "slug": "bbot-public",
+                            "slug": "saudit-public",
                             "profileType": "team",
                             "profileId": "000000",
                             "publicHandle": "https://www.postman.com/blacklanternsecurity",
@@ -998,7 +998,7 @@ class TestTrufflehog(ModuleTestBase):
             json={
                 "workspace": {
                     "id": "3a7e4bdc-7ff7-4dd4-8eaa-61ddce1c3d1b",
-                    "name": "BlackLanternSecurity BBOT [Public]",
+                    "name": "BlackLanternSecurity SAUDIT [Public]",
                     "type": "personal",
                     "description": None,
                     "visibility": "public",
@@ -1009,14 +1009,14 @@ class TestTrufflehog(ModuleTestBase):
                     "collections": [
                         {
                             "id": "2aab9fd0-3715-4abe-8bb0-8cb0264d023f",
-                            "name": "BBOT Public",
+                            "name": "SAUDIT Public",
                             "uid": "10197090-2aab9fd0-3715-4abe-8bb0-8cb0264d023f",
                         },
                     ],
                     "environments": [
                         {
                             "id": "f770f816-9c6a-40f7-bde3-c0855d2a1089",
-                            "name": "BBOT Test",
+                            "name": "SAUDIT Test",
                             "uid": "10197090-f770f816-9c6a-40f7-bde3-c0855d2a1089",
                         }
                     ],
@@ -1051,7 +1051,7 @@ class TestTrufflehog(ModuleTestBase):
             json={
                 "environment": {
                     "id": "f770f816-9c6a-40f7-bde3-c0855d2a1089",
-                    "name": "BBOT Test",
+                    "name": "SAUDIT Test",
                     "owner": "00000000",
                     "createdAt": "2021-11-17T06:29:54.000Z",
                     "updatedAt": "2021-11-23T07:06:53.000Z",
@@ -1072,7 +1072,7 @@ class TestTrufflehog(ModuleTestBase):
                 "collection": {
                     "info": {
                         "_postman_id": "62b91565-d2e2-4bcd-8248-4dba2e3452f0",
-                        "name": "BBOT Public",
+                        "name": "SAUDIT Public",
                         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
                         "updatedAt": "2021-11-17T07:13:16.000Z",
                         "createdAt": "2021-11-17T07:13:15.000Z",
@@ -1124,7 +1124,7 @@ class TestTrufflehog(ModuleTestBase):
                 }
             },
         )
-        temp_path = Path("/tmp/.bbot_test")
+        temp_path = Path("/tmp/.saudit_test")
         temp_repo_path = temp_path / "test_keys"
         shutil.rmtree(temp_repo_path, ignore_errors=True)
         subprocess.run(["git", "init", "test_keys"], cwd=temp_path)
@@ -1135,9 +1135,9 @@ class TestTrufflehog(ModuleTestBase):
             [
                 "git",
                 "-c",
-                "user.name='BBOT Test'",
+                "user.name='SAUDIT Test'",
                 "-c",
-                "user.email='bbot@blacklanternsecurity.com'",
+                "user.email='saudit@blacklanternsecurity.com'",
                 "commit",
                 "-m",
                 "Initial commit",
@@ -1191,14 +1191,14 @@ class TestTrufflehog(ModuleTestBase):
             [
                 e
                 for e in filesystem_events
-                if e.data["path"].endswith("/git_repos/.bbot_test/test_keys") and Path(e.data["path"]).is_dir()
+                if e.data["path"].endswith("/git_repos/.saudit_test/test_keys") and Path(e.data["path"]).is_dir()
             ]
         ), "Test keys repo dir does not exist"
         assert 1 == len(
             [
                 e
                 for e in filesystem_events
-                if e.data["path"].endswith("/workflow_logs/blacklanternsecurity/bbot/test.txt")
+                if e.data["path"].endswith("/workflow_logs/blacklanternsecurity/saudit/test.txt")
                 and Path(e.data["path"]).is_file()
             ]
         ), "Workflow log file does not exist"
@@ -1215,7 +1215,7 @@ class TestTrufflehog(ModuleTestBase):
                 e
                 for e in filesystem_events
                 if e.data["path"].endswith(
-                    "/postman_workspaces/BlackLanternSecurity BBOT [Public]/3a7e4bdc-7ff7-4dd4-8eaa-61ddce1c3d1b.zip"
+                    "/postman_workspaces/BlackLanternSecurity SAUDIT [Public]/3a7e4bdc-7ff7-4dd4-8eaa-61ddce1c3d1b.zip"
                 )
                 and Path(e.data["path"]).is_file()
             ]
@@ -1223,7 +1223,7 @@ class TestTrufflehog(ModuleTestBase):
 
 
 class TestTrufflehog_NonVerified(TestTrufflehog):
-    download_dir = bbot_test_dir / "test_trufflehog_nonverified"
+    download_dir = saudit_test_dir / "test_trufflehog_nonverified"
     config_overrides = {
         "modules": {
             "trufflehog": {"only_verified": False},
@@ -1262,14 +1262,14 @@ class TestTrufflehog_NonVerified(TestTrufflehog):
             [
                 e
                 for e in filesystem_events
-                if e.data["path"].endswith("/git_repos/.bbot_test/test_keys") and Path(e.data["path"]).is_dir()
+                if e.data["path"].endswith("/git_repos/.saudit_test/test_keys") and Path(e.data["path"]).is_dir()
             ]
         ), "Test keys repo dir does not exist"
         assert 1 == len(
             [
                 e
                 for e in filesystem_events
-                if e.data["path"].endswith("/workflow_logs/blacklanternsecurity/bbot/test.txt")
+                if e.data["path"].endswith("/workflow_logs/blacklanternsecurity/saudit/test.txt")
                 and Path(e.data["path"]).is_file()
             ]
         ), "Workflow log file does not exist"
@@ -1286,7 +1286,7 @@ class TestTrufflehog_NonVerified(TestTrufflehog):
                 e
                 for e in filesystem_events
                 if e.data["path"].endswith(
-                    "/postman_workspaces/BlackLanternSecurity BBOT [Public]/3a7e4bdc-7ff7-4dd4-8eaa-61ddce1c3d1b.zip"
+                    "/postman_workspaces/BlackLanternSecurity SAUDIT [Public]/3a7e4bdc-7ff7-4dd4-8eaa-61ddce1c3d1b.zip"
                 )
                 and Path(e.data["path"]).is_file()
             ]
@@ -1311,7 +1311,7 @@ class TestTrufflehog_RAWText(ModuleTestBase):
     targets = ["http://127.0.0.1:8888/test.pdf"]
     modules_overrides = ["httpx", "trufflehog", "filedownload", "extractous"]
 
-    download_dir = bbot_test_dir / "test_trufflehog_rawtext"
+    download_dir = saudit_test_dir / "test_trufflehog_rawtext"
     config_overrides = {
         "modules": {"trufflehog": {"only_verified": False}, "filedownload": {"output_folder": str(download_dir)}}
     }

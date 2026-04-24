@@ -31,17 +31,17 @@ class ColoredFormatter(logging.Formatter):
         if levelname == "CRITICAL" or levelname.startswith("HUGE"):
             colored_record.msg = colorize(colored_record.msg, level=levelname)
         # remove name
-        if colored_record.name.startswith("bbot.modules."):
-            colored_record.name = colored_record.name.split("bbot.modules.")[-1]
+        if colored_record.name.startswith("saudit.modules."):
+            colored_record.name = colored_record.name.split("saudit.modules.")[-1]
             return self.module_formatter.format(colored_record)
         return self.formatter.format(colored_record)
 
 
-class BBOTLogger:
+class SAUDITLogger:
     """
-    The main BBOT logger.
+    The main SAUDIT logger.
 
-    The job of this class is to manage the different log handlers in BBOT,
+    The job of this class is to manage the different log handlers in SAUDIT,
     allow adding new log handlers, and easily switching log levels on the fly.
     """
 
@@ -66,8 +66,8 @@ class BBOTLogger:
         self.listener = None
 
         # if we haven't set up logging yet, do it now
-        if "_BBOT_LOGGING_SETUP" not in os.environ:
-            os.environ["_BBOT_LOGGING_SETUP"] = "1"
+        if "_SAUDIT_LOGGING_SETUP" not in os.environ:
+            os.environ["_SAUDIT_LOGGING_SETUP"] = "1"
             self.queue = multiprocessing.Queue()
             self.setup_queue_handler()
             # Start the QueueListener
@@ -203,14 +203,14 @@ class BBOTLogger:
         if self._log_handlers is None:
             log_dir = Path(self.core.home) / "logs"
             if not mkdir(log_dir, raise_error=False):
-                error_and_exit(f"Failure creating or error writing to BBOT logs directory ({log_dir})")
+                error_and_exit(f"Failure creating or error writing to SAUDIT logs directory ({log_dir})")
 
             # Main log file
-            main_handler = GzipRotatingFileHandler(f"{log_dir}/bbot.log", maxBytes=1024 * 1024 * 100, backupCount=100)
+            main_handler = GzipRotatingFileHandler(f"{log_dir}/saudit.log", maxBytes=1024 * 1024 * 100, backupCount=100)
 
             # Separate log file for debugging
             debug_handler = GzipRotatingFileHandler(
-                f"{log_dir}/bbot.debug.log", maxBytes=1024 * 1024 * 100, backupCount=100
+                f"{log_dir}/saudit.debug.log", maxBytes=1024 * 1024 * 100, backupCount=100
             )
 
             # Log to stderr

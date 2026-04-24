@@ -13,12 +13,12 @@ class TestMySQL(ModuleTestBase):
             "docker",
             "run",
             "--name",
-            "bbot-test-mysql",
+            "saudit-test-mysql",
             "--rm",
             "-e",
-            "MYSQL_ROOT_PASSWORD=bbotislife",
+            "MYSQL_ROOT_PASSWORD=sauditislife",
             "-e",
-            "MYSQL_DATABASE=bbot",
+            "MYSQL_DATABASE=saudit",
             "-p",
             "3306:3306",
             "-d",
@@ -34,7 +34,7 @@ class TestMySQL(ModuleTestBase):
         start_time = time.time()
         while True:
             try:
-                conn = await aiomysql.connect(user="root", password="bbotislife", db="bbot", host="localhost")
+                conn = await aiomysql.connect(user="root", password="sauditislife", db="saudit", host="localhost")
                 conn.close()
                 break
             except Exception as e:
@@ -50,7 +50,7 @@ class TestMySQL(ModuleTestBase):
         import aiomysql
 
         # Connect to the MySQL database
-        conn = await aiomysql.connect(user="root", password="bbotislife", db="bbot", host="localhost")
+        conn = await aiomysql.connect(user="root", password="sauditislife", db="saudit", host="localhost")
 
         try:
             async with conn.cursor() as cur:
@@ -68,7 +68,7 @@ class TestMySQL(ModuleTestBase):
         finally:
             conn.close()
             process = await asyncio.create_subprocess_exec(
-                "docker", "stop", "bbot-test-mysql", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                "docker", "stop", "saudit-test-mysql", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
             stdout, stderr = await process.communicate()
 

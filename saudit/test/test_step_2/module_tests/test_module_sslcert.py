@@ -2,7 +2,7 @@ from .base import ModuleTestBase
 
 
 class TestSSLCert(ModuleTestBase):
-    targets = ["127.0.0.1:9999", "bbottest.notreal"]
+    targets = ["127.0.0.1:9999", "saudittest.notreal"]
     config_overrides = {"scope": {"report_distance": 1}}
 
     def check(self, module_test, events):
@@ -11,7 +11,7 @@ class TestSSLCert(ModuleTestBase):
             [
                 e
                 for e in events
-                if e.data == "www.bbottest.notreal" and str(e.module) == "sslcert" and e.scope_distance == 0
+                if e.data == "www.saudittest.notreal" and str(e.module) == "sslcert" and e.scope_distance == 0
             ]
         ), "Failed to detect subject alternate name (SAN)"
         assert 1 == len(

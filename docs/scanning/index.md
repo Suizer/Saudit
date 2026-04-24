@@ -2,20 +2,20 @@
 
 ## Scan Names
 
-Every BBOT scan gets a random, mildly-entertaining name like **`demonic_jimmy`**. Output for that scan, including scan stats and any web screenshots, are saved to a folder by that name in `~/.bbot/scans`. The most recent 20 scans are kept, and older ones are removed.
+Every SAUDIT scan gets a random, mildly-entertaining name like **`demonic_jimmy`**. Output for that scan, including scan stats and any web screenshots, are saved to a folder by that name in `~/.saudit/scans`. The most recent 20 scans are kept, and older ones are removed.
 
-If you don't want a random name, you can change it with `-n`. You can also change the location of BBOT's output with `-o`:
+If you don't want a random name, you can change it with `-n`. You can also change the location of SAUDIT's output with `-o`:
 
 ```bash
 # save everything to the folder "my_scan" in the current directory
-bbot -t evilcorp.com -f subdomain-enum -m gowitness -n my_scan -o .
+saudit -t evilcorp.com -f subdomain-enum -m gowitness -n my_scan -o .
 ```
 
-If you reuse a scan name, BBOT will automatically append to your previous output files.
+If you reuse a scan name, SAUDIT will automatically append to your previous output files.
 
 ## Targets (`-t`)
 
-Targets declare what's in-scope, and seed a scan with initial data. BBOT accepts an unlimited number of targets. They can be any of the following:
+Targets declare what's in-scope, and seed a scan with initial data. SAUDIT accepts an unlimited number of targets. They can be any of the following:
 
 - `DNS_NAME` (`evilcorp.com`)
 - `IP_ADDRESS` (`1.2.3.4`)
@@ -28,7 +28,7 @@ Targets declare what's in-scope, and seed a scan with initial data. BBOT accepts
 - `FILESYSTEM` (`FILESYSTEM:/tmp/asdf`)
 - `MOBILE_APP` (`MOBILE_APP:https://play.google.com/store/apps/details?id=com.evilcorp.app`)
 
-Note that BBOT only discriminates down to the host level. This means, for example, if you specify a URL `https://www.evilcorp.com` as the target, the scan will be *seeded* with that URL, but the scope of the scan will be the entire host, `www.evilcorp.com`. Other ports/URLs on that same host may also be scanned.
+Note that SAUDIT only discriminates down to the host level. This means, for example, if you specify a URL `https://www.evilcorp.com` as the target, the scan will be *seeded* with that URL, but the scope of the scan will be the entire host, `www.evilcorp.com`. Other ports/URLs on that same host may also be scanned.
 
 You can specify targets directly on the command line, load them from files, or both! For example:
 
@@ -42,20 +42,20 @@ evilcorp.co.uk
 https://www.evilcorp.co.uk
 
 # load targets from a file and from the command-line
-$ bbot -t targets.txt fsociety.com 5.6.7.0/24 -m portscan
+$ saudit -t targets.txt fsociety.com 5.6.7.0/24 -m portscan
 ```
 
-On start, BBOT automatically converts Targets into [Events](events.md).
+On start, SAUDIT automatically converts Targets into [Events](events.md).
 
 ## Modules (`-m`)
 
-To see a full list of modules and their descriptions, use `bbot -l` or see [List of Modules](../modules/list_of_modules.md).
+To see a full list of modules and their descriptions, use `saudit -l` or see [List of Modules](../modules/list_of_modules.md).
 
-Modules are the part of BBOT that does the work -- port scanning, subdomain brute-forcing, API querying, etc. Modules consume [Events](events.md) (`IP_ADDRESS`, `DNS_NAME`, etc.) from each other, process the data in a useful way, then emit the results as new events. You can enable individual modules with `-m`.
+Modules are the part of SAUDIT that does the work -- port scanning, subdomain brute-forcing, API querying, etc. Modules consume [Events](events.md) (`IP_ADDRESS`, `DNS_NAME`, etc.) from each other, process the data in a useful way, then emit the results as new events. You can enable individual modules with `-m`.
 
 ```bash
 # Enable modules: portscan, sslcert, and httpx
-bbot -t www.evilcorp.com -m portscan sslcert httpx
+saudit -t www.evilcorp.com -m portscan sslcert httpx
 ```
 
 ### Types of Modules
@@ -76,11 +76,11 @@ For details in the inner workings of modules, see [How to Write a Module](../dev
 
 ## Flags (`-f`)
 
-Flags are how BBOT categorizes its modules. In a way, you can think of them as groups. Flags let you enable a bunch of similar modules at the same time without having to specify them each individually. For example, `-f subdomain-enum` would enable every module with the `subdomain-enum` flag.
+Flags are how SAUDIT categorizes its modules. In a way, you can think of them as groups. Flags let you enable a bunch of similar modules at the same time without having to specify them each individually. For example, `-f subdomain-enum` would enable every module with the `subdomain-enum` flag.
 
 ```bash
 # list all subdomain-enum modules
-bbot -f subdomain-enum -l
+saudit -f subdomain-enum -l
 ```
 
 ### Filtering Modules
@@ -97,21 +97,21 @@ Every module is either `safe` or `aggressive`, and either `active` or `passive`.
 
 ```bash
 # Enable safe modules but exclude active ones
-bbot -t evilcorp.com -f safe -ef active
+saudit -t evilcorp.com -f safe -ef active
 ```
 
 This is equivalent to requiring the passive flag:
 
 ```bash
 # Enable safe modules but only if they're also passive
-bbot -t evilcorp.com -f safe -rf passive
+saudit -t evilcorp.com -f safe -rf passive
 ```
 
 A single module can have multiple flags. For example, the `securitytrails` module is `passive`, `safe`, `subdomain-enum`. Below is a full list of flags and their associated modules.
 
 ### List of Flags
 
-<!-- BBOT MODULE FLAGS -->
+<!-- SAUDIT MODULE FLAGS -->
 | Flag             | # Modules   | Description                                                    | Modules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 |------------------|-------------|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | safe             | 98          | Non-intrusive, safe to run                                     | affiliates, aggregate, ajaxpro, anubisdb, apkpure, asn, aspnet_bin_exposure, azure_realm, azure_tenant, baddns, baddns_direct, baddns_zone, badsecrets, bevigil, bucket_amazon, bucket_digitalocean, bucket_file_enum, bucket_firebase, bucket_google, bucket_microsoft, bufferoverrun, builtwith, c99, censys_dns, censys_ip, certspotter, chaos, code_repository, credshed, crt, crt_db, dehashed, digitorus, dnsbimi, dnscaa, dnscommonsrv, dnsdumpster, dnstlsrpt, docker_pull, dockerhub, emailformat, extractous, filedownload, fingerprintx, fullhunt, git, git_clone, gitdumper, github_codesearch, github_org, github_usersearch, github_workflows, gitlab_com, gitlab_onprem, google_playstore, gowitness, graphql_introspection, hackertarget, httpx, hunt, hunterio, iis_shortnames, ip2location, ipstack, jadx, leakix, myssl, newsletters, ntlm, oauth, otx, passivetotal, pgp, portfilter, portscan, postman, postman_download, rapiddns, reflected_parameters, retirejs, robots, securitytrails, securitytxt, shodan_dns, shodan_idb, sitedossier, skymem, social, sslcert, subdomaincenter, subdomainradar, trickest, trufflehog, unarchive, urlscan, viewdns, virustotal, wayback |
@@ -136,11 +136,11 @@ A single module can have multiple flags. For example, the `securitytrails` modul
 | service-enum     | 1           | Identifies protocols running on open ports                     | fingerprintx                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | subdomain-hijack | 1           | Detects hijackable subdomains                                  | baddns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | web-screenshots  | 1           | Takes screenshots of web pages                                 | gowitness                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-<!-- END BBOT MODULE FLAGS -->
+<!-- END SAUDIT MODULE FLAGS -->
 
 ## Dependencies
 
-BBOT modules have external dependencies ranging from OS packages (`openssl`) to binaries (`nuclei`) to Python libraries (`wappalyzer`). When a module is enabled, installation of its dependencies happens at runtime with [Ansible](https://github.com/ansible/ansible). BBOT provides several command-line flags to control how dependencies are installed.
+SAUDIT modules have external dependencies ranging from OS packages (`openssl`) to binaries (`nuclei`) to Python libraries (`wappalyzer`). When a module is enabled, installation of its dependencies happens at runtime with [Ansible](https://github.com/ansible/ansible). SAUDIT provides several command-line flags to control how dependencies are installed.
 
 - `--no-deps` - Don't install module dependencies
 - `--force-deps` - Force install all module dependencies
@@ -148,29 +148,29 @@ BBOT modules have external dependencies ranging from OS packages (`openssl`) to 
 - `--ignore-failed-deps` - Run modules even if they have failed dependencies
 - `--install-all-deps` - Install dependencies for all modules (useful if you are provisioning a pentest system and want to install everything ahead of time)
 
-For details on how Ansible playbooks are attached to BBOT modules, see [How to Write a Module](../dev/module_howto.md#module-dependencies).
+For details on how Ansible playbooks are attached to SAUDIT modules, see [How to Write a Module](../dev/module_howto.md#module-dependencies).
 
 ## Scope
 
-For pentesters and bug bounty hunters, staying in scope is extremely important. BBOT takes this seriously, meaning that active modules (e.g. `nuclei`) will only touch in-scope resources.
+For pentesters and bug bounty hunters, staying in scope is extremely important. SAUDIT takes this seriously, meaning that active modules (e.g. `nuclei`) will only touch in-scope resources.
 
 By default, scope is whatever you specify with `-t`. This includes child subdomains. For example, if you specify `-t evilcorp.com`, all its subdomains (`www.evilcorp.com`, `mail.evilcorp.com`, etc.) also become in-scope.
 
 ### Scope Distance
 
-Since BBOT is recursive, it would quickly resort to scanning the entire internet without some kind of restraining mechanism. To solve this problem, every [event](events.md) discovered by BBOT is assigned a **Scope Distance**. Scope distance represents how far out from the main scope that data was discovered.
+Since SAUDIT is recursive, it would quickly resort to scanning the entire internet without some kind of restraining mechanism. To solve this problem, every [event](events.md) discovered by SAUDIT is assigned a **Scope Distance**. Scope distance represents how far out from the main scope that data was discovered.
 
-For example, if your target is `evilcorp.com`, `www.evilcorp.com` would have a scope distance of `0` (i.e. in-scope). If BBOT discovers that `www.evilcorp.com` resolves to `1.2.3.4`, `1.2.3.4` is one hop away, which means it would have a scope distance of `1`. If `1.2.3.4` has a PTR record that points to `ecorp.blob.core.windows.net`, `ecorp.blob.core.windows.net` is two hops away, so its scope distance is `2`.
+For example, if your target is `evilcorp.com`, `www.evilcorp.com` would have a scope distance of `0` (i.e. in-scope). If SAUDIT discovers that `www.evilcorp.com` resolves to `1.2.3.4`, `1.2.3.4` is one hop away, which means it would have a scope distance of `1`. If `1.2.3.4` has a PTR record that points to `ecorp.blob.core.windows.net`, `ecorp.blob.core.windows.net` is two hops away, so its scope distance is `2`.
 
 Scope distance continues to increase the further out you get. Most modules (e.g. `nuclei` and `portscan`) only consume in-scope events. Certain other passive modules such as `asn` accept out to distance `1`. By default, DNS resolution happens out to a distance of `2`. Upon its discovery, any [event](events.md) that's determined to be in-scope (e.g. `www.evilcorp.com`) immediately becomes distance `0`, and the cycle starts over.
 
 #### Displaying Out-of-scope Events
 
-By default, BBOT only displays in-scope events (with a few exceptions such as `STORAGE_BUCKET`s). If you want to see more, you must increase the [config](configuration.md) value of `scope.report_distance`:
+By default, SAUDIT only displays in-scope events (with a few exceptions such as `STORAGE_BUCKET`s). If you want to see more, you must increase the [config](configuration.md) value of `scope.report_distance`:
 
 ```bash
 # display out-of-scope events up to one hop away from the main scope
-bbot -t evilcorp.com -f subdomain-enum -c scope.report_distance=1
+saudit -t evilcorp.com -f subdomain-enum -c scope.report_distance=1
 ```
 
 ### Strict Scope
@@ -181,7 +181,7 @@ Note that `--strict-scope` only applies to targets and whitelists, but not black
 
 ### Whitelists and Blacklists
 
-BBOT allows precise control over scope with whitelists and blacklists. These both use the same syntax as `--target`, meaning they accept the same event types, and you can specify an unlimited number of them, via a file, the CLI, or both.
+SAUDIT allows precise control over scope with whitelists and blacklists. These both use the same syntax as `--target`, meaning they accept the same event types, and you can specify an unlimited number of them, via a file, the CLI, or both.
 
 #### Whitelists
 
@@ -189,7 +189,7 @@ BBOT allows precise control over scope with whitelists and blacklists. These bot
 
 ```bash
 # Seed scan with evilcorp.com, but restrict scope to 1.2.3.0/24
-bbot -t evilcorp.com --whitelist 1.2.3.0/24 -f subdomain-enum -m portscan nuclei --allow-deadly
+saudit -t evilcorp.com --whitelist 1.2.3.0/24 -f subdomain-enum -m portscan nuclei --allow-deadly
 ```
 
 #### Blacklists
@@ -198,7 +198,7 @@ bbot -t evilcorp.com --whitelist 1.2.3.0/24 -f subdomain-enum -m portscan nuclei
 
 ```bash
 # Scan evilcorp.com, but exclude internal.evilcorp.com and its children
-bbot -t evilcorp.com --blacklist internal.evilcorp.com -f subdomain-enum -m portscan nuclei --allow-deadly
+saudit -t evilcorp.com --blacklist internal.evilcorp.com -f subdomain-enum -m portscan nuclei --allow-deadly
 ```
 
 #### Blacklist by Regex
@@ -208,7 +208,7 @@ Blacklists also accept regex patterns. These regexes are are checked against the
 To specify a regex, prefix the pattern with `RE:`. For example, to exclude all events containing "signout", you could do:
 
 ```bash
-bbot -t evilcorp.com --blacklist "RE:signout"
+saudit -t evilcorp.com --blacklist "RE:signout"
 ```
 
 Note that this would blacklist both of the following events:
@@ -219,7 +219,7 @@ Note that this would blacklist both of the following events:
 If you only want to blacklist the URL, you could narrow the regex like so:
 
 ```bash
-bbot -t evilcorp.com --blacklist 'RE:signout\.aspx$'
+saudit -t evilcorp.com --blacklist 'RE:signout\.aspx$'
 ```
 
 Similar to targets and whitelists, blacklists can be specified in your preset. The `spider` preset makes use of this to prevent the spider from following logout links:
@@ -246,7 +246,7 @@ config:
 
 ## DNS Wildcards
 
-BBOT has robust wildcard detection built-in. It can reliably detect wildcard domains, and will tag them accordingly:
+SAUDIT has robust wildcard detection built-in. It can reliably detect wildcard domains, and will tag them accordingly:
 
 ```text
 [DNS_NAME]      github.io   TARGET  (a-record, a-wildcard-domain, aaaa-wildcard-domain, wildcard-domain)
@@ -262,16 +262,16 @@ Wildcard hosts are collapsed into a single host beginning with `_wildcard`:
 
 If you don't want this, you can disable wildcard detection on a domain-to-domain basis in the [config](configuration.md):
 
-```yaml title="~/.bbot/config/bbot.yml"
+```yaml title="~/.saudit/config/saudit.yml"
 dns:
   wildcard_ignore:
     - evilcorp.com
     - evilcorp.co.uk
 ```
 
-There are certain edge cases (such as with dynamic DNS rules) where BBOT's wildcard detection fails. In these cases, you can try increasing the number of wildcard checks in the config:
+There are certain edge cases (such as with dynamic DNS rules) where SAUDIT's wildcard detection fails. In these cases, you can try increasing the number of wildcard checks in the config:
 
-```yaml title="~/.bbot/config/bbot.yml"
+```yaml title="~/.saudit/config/saudit.yml"
 # default == 10
 dns:
   wildcard_tests: 20

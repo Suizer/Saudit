@@ -19,7 +19,7 @@ dnsresolve: True
 cloudcheck: True
 ```
 
-These modules are executing core functionality that is normally essential for a typical BBOT scan. Let's take a quick look at each one's functionality:
+These modules are executing core functionality that is normally essential for a typical SAUDIT scan. Let's take a quick look at each one's functionality:
 
 ### aggregate
 
@@ -31,7 +31,7 @@ The cloud module looks at events and tries to determine if they are associated w
 
 ### dns
 
-The DNS internal module controls the basic DNS resolution the BBOT performs, and all of the supporting machinery like wildcard detection, etc.
+The DNS internal module controls the basic DNS resolution the SAUDIT performs, and all of the supporting machinery like wildcard detection, etc.
 
 ### excavate
 
@@ -41,7 +41,7 @@ Here is a summary of the data it produces:
 
 #### URLs
 
-By extracting URLs from all visited pages, this is actually already half of a web-spider. The other half is recursion, which is baked in to BBOT from the ground up. Therefore, protections are in place by default in the form of `web_spider_distance` and `web_spider_depth` settings. These settings govern restrictions to URLs recursively harvested from HTTP responses, preventing endless runaway scans. However, in the right situation the controlled use of a web-spider is extremely powerful.
+By extracting URLs from all visited pages, this is actually already half of a web-spider. The other half is recursion, which is baked in to SAUDIT from the ground up. Therefore, protections are in place by default in the form of `web_spider_distance` and `web_spider_depth` settings. These settings govern restrictions to URLs recursively harvested from HTTP responses, preventing endless runaway scans. However, in the right situation the controlled use of a web-spider is extremely powerful.
 
 #### Parameter Extraction
 
@@ -57,16 +57,16 @@ Detect email addresses within HTTP_RESPONSE data.
 Scans for verbose error messages in HTTP responses and raw text data. By identifying specific error signatures from various programming languages and frameworks, this feature helps uncover misconfigurations, debugging information, and potential vulnerabilities. This insight is invaluable for identifying weak points or anomalies in web applications.
 
 #### Content Security Policy (CSP) Extraction
-The CSP extraction capability focuses on extracting domains from Content-Security-Policy headers. By analyzing these headers, BBOT can identify additional domains which can get fed back into the scan.
+The CSP extraction capability focuses on extracting domains from Content-Security-Policy headers. By analyzing these headers, SAUDIT can identify additional domains which can get fed back into the scan.
 
 #### Serialization Detection
 Serialized objects are a common source of serious security vulnerabilities. Excavate aims to detect those used in Java, .NET, and PHP applications.
 
 #### Functionality Detection
-Looks for specific web functionalities such as file upload fields and WSDL URLs. By identifying these elements, BBOT can pinpoint areas of the application that may require further scrutiny for security vulnerabilities.
+Looks for specific web functionalities such as file upload fields and WSDL URLs. By identifying these elements, SAUDIT can pinpoint areas of the application that may require further scrutiny for security vulnerabilities.
 
 #### Non-HTTP Scheme Detection
-The non-HTTP scheme detection capability extracts URLs with non-HTTP schemes, such as ftp, mailto, and javascript. By identifying these URLs, BBOT can uncover additional vectors for attack or information leakage.
+The non-HTTP scheme detection capability extracts URLs with non-HTTP schemes, such as ftp, mailto, and javascript. By identifying these URLs, SAUDIT can uncover additional vectors for attack or information leakage.
 
 #### Custom Yara Rules
 
@@ -74,7 +74,7 @@ Excavate supports the use of custom YARA rules, which will be added to the other
 
 ### speculate
 
-Speculate is all about inferring one data type from another, particularly when certain tools like port scanners are not enabled. This is essential functionality for most BBOT scans, allowing for the discovery of web resources when starting with a DNS-only target list without a port scanner. It bridges gaps in the data, providing a more comprehensive view of the target by leveraging existing information.
+Speculate is all about inferring one data type from another, particularly when certain tools like port scanners are not enabled. This is essential functionality for most SAUDIT scans, allowing for the discovery of web resources when starting with a DNS-only target list without a port scanner. It bridges gaps in the data, providing a more comprehensive view of the target by leveraging existing information.
 
 * IP_RANGE: Converts an IP range into individual IP addresses and emits them as IP_ADDRESS events.
 * DNS_NAME: Generates parent domains from DNS names.

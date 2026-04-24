@@ -41,7 +41,7 @@ def colorize(s, level="INFO"):
 
 def log_to_stderr(msg, level="INFO", logname=True):
     """
-    Print to stderr with BBOT logger colors
+    Print to stderr with SAUDIT logger colors
     """
     levelname = level.upper()
     if not any(x in sys.argv for x in ("-s", "--silent")):

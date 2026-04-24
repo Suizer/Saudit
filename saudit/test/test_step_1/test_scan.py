@@ -1,6 +1,6 @@
 from ipaddress import ip_network
 
-from ..bbot_fixtures import *
+from ..saudit_fixtures import *
 
 
 @pytest.mark.asyncio
@@ -8,9 +8,9 @@ async def test_scan(
     events,
     helpers,
     monkeypatch,
-    bbot_scanner,
+    saudit_scanner,
 ):
-    scan0 = bbot_scanner(
+    scan0 = saudit_scanner(
         "1.1.1.0",
         "1.1.1.1/31",
         "evilcorp.com",
@@ -42,7 +42,7 @@ async def test_scan(
     assert set(j["target"]["blacklist"]) == {"1.1.1.0/28", "www.evilcorp.com"}
     assert "ipneighbor" in j["preset"]["modules"]
 
-    scan1 = bbot_scanner("1.1.1.1", whitelist=["1.0.0.1"])
+    scan1 = saudit_scanner("1.1.1.1", whitelist=["1.0.0.1"])
     assert not scan1.blacklisted("1.1.1.1")
     assert not scan1.blacklisted("1.0.0.1")
     assert not scan1.whitelisted("1.1.1.1")
@@ -50,7 +50,7 @@ async def test_scan(
     assert scan1.in_scope("1.0.0.1")
     assert not scan1.in_scope("1.1.1.1")
 
-    scan2 = bbot_scanner("1.1.1.1")
+    scan2 = saudit_scanner("1.1.1.1")
     assert not scan2.blacklisted("1.1.1.1")
     assert not scan2.blacklisted("1.0.0.1")
     assert scan2.whitelisted("1.1.1.1")
@@ -64,7 +64,7 @@ async def test_scan(
     }
 
     # make sure DNS resolution works
-    scan4 = bbot_scanner("1.1.1.1", config={"dns": {"minimal": False}})
+    scan4 = saudit_scanner("1.1.1.1", config={"dns": {"minimal": False}})
     await scan4.helpers.dns._mock_dns(dns_table)
     events = []
     async for event in scan4.async_start():
@@ -73,7 +73,7 @@ async def test_scan(
     assert "one.one.one.one" in event_data
 
     # make sure it doesn't work when you turn it off
-    scan5 = bbot_scanner("1.1.1.1", config={"dns": {"minimal": True}})
+    scan5 = saudit_scanner("1.1.1.1", config={"dns": {"minimal": True}})
     await scan5.helpers.dns._mock_dns(dns_table)
     events = []
     async for event in scan5.async_start():
@@ -84,12 +84,12 @@ async def test_scan(
     for scan in (scan0, scan1, scan2, scan4, scan5):
         await scan._cleanup()
 
-    scan6 = bbot_scanner("a.foobar.io", "b.foobar.io", "c.foobar.io", "foobar.io")
+    scan6 = saudit_scanner("a.foobar.io", "b.foobar.io", "c.foobar.io", "foobar.io")
     assert len(scan6.dns_strings) == 1
 
 
 @pytest.mark.asyncio
-async def test_task_scan_handle_event_timeout(bbot_scanner):
+async def test_task_scan_handle_event_timeout(saudit_scanner):
     from saudit.modules.base import BaseModule
 
     # make a module that takes a long time to handle an event
@@ -123,7 +123,7 @@ async def test_task_scan_handle_event_timeout(bbot_scanner):
                 raise
 
     # scan with both modules
-    scan = bbot_scanner(
+    scan = saudit_scanner(
         "127.0.0.1",
         config={
             "module_handle_event_timeout": 5,
@@ -145,8 +145,8 @@ async def test_task_scan_handle_event_timeout(bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_url_extension_handling(bbot_scanner):
-    scan = bbot_scanner(config={"url_extension_blacklist": ["css"]})
+async def test_url_extension_handling(saudit_scanner):
+    scan = saudit_scanner(config={"url_extension_blacklist": ["css"]})
     await scan._prep()
     assert scan.url_extension_blacklist == {"css"}
     good_event = scan.make_event("https://evilcorp.com/a.txt", "URL", tags=["status-200"], parent=scan.root_event)
@@ -177,10 +177,10 @@ async def test_speed_counter():
 
 
 @pytest.mark.asyncio
-async def test_python_output_matches_json(bbot_scanner):
+async def test_python_output_matches_json(saudit_scanner):
     import json
 
-    scan = bbot_scanner(
+    scan = saudit_scanner(
         "blacklanternsecurity.com",
         config={"speculate": True, "dns": {"minimal": False}, "scope": {"report_distance": 10}},
     )
@@ -202,9 +202,9 @@ async def test_python_output_matches_json(bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_huge_target_list(bbot_scanner, monkeypatch):
+async def test_huge_target_list(saudit_scanner, monkeypatch):
     # single target should only have one rule
-    scan = bbot_scanner("evilcorp.com", config={"excavate": True})
+    scan = saudit_scanner("evilcorp.com", config={"excavate": True})
     await scan._prep()
     assert "hostname_extraction_0" in scan.modules["excavate"].yara_rules_dict
     assert "hostname_extraction_1" not in scan.modules["excavate"].yara_rules_dict
@@ -212,7 +212,7 @@ async def test_huge_target_list(bbot_scanner, monkeypatch):
     # over 10000 targets should be broken into two rules
     num_targets = 10005
     targets = [f"evil{i}.com" for i in range(num_targets)]
-    scan = bbot_scanner(*targets, config={"excavate": True})
+    scan = saudit_scanner(*targets, config={"excavate": True})
     await scan._prep()
     assert "hostname_extraction_0" in scan.modules["excavate"].yara_rules_dict
     assert "hostname_extraction_1" in scan.modules["excavate"].yara_rules_dict
@@ -220,10 +220,10 @@ async def test_huge_target_list(bbot_scanner, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_exclude_cdn(bbot_scanner, monkeypatch):
+async def test_exclude_cdn(saudit_scanner, monkeypatch):
     # test that CDN exclusion works
 
-    from bbot import Preset
+    from saudit import Preset
 
     dns_mock = {
         "evilcorp.com": {"A": ["127.0.0.1"]},
@@ -231,7 +231,7 @@ async def test_exclude_cdn(bbot_scanner, monkeypatch):
     }
 
     # first, run a scan with no CDN exclusion
-    scan = bbot_scanner("evilcorp.com")
+    scan = saudit_scanner("evilcorp.com")
     await scan.helpers._mock_dns(dns_mock)
 
     from saudit.modules.base import BaseModule
@@ -259,13 +259,13 @@ async def test_exclude_cdn(bbot_scanner, monkeypatch):
         "www.evilcorp.com:8080",
     }
 
-    monkeypatch.setattr("sys.argv", ["bbot", "-t", "evilcorp.com", "--exclude-cdn"])
+    monkeypatch.setattr("sys.argv", ["saudit", "-t", "evilcorp.com", "--exclude-cdn"])
 
     # then run a scan with --exclude-cdn enabled
     preset = Preset("evilcorp.com")
     preset.parse_args()
     assert preset.bake().to_yaml() == "modules:\n- portfilter\n"
-    scan = bbot_scanner("evilcorp.com", preset=preset)
+    scan = saudit_scanner("evilcorp.com", preset=preset)
     await scan.helpers._mock_dns(dns_mock)
     dummy = DummyModule(scan=scan)
     await scan._prep()
@@ -279,7 +279,7 @@ async def test_exclude_cdn(bbot_scanner, monkeypatch):
     }
 
 
-async def test_scan_name(bbot_scanner):
-    scan = bbot_scanner("evilcorp.com", name="test_scan_name")
+async def test_scan_name(saudit_scanner):
+    scan = saudit_scanner("evilcorp.com", name="test_scan_name")
     assert scan.name == "test_scan_name"
     assert scan.preset.scan_name == "test_scan_name"

@@ -2,7 +2,7 @@ import json
 import random
 import ipaddress
 
-from ..bbot_fixtures import *
+from ..saudit_fixtures import *
 from saudit.scanner import Scanner
 from saudit.core.helpers.regexes import event_uuid_regex
 
@@ -792,7 +792,7 @@ async def test_event_discovery_context():
     await scan._cleanup()
 
     # test to make sure this doesn't come back
-    #  https://github.com/blacklanternsecurity/bbot/issues/1498
+    #  https://github.com/blacklanternsecurity/saudit/issues/1498
     scan = Scanner("http://blacklanternsecurity.com", config={"dns": {"minimal": False}})
     await scan.helpers.dns._mock_dns(
         {"blacklanternsecurity.com": {"TXT": ["blsops.com"], "A": ["127.0.0.1"]}, "blsops.com": {"A": ["127.0.0.1"]}}
@@ -806,12 +806,12 @@ async def test_event_discovery_context():
 
 
 @pytest.mark.asyncio
-async def test_event_web_spider_distance(bbot_scanner):
+async def test_event_web_spider_distance(saudit_scanner):
     # make sure web spider distance inheritance works as intended
     # and we don't have any runaway situations with SOCIAL events + URLs
 
     # URL_UNVERIFIED events should not increment web spider distance
-    scan = bbot_scanner(config={"web": {"spider_distance": 1}})
+    scan = saudit_scanner(config={"web": {"spider_distance": 1}})
     url_event_1 = scan.make_event("http://www.evilcorp.com/test1", "URL_UNVERIFIED", parent=scan.root_event)
     assert url_event_1.web_spider_distance == 0
     url_event_2 = scan.make_event("http://www.evilcorp.com/test2", "URL_UNVERIFIED", parent=url_event_1)
@@ -824,7 +824,7 @@ async def test_event_web_spider_distance(bbot_scanner):
     assert "spider-max" not in url_event_3.tags
 
     # URL events should increment web spider distance
-    scan = bbot_scanner(config={"web": {"spider_distance": 1}})
+    scan = saudit_scanner(config={"web": {"spider_distance": 1}})
     url_event_1 = scan.make_event("http://www.evilcorp.com/test1", "URL", parent=scan.root_event, tags="status-200")
     assert url_event_1.web_spider_distance == 0
     url_event_2 = scan.make_event("http://www.evilcorp.com/test2", "URL", parent=url_event_1, tags="status-200")
@@ -993,7 +993,7 @@ def test_event_magic():
 
     zip_base64 = "UEsDBAoDAAAAAOMmZ1lR4FaHBQAAAAUAAAAIAAAAYXNkZi50eHRhc2RmClBLAQI/AwoDAAAAAOMmZ1lR4FaHBQAAAAUAAAAIACQAAAAAAAAAIICkgQAAAABhc2RmLnR4dAoAIAAAAAAAAQAYAICi2B77MNsBgKLYHvsw2wGAotge+zDbAVBLBQYAAAAAAQABAFoAAAArAAAAAAA="
     zip_bytes = base64.b64decode(zip_base64)
-    zip_file = Path("/tmp/.bbottestzipasdkfjalsdf.zip")
+    zip_file = Path("/tmp/.saudittestzipasdkfjalsdf.zip")
     with open(zip_file, "wb") as f:
         f.write(zip_bytes)
 
@@ -1009,7 +1009,7 @@ def test_event_magic():
     scan = Scanner()
     event = scan.make_event({"path": zip_file}, "FILESYSTEM", parent=scan.root_event)
     assert event.data == {
-        "path": "/tmp/.bbottestzipasdkfjalsdf.zip",
+        "path": "/tmp/.saudittestzipasdkfjalsdf.zip",
         "magic_extension": ".zip",
         "magic_mime_type": "application/zip",
         "magic_description": "PKZIP Archive file",

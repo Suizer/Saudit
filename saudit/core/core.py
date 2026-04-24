@@ -5,18 +5,18 @@ from pathlib import Path
 from contextlib import suppress
 from omegaconf import OmegaConf
 
-from saudit.errors import BBOTError
+from saudit.errors import SAUDITError
 from .multiprocess import SHARED_INTERPRETER_STATE
 
 
 DEFAULT_CONFIG = None
 
 
-class BBOTCore:
+class SAUDITCore:
     """
-    This is the first thing that loads when you import BBOT.
+    This is the first thing that loads when you import SAUDIT.
 
-    Unlike a Preset, BBOTCore holds only the config, not scan-specific stuff like targets, flags, modules, etc.
+    Unlike a Preset, SAUDITCore holds only the config, not scan-specific stuff like targets, flags, modules, etc.
 
     Its main jobs are:
 
@@ -46,19 +46,19 @@ class BBOTCore:
 
     def _prep_multiprocessing(self):
         import multiprocessing
-        from .helpers.process import BBOTProcess
+        from .helpers.process import SAUDITProcess
 
         if SHARED_INTERPRETER_STATE.is_main_process:
-            # if this is the main bbot process, set the logger and queue for the first time
+            # if this is the main saudit process, set the logger and queue for the first time
             from functools import partialmethod
 
-            BBOTProcess.__init__ = partialmethod(
-                BBOTProcess.__init__, log_level=self.logger.log_level, log_queue=self.logger.queue
+            SAUDITProcess.__init__ = partialmethod(
+                SAUDITProcess.__init__, log_level=self.logger.log_level, log_queue=self.logger.queue
             )
 
         # this makes our process class the default for process pools, etc.
         mp_context = multiprocessing.get_context("spawn")
-        mp_context.Process = BBOTProcess
+        mp_context.Process = SAUDITProcess
 
     @property
     def home(self):
@@ -100,14 +100,14 @@ class BBOTCore:
     @property
     def default_config(self):
         """
-        The default BBOT config (from `defaults.yml`). Read-only.
+        The default SAUDIT config (from `defaults.yml`). Read-only.
         """
         global DEFAULT_CONFIG
         if DEFAULT_CONFIG is None:
             self.default_config = self.files_config.get_default_config()
-            # ensure bbot home dir
+            # ensure saudit home dir
             if "home" not in self.default_config:
-                self.default_config["home"] = "~/.bbot"
+                self.default_config["home"] = "~/.saudit"
         return DEFAULT_CONFIG
 
     @default_config.setter
@@ -122,7 +122,7 @@ class BBOTCore:
     @property
     def custom_config(self):
         """
-        Custom BBOT config (from `~/.config/bbot/bbot.yml`)
+        Custom SAUDIT config (from `~/.config/saudit/saudit.yml`)
         """
         # we temporarily clear out the config so it can be refreshed if/when custom_config changes
         self._config = None
@@ -189,40 +189,40 @@ class BBOTCore:
     @property
     def files_config(self):
         """
-        Get the configs from `bbot.yml` and `defaults.yml`
+        Get the configs from `saudit.yml` and `defaults.yml`
         """
         if self._files_config is None:
             from .config import files
 
             self.files = files
-            self._files_config = files.BBOTConfigFiles(self)
+            self._files_config = files.SAUDITConfigFiles(self)
         return self._files_config
 
     def create_process(self, *args, **kwargs):
-        if os.environ.get("BBOT_TESTING", "") == "True":
+        if os.environ.get("SAUDIT_TESTING", "") == "True":
             process = self.create_thread(*args, **kwargs)
         else:
             if SHARED_INTERPRETER_STATE.is_scan_process:
-                from .helpers.process import BBOTProcess
+                from .helpers.process import SAUDITProcess
 
-                process = BBOTProcess(*args, **kwargs)
+                process = SAUDITProcess(*args, **kwargs)
             else:
                 import multiprocessing
 
-                raise BBOTError(f"Tried to start server from process {multiprocessing.current_process().name}")
+                raise SAUDITError(f"Tried to start server from process {multiprocessing.current_process().name}")
         process.daemon = True
         return process
 
     def create_thread(self, *args, **kwargs):
-        from .helpers.process import BBOTThread
+        from .helpers.process import SAUDITThread
 
-        return BBOTThread(*args, **kwargs)
+        return SAUDITThread(*args, **kwargs)
 
     @property
     def logger(self):
         self.config
         if self._logger is None:
-            from .config.logger import BBOTLogger
+            from .config.logger import SAUDITLogger
 
-            self._logger = BBOTLogger(self)
+            self._logger = SAUDITLogger(self)
         return self._logger

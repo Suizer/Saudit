@@ -86,7 +86,7 @@ class Nmap_XML(BaseOutputModule):
         nmaprun = Element(
             "nmaprun",
             {
-                "scanner": "bbot",
+                "scanner": "saudit",
                 "args": " ".join(sys.argv),
                 "start": scan_start_time,
                 "startstr": scan_start_time_str,
@@ -146,7 +146,7 @@ class Nmap_XML(BaseOutputModule):
             {
                 "time": scan_end_time_timestamp,
                 "timestr": scan_end_time_str,
-                "summary": f"BBOT done at {scan_end_time_str}; {num_hosts_up} scanned in {scan_duration} seconds",
+                "summary": f"SAUDIT done at {scan_end_time_str}; {num_hosts_up} scanned in {scan_duration} seconds",
                 "elapsed": str(scan_duration.total_seconds()),
                 "exit": "success",
             },

@@ -58,9 +58,9 @@ class legba(BaseModule):
         {
             "name": "Download legba",
             "unarchive": {
-                "src": "https://github.com/evilsocket/legba/releases/download/#{BBOT_MODULES_LEGBA_VERSION}/legba-#{BBOT_MODULES_LEGBA_VERSION}-#{BBOT_OS}-#{BBOT_CPU_ARCH_RUST}.tar.gz",
-                "dest": "#{BBOT_TEMP}",
-                "include": "legba-#{BBOT_MODULES_LEGBA_VERSION}-#{BBOT_OS}-#{BBOT_CPU_ARCH_RUST}/legba",
+                "src": "https://github.com/evilsocket/legba/releases/download/#{SAUDIT_MODULES_LEGBA_VERSION}/legba-#{SAUDIT_MODULES_LEGBA_VERSION}-#{SAUDIT_OS}-#{SAUDIT_CPU_ARCH_RUST}.tar.gz",
+                "dest": "#{SAUDIT_TEMP}",
+                "include": "legba-#{SAUDIT_MODULES_LEGBA_VERSION}-#{SAUDIT_OS}-#{SAUDIT_CPU_ARCH_RUST}/legba",
                 "remote_src": True,
                 "mode": "u+x,g+x,o+x",
             },

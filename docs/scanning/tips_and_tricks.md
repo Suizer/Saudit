@@ -3,7 +3,7 @@
 Below are some helpful tricks to help you in your adventures.
 
 ## Change Verbosity During Scan
-Press enter during a BBOT scan to change the log level. This will allow you to see debugging messages, etc.
+Press enter during a SAUDIT scan to change the log level. This will allow you to see debugging messages, etc.
 
 <img src="https://user-images.githubusercontent.com/20261699/224358855-9411cdc6-68a9-4cc4-828f-e30e4766101a.gif" style="max-width: 45em !important"/>
 
@@ -16,13 +16,13 @@ You can also kill multiple modules at a time by specifying them in a space or co
 kill httpx sslcert
 ```
 
-<img src="https://github.com/blacklanternsecurity/bbot/assets/20261699/61ad7123-8879-4c86-afdd-e96d7264b67c" style="max-width: 45em !important"/>
+<img src="https://github.com/blacklanternsecurity/saudit/assets/20261699/61ad7123-8879-4c86-afdd-e96d7264b67c" style="max-width: 45em !important"/>
 
 ## Common Config Changes
 
 ### Speed Up Slow Modules
 
-BBOT modules can be parallelized so that more than one instance runs at a time. By default, many modules are already set to reasonable defaults:
+SAUDIT modules can be parallelized so that more than one instance runs at a time. By default, many modules are already set to reasonable defaults:
 
 ```python
 class baddns(BaseModule):
@@ -33,16 +33,16 @@ To override this, you can set a module's `module_threads` in the config:
 
 ```bash
 # increase baddns threads to 20
-bbot -t evilcorp.com -m baddns -c modules.baddns.module_threads=20
+saudit -t evilcorp.com -m baddns -c modules.baddns.module_threads=20
 ```
 
 ### Boost DNS Brute-force Speed
 
-If you have a fast internet connection or are running BBOT from a cloud VM, you can speed up subdomain enumeration by cranking the threads for `massdns`. The default is `1000`, which is about 1MB/s of DNS traffic:
+If you have a fast internet connection or are running SAUDIT from a cloud VM, you can speed up subdomain enumeration by cranking the threads for `massdns`. The default is `1000`, which is about 1MB/s of DNS traffic:
 
 ```bash
 # massdns with 5000 resolvers, about 5MB/s
-bbot -t evilcorp.com -f subdomain-enum -c dns.brute_threads=5000
+saudit -t evilcorp.com -f subdomain-enum -c dns.brute_threads=5000
 ```
 
 ### Web Spider
@@ -67,14 +67,14 @@ config:
 
 ```bash
 # run the web spider against www.evilcorp.com
-bbot -t www.evilcorp.com -m httpx -c spider.yml
+saudit -t www.evilcorp.com -m httpx -c spider.yml
 ```
 
 You can also pair the web spider with subdomain enumeration:
 
 ```bash
 # spider every subdomain of evilcorp.com
-bbot -t evilcorp.com -f subdomain-enum -c spider.yml
+saudit -t evilcorp.com -f subdomain-enum -c spider.yml
 ```
 
 ### Exclude CDNs from Port Scan
@@ -82,13 +82,13 @@ bbot -t evilcorp.com -f subdomain-enum -c spider.yml
 Use `--exclude-cdns` to filter out unwanted open ports from CDNs and WAFs, e.g. Cloudflare. You can also customize the criteria by setting `modules.portfilter.cdn_tags`. By default, only open ports with `cdn-*` tags are filtered, but you can include all cloud providers by setting `cdn_tags` to `cdn,cloud`:
 
 ```bash
-bbot -t evilcorp.com --exclude-cdns -c modules.portfilter.cdn_tags=cdn,cloud
+saudit -t evilcorp.com --exclude-cdns -c modules.portfilter.cdn_tags=cdn,cloud
 ```
 
 Additionally, you can customize the allowed ports by setting `modules.portscan.allowed_cdn_ports`.
 
 ```bash
-bbot -t evilcorp.com --exclude-cdns -c modules.portfilter.allowed_cdn_ports=80,443,8443
+saudit -t evilcorp.com --exclude-cdns -c modules.portfilter.allowed_cdn_ports=80,443,8443
 ```
 
 Example preset:
@@ -105,15 +105,15 @@ config:
 ```
 
 ```bash
-bbot -t evilcorp.com -p skip_cdns.yml
+saudit -t evilcorp.com -p skip_cdns.yml
 ```
 
-### Ingest BBOT Data Into SIEM (Elastic, Splunk)
+### Ingest SAUDIT Data Into SIEM (Elastic, Splunk)
 
-If your goal is to run a BBOT scan and later feed its data into a SIEM such as Elastic, be sure to enable this option when scanning:
+If your goal is to run a SAUDIT scan and later feed its data into a SIEM such as Elastic, be sure to enable this option when scanning:
 
 ```bash
-bbot -t evilcorp.com -c modules.json.siem_friendly=true
+saudit -t evilcorp.com -c modules.json.siem_friendly=true
 ```
 
 This ensures the `.data` event attribute is always the same type (a dictionary), by nesting it like so:
@@ -128,44 +128,44 @@ This ensures the `.data` event attribute is always the same type (a dictionary),
 
 ### Custom HTTP Proxy
 
-Web pentesters may appreciate BBOT's ability to quickly populate Burp Suite site maps for all subdomains in a target. If your scan includes gowitness, this will capture the traffic as if you manually visited each website in your browser -- including auxiliary web resources and javascript API calls. To accomplish this, set the `web.http_proxy` config option like so:
+Web pentesters may appreciate SAUDIT's ability to quickly populate Burp Suite site maps for all subdomains in a target. If your scan includes gowitness, this will capture the traffic as if you manually visited each website in your browser -- including auxiliary web resources and javascript API calls. To accomplish this, set the `web.http_proxy` config option like so:
 
 ```bash
 # enumerate subdomains, take web screenshots, proxy through Burp
-bbot -t evilcorp.com -f subdomain-enum -m gowitness -c web.http_proxy=http://127.0.0.1:8080
+saudit -t evilcorp.com -f subdomain-enum -m gowitness -c web.http_proxy=http://127.0.0.1:8080
 ```
 
 ### Display `HTTP_RESPONSE` Events
 
-BBOT's `httpx` module emits `HTTP_RESPONSE` events, but by default they're hidden from output. These events contain the full raw HTTP body along with headers, etc. If you want to see them, you can modify `omit_event_types` in the config:
+SAUDIT's `httpx` module emits `HTTP_RESPONSE` events, but by default they're hidden from output. These events contain the full raw HTTP body along with headers, etc. If you want to see them, you can modify `omit_event_types` in the config:
 
-```yaml title="~/.bbot/config/bbot.yml"
+```yaml title="~/.saudit/config/saudit.yml"
 omit_event_types:
   - URL_UNVERIFIED
   # - HTTP_RESPONSE
 ```
 
 ### Display Out-of-scope Events
-By default, BBOT only shows in-scope events (with a few exceptions for things like storage buckets). If you want to see events that BBOT is emitting internally (such as for DNS resolution, etc.), you can increase `scope.report_distance` in the config or on the command line like so:
+By default, SAUDIT only shows in-scope events (with a few exceptions for things like storage buckets). If you want to see events that SAUDIT is emitting internally (such as for DNS resolution, etc.), you can increase `scope.report_distance` in the config or on the command line like so:
 ~~~bash
 # display events up to scope distance 2 (default == 0)
-bbot -f subdomain-enum -t evilcorp.com -c scope.report_distance=2
+saudit -f subdomain-enum -t evilcorp.com -c scope.report_distance=2
 ~~~
 
 ### Speed Up Scans By Disabling DNS Resolution
 
-If you already have a list of discovered targets (e.g. URLs), you can speed up the scan by skipping BBOT's DNS resolution. You can do this by setting `dns.disable` to `true`:
+If you already have a list of discovered targets (e.g. URLs), you can speed up the scan by skipping SAUDIT's DNS resolution. You can do this by setting `dns.disable` to `true`:
 
 ~~~bash
 # completely disable DNS resolution
-bbot -m httpx gowitness wappalyzer -t urls.txt -c dns.disable=true
+saudit -m httpx gowitness wappalyzer -t urls.txt -c dns.disable=true
 ~~~
 
 Note that the above setting _completely_ disables DNS resolution, meaning even `A` and `AAAA` records are not resolved. This can cause problems if you're using an IP whitelist or blacklist. In this case, you'll want to use `dns.minimal` instead:
 
 ~~~bash
 # only resolve A and AAAA records
-bbot -m httpx gowitness wappalyzer -t urls.txt -c dns.minimal=true
+saudit -m httpx gowitness wappalyzer -t urls.txt -c dns.minimal=true
 ~~~
 
 ## FAQ
@@ -180,7 +180,7 @@ By default, `URL_UNVERIFIED`s are hidden from output. If you want to see all of 
 
 ```bash
 # visit www.evilcorp.com and extract all the links
-bbot -t www.evilcorp.com -m httpx -c omit_event_types=[] scope.report_distance=2
+saudit -t www.evilcorp.com -m httpx -c omit_event_types=[] scope.report_distance=2
 ```
 
 ### Can I crank up the threads for a module to make it go faster?
@@ -188,7 +188,7 @@ bbot -t www.evilcorp.com -m httpx -c omit_event_types=[] scope.report_distance=2
 Yes, you can customize the threads for any module by setting `module_threads` like so:
 
 ```bash
-bbot -t evilcorp.com -m sslcert -c modules.sslcert.module_threads=50
+saudit -t evilcorp.com -m sslcert -c modules.sslcert.module_threads=50
 ```
 
 `module_threads` is one of several [universal module options](./configuration.md) that can be applied to any module.

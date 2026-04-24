@@ -73,10 +73,10 @@ class TestDnsbimi(ModuleTestBase):
             "Failed to emit DNS_NAME"
         )
 
-        # This should be filtered by a default BBOT configuration
+        # This should be filtered by a default SAUDIT configuration
         assert not any(str(e.data) == "https://nondefault.thirdparty.tld/brand/logo.svg" for e in events)
 
-        # This should not be filtered by a default BBOT configuration
+        # This should not be filtered by a default SAUDIT configuration
         assert any(
             e.type == "URL_UNVERIFIED" and e.data == "https://bimi.test.localdomain/certificate.pem" for e in events
         ), "Failed to emit URL_UNVERIFIED"

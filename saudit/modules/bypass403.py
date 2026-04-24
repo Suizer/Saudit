@@ -63,7 +63,7 @@ header_payloads = {
     "X-Host": "127.0.0.1",
 }
 
-# This is planned to be replaced in the future: https://github.com/blacklanternsecurity/bbot/issues/1068
+# This is planned to be replaced in the future: https://github.com/blacklanternsecurity/saudit/issues/1068
 waf_strings = ["The requested URL was rejected"]
 
 for qp in query_payloads:

@@ -50,9 +50,9 @@ class nuclei(BaseModule):
         {
             "name": "Download nuclei",
             "unarchive": {
-                "src": "https://github.com/projectdiscovery/nuclei/releases/download/v#{BBOT_MODULES_NUCLEI_VERSION}/nuclei_#{BBOT_MODULES_NUCLEI_VERSION}_#{BBOT_OS}_#{BBOT_CPU_ARCH_GOLANG}.zip",
+                "src": "https://github.com/projectdiscovery/nuclei/releases/download/v#{SAUDIT_MODULES_NUCLEI_VERSION}/nuclei_#{SAUDIT_MODULES_NUCLEI_VERSION}_#{SAUDIT_OS}_#{SAUDIT_CPU_ARCH_GOLANG}.zip",
                 "include": "nuclei",
-                "dest": "#{BBOT_TOOLS}",
+                "dest": "#{SAUDIT_TOOLS}",
                 "remote_src": True,
             },
         }

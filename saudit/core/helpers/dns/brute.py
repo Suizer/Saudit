@@ -160,7 +160,7 @@ class DNSBrute:
             nameservers = set(self.parent_helper.read_file(self._resolver_file_original))
             nameservers.difference_update(self.parent_helper.dns.system_resolvers)
             # exclude system nameservers from brute-force
-            # this helps prevent rate-limiting which might cause BBOT's main dns queries to fail
+            # this helps prevent rate-limiting which might cause SAUDIT's main dns queries to fail
             self._resolver_file = self.parent_helper.tempfile(nameservers, pipe=False)
         return self._resolver_file
 

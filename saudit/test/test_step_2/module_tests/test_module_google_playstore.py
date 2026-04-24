@@ -14,17 +14,17 @@ class TestGoogle_Playstore(ModuleTestBase):
             <title>"blacklanternsecurity" - Android Apps on Google Play</title>
             </head>
             <body>
-            <a href="/store/apps/details?id=com.bbot.test&pcampaignid=dontmatchme&pli=1"/>
-            <a href="/store/apps/details?id=com.bbot.other"/>
+            <a href="/store/apps/details?id=com.saudit.test&pcampaignid=dontmatchme&pli=1"/>
+            <a href="/store/apps/details?id=com.saudit.other"/>
             </body>
             </html>""",
         )
         module_test.httpx_mock.add_response(
-            url="https://play.google.com/store/apps/details?id=com.bbot.test",
+            url="https://play.google.com/store/apps/details?id=com.saudit.test",
             text="""<!DOCTYPE html>
             <html>
             <head>
-            <title>BBOT</title>
+            <title>SAUDIT</title>
             </head>
             <body>
             <meta name="appstore:developer_url" content="https://www.blacklanternsecurity.com">
@@ -34,11 +34,11 @@ class TestGoogle_Playstore(ModuleTestBase):
             </html>""",
         )
         module_test.httpx_mock.add_response(
-            url="https://play.google.com/store/apps/details?id=com.bbot.other",
+            url="https://play.google.com/store/apps/details?id=com.saudit.other",
             text="""<!DOCTYPE html>
             <html>
             <head>
-            <title>BBOT</title>
+            <title>SAUDIT</title>
             </head>
             <body>
             <meta name="appstore:developer_url" content="">
@@ -67,17 +67,17 @@ class TestGoogle_Playstore(ModuleTestBase):
                 for e in events
                 if e.type == "MOBILE_APP"
                 and "android" in e.tags
-                and e.data["id"] == "com.bbot.test"
-                and e.data["url"] == "https://play.google.com/store/apps/details?id=com.bbot.test"
+                and e.data["id"] == "com.saudit.test"
+                and e.data["url"] == "https://play.google.com/store/apps/details?id=com.saudit.test"
             ]
-        ), "Failed to find bbot android app"
+        ), "Failed to find saudit android app"
         assert 1 == len(
             [
                 e
                 for e in events
                 if e.type == "MOBILE_APP"
                 and "android" in e.tags
-                and e.data["id"] == "com.bbot.other"
-                and e.data["url"] == "https://play.google.com/store/apps/details?id=com.bbot.other"
+                and e.data["id"] == "com.saudit.other"
+                and e.data["url"] == "https://play.google.com/store/apps/details?id=com.saudit.other"
             ]
-        ), "Failed to find other bbot android app"
+        ), "Failed to find other saudit android app"

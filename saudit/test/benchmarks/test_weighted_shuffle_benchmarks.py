@@ -7,7 +7,7 @@ class TestWeightedShuffleBenchmarks:
     """
     Benchmark tests for weighted_shuffle operations.
 
-    This function is critical for BBOT's queue management, where it shuffles
+    This function is critical for SAUDIT's queue management, where it shuffles
     incoming queues based on module priority weights. Performance here directly
     impacts scan throughput and responsiveness.
     """
@@ -40,8 +40,8 @@ class TestWeightedShuffleBenchmarks:
         return {"items": items, "weights": weights}
 
     def _generate_priority_weights(self):
-        """Generate realistic priority weights (like BBOT module priorities)"""
-        # BBOT uses priorities 1-5, where lower priority = higher weight
+        """Generate realistic priority weights (like SAUDIT module priorities)"""
+        # SAUDIT uses priorities 1-5, where lower priority = higher weight
         # Weights are calculated as [5] + [6 - m.priority for m in modules]
         priorities = [5] + [6 - p for p in [1, 2, 3, 4, 5]] * 20  # 5 + 5*20 = 105 items
         items = [f"queue_{i}" for i in range(len(priorities))]
@@ -49,7 +49,7 @@ class TestWeightedShuffleBenchmarks:
 
     @pytest.mark.benchmark(group="weighted_shuffle")
     def test_typical_queue_shuffle(self, benchmark):
-        """Benchmark weighted shuffle with typical BBOT scan workload"""
+        """Benchmark weighted shuffle with typical SAUDIT scan workload"""
 
         def shuffle_typical():
             return weighted_shuffle(self.medium_data["items"], self.medium_data["weights"])
@@ -60,7 +60,7 @@ class TestWeightedShuffleBenchmarks:
 
     @pytest.mark.benchmark(group="weighted_shuffle")
     def test_priority_queue_shuffle(self, benchmark):
-        """Benchmark weighted shuffle with realistic BBOT priority weights"""
+        """Benchmark weighted shuffle with realistic SAUDIT priority weights"""
 
         def shuffle_priorities():
             return weighted_shuffle(self.priority_weights["items"], self.priority_weights["weights"])

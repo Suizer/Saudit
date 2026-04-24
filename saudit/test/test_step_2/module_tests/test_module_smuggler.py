@@ -27,7 +27,7 @@ smuggler_text = r"""
     [tabprefix1]   : Checking TECL...
     [tabprefix1]   : Checking CLTE...
     [tabprefix1]   : Potential CLTE Issue Found - POST @ http://127.0.0.1:8888 - default.py
-    [CRITICAL]     : CLTE Payload: /home/user/.bbot/tools/smuggler/payloads/http_127.0.0.1_net_CLTE_tabprefix1.txt URL: http://127.0.0.1:8888/
+    [CRITICAL]     : CLTE Payload: /home/user/.saudit/tools/smuggler/payloads/http_127.0.0.1_net_CLTE_tabprefix1.txt URL: http://127.0.0.1:8888/
     """
 
 

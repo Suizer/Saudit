@@ -19,15 +19,15 @@ class DNSHelper(EngineClient):
     SERVER_CLASS = DNSEngine
     ERROR_CLASS = DNSError
 
-    """Helper class for DNS-related operations within BBOT.
+    """Helper class for DNS-related operations within SAUDIT.
 
     This class provides mechanisms for host resolution, wildcard domain detection, event tagging, and more.
-    It centralizes all DNS-related activities in BBOT, offering both synchronous and asynchronous methods
+    It centralizes all DNS-related activities in SAUDIT, offering both synchronous and asynchronous methods
     for DNS resolution, as well as various utilities for batch resolution and DNS query filtering.
 
     Attributes:
         parent_helper: A reference to the instantiated `ConfigAwareHelper` (typically `scan.helpers`).
-        resolver (BBOTAsyncResolver): An asynchronous DNS resolver tailored for BBOT with rate-limiting capabilities.
+        resolver (SAUDITAsyncResolver): An asynchronous DNS resolver tailored for SAUDIT with rate-limiting capabilities.
         timeout (int): The timeout value for DNS queries. Defaults to 5 seconds.
         retries (int): The number of retries for failed DNS queries. Defaults to 1.
         abort_threshold (int): The threshold for aborting after consecutive failed queries. Defaults to 50.
@@ -43,7 +43,7 @@ class DNSHelper(EngineClient):
         parent_helper: The parent helper object with configuration details and utilities.
 
     Raises:
-        DNSError: If an issue arises when creating the BBOTAsyncResolver instance.
+        DNSError: If an issue arises when creating the SAUDITAsyncResolver instance.
 
     Examples:
         >>> dns_helper = DNSHelper(parent_config)

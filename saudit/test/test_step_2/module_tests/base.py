@@ -4,7 +4,7 @@ import logging
 import pytest_asyncio
 from omegaconf import OmegaConf
 
-from ...bbot_fixtures import *
+from ...saudit_fixtures import *
 from saudit.scanner import Scanner
 from saudit.core.helpers.misc import rand_string
 
@@ -64,7 +64,7 @@ class ModuleTestBase:
                 force_start=getattr(module_test_base, "force_start", False),
             )
             self.events = []
-            self.log = logging.getLogger(f"bbot.test.{module_test_base.name}")
+            self.log = logging.getLogger(f"saudit.test.{module_test_base.name}")
 
         def set_expect_requests(self, expect_args={}, respond_args={}):
             if "uri" not in expect_args:
@@ -90,15 +90,15 @@ class ModuleTestBase:
 
     @pytest_asyncio.fixture
     async def module_test(
-        self, httpx_mock, bbot_httpserver, bbot_httpserver_ssl, monkeypatch, request, caplog, capsys
+        self, httpx_mock, saudit_httpserver, saudit_httpserver_ssl, monkeypatch, request, caplog, capsys
     ):
         # If a test uses docker, we can't run it in the distro tests
-        if os.getenv("BBOT_DISTRO_TESTS") and self.skip_distro_tests:
+        if os.getenv("SAUDIT_DISTRO_TESTS") and self.skip_distro_tests:
             pytest.skip("Skipping test since it uses docker")
 
         self.log.info(f"Starting {self.name} module test")
         module_test = self.ModuleTest(
-            self, httpx_mock, bbot_httpserver, bbot_httpserver_ssl, monkeypatch, request, caplog, capsys
+            self, httpx_mock, saudit_httpserver, saudit_httpserver_ssl, monkeypatch, request, caplog, capsys
         )
         self.log.debug("Mocking DNS")
         await module_test.mock_dns({"blacklanternsecurity.com": {"A": ["127.0.0.88"]}})

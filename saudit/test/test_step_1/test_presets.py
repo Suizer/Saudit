@@ -1,4 +1,4 @@
-from ..bbot_fixtures import *  # noqa F401
+from ..saudit_fixtures import *  # noqa F401
 
 from saudit.scanner import Scanner, Preset
 
@@ -146,7 +146,7 @@ config:
 
 
 def test_preset_cache():
-    preset_file = bbot_test_dir / "test_preset.yml"
+    preset_file = saudit_test_dir / "test_preset.yml"
     yaml_string = """
 flags:
   - subdomain-enum
@@ -570,7 +570,7 @@ def test_preset_module_resolution(clean_default_config):
 
 @pytest.mark.asyncio
 async def test_preset_module_loader():
-    custom_module_dir = bbot_test_dir / "custom_module_dir"
+    custom_module_dir = saudit_test_dir / "custom_module_dir"
     custom_module_dir_2 = custom_module_dir / "asdf"
     custom_output_module_dir = custom_module_dir / "output"
     custom_internal_module_dir = custom_module_dir / "internal"
@@ -678,7 +678,7 @@ class TestModule4(BaseModule):
     preset2.module_loader.__init__()
 
     # custom module dir via preset
-    custom_module_dir_3 = bbot_test_dir / "custom_module_dir_3"
+    custom_module_dir_3 = saudit_test_dir / "custom_module_dir_3"
     custom_module_dir_3.mkdir(exist_ok=True, parents=True)
     custom_module_5 = custom_module_dir_3 / "testmodule5.py"
     with open(custom_module_5, "w") as f:
@@ -718,10 +718,10 @@ modules:
 def test_preset_include():
     # test recursive preset inclusion
 
-    custom_preset_dir_1 = bbot_test_dir / "custom_preset_dir"
+    custom_preset_dir_1 = saudit_test_dir / "custom_preset_dir"
     custom_preset_dir_2 = custom_preset_dir_1 / "preset_subdir"
     custom_preset_dir_3 = custom_preset_dir_2 / "subsubdir"
-    custom_preset_dir_4 = Path("/tmp/.bbot_preset_test")
+    custom_preset_dir_4 = Path("/tmp/.saudit_preset_test")
     custom_preset_dir_5 = custom_preset_dir_4 / "subdir"
     mkdir(custom_preset_dir_1)
     mkdir(custom_preset_dir_2)
@@ -821,7 +821,7 @@ config:
 
 @pytest.mark.asyncio
 async def test_preset_conditions():
-    custom_preset_dir_1 = bbot_test_dir / "custom_preset_dir"
+    custom_preset_dir_1 = saudit_test_dir / "custom_preset_dir"
     custom_preset_dir_2 = custom_preset_dir_1 / "preset_subdir"
     mkdir(custom_preset_dir_1)
     mkdir(custom_preset_dir_2)
@@ -940,7 +940,7 @@ config:
     spider_distance: 1
     spider_depth: 2
 """
-    custom_preset_dir = bbot_test_dir / "custom_preset_dir_override"
+    custom_preset_dir = saudit_test_dir / "custom_preset_dir_override"
     custom_preset_dir.mkdir(parents=True, exist_ok=True)
     preset_1_file = custom_preset_dir / "override1.yml"
     preset_1_file.write_text(preset_1_yaml)
@@ -1060,16 +1060,16 @@ def test_preset_require_exclude():
 
 @pytest.mark.asyncio
 async def test_preset_output_dir():
-    output_dir = bbot_test_dir / "preset_output_dir"
+    output_dir = saudit_test_dir / "preset_output_dir"
     preset = Preset.from_yaml_string(
         f"""
 output_dir: {output_dir}
-scan_name: bbot_test
+scan_name: saudit_test
 """
     )
     scan = Scanner(preset=preset)
     await scan.async_start_without_generator()
-    scan_dir = output_dir / "bbot_test"
+    scan_dir = output_dir / "saudit_test"
     assert scan_dir.is_dir()
     output_file = scan_dir / "output.txt"
     assert output_file.is_file()
@@ -1077,7 +1077,7 @@ scan_name: bbot_test
     shutil.rmtree(output_dir, ignore_errors=True)
 
 
-# regression test for https://github.com/blacklanternsecurity/bbot/issues/2337
+# regression test for https://github.com/blacklanternsecurity/saudit/issues/2337
 def test_preset_serialization():
     preset = Preset("192.168.1.1")
     preset = preset.bake()

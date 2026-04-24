@@ -1,21 +1,21 @@
 """
 The tests in this file are a bit unique because they're not intended to test any specific functionality
 
-They are meant to be a thorough baseline of how different modules and BBOT systems interact
+They are meant to be a thorough baseline of how different modules and SAUDIT systems interact
 Basically, if there is a small change in how scope works, dns resolution, etc., these tests are designed to catch it.
-They will show you how your change affects bbot's behavior across a wide range of scans and configurations.
+They will show you how your change affects saudit's behavior across a wide range of scans and configurations.
 
 I know they suck but they exist for a reason. If one of these tests is failing for you, it's important to take the time and
 understand exactly what changed and why (and whether it's okay) before changing the test to match your results.
 """
 
-from ..bbot_fixtures import *  # noqa: F401
+from ..saudit_fixtures import *  # noqa: F401
 
 from pytest_httpserver import HTTPServer
 
 
 @pytest.fixture
-def bbot_other_httpservers():
+def saudit_other_httpservers():
 
     server_hosts = [
         ("127.0.0.77", 8888),
@@ -42,9 +42,9 @@ def bbot_other_httpservers():
 
 
 @pytest.mark.asyncio
-async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_httpservers, bbot_httpserver_ssl):
+async def test_manager_scope_accuracy(saudit_scanner, saudit_httpserver, saudit_other_httpservers, saudit_httpserver_ssl):
     """
-    This test ensures that BBOT correctly handles different scope distance settings.
+    This test ensures that SAUDIT correctly handles different scope distance settings.
     It performs these tests for normal modules, output modules, and their graph variants,
     ensuring that when an internal event leads to an interesting discovery, the entire event chain is preserved.
     This is important for preventing orphans in the graph.
@@ -53,9 +53,9 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
     from saudit.modules.base import BaseModule
     from saudit.modules.output.base import BaseOutputModule
 
-    server_77, server_88, server_99, server_111, server_222, server_33 = bbot_other_httpservers
+    server_77, server_88, server_99, server_111, server_222, server_33 = saudit_other_httpservers
 
-    bbot_httpserver.expect_request(uri="/").respond_with_data(response_data="<a href='http://127.0.0.77:8888'/>")
+    saudit_httpserver.expect_request(uri="/").respond_with_data(response_data="<a href='http://127.0.0.77:8888'/>")
     server_77.expect_request(uri="/").respond_with_data(response_data="<a href='http://127.0.0.88:8888'/>")
     server_88.expect_request(uri="/").respond_with_data(response_data="<a href='http://127.0.0.99:8888'/>")
     server_99.expect_request(uri="/").respond_with_data(response_data="<a href='http://127.0.0.111:8888'/>")
@@ -102,7 +102,7 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
                 self.events.append(event)
 
     async def do_scan(*args, _config={}, _dns_mock={}, scan_callback=None, **kwargs):
-        scan = bbot_scanner(*args, config=_config, **kwargs)
+        scan = saudit_scanner(*args, config=_config, **kwargs)
         dummy_module = DummyModule(scan)
         dummy_module_nodupes = DummyModuleNoDupes(scan)
         dummy_graph_output_module = DummyGraphOutputModule(scan)
@@ -399,7 +399,7 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
     # Removed OPEN_TCP_PORT("127.0.0.77:8888")
     # before, this event was speculated off the URL_UNVERIFIED, and that's what was used by httpx to generate the URL. it was graph-important.
     # now for whatever reason, httpx is visiting the url directly and the open port isn't being used
-    # I don't know what changed exactly, but it doesn't matter, either way is equally valid and bbot is meant to be flexible this way.
+    # I don't know what changed exactly, but it doesn't matter, either way is equally valid and saudit is meant to be flexible this way.
     assert 1 == len([e for e in events if e.type == "IP_RANGE" and e.data == "127.0.0.0/31" and e.internal is False and e.scope_distance == 0])
     assert 0 == len([e for e in events if e.type == "IP_ADDRESS" and e.data == "127.0.0.0"])
     assert 1 == len([e for e in events if e.type == "IP_ADDRESS" and e.data == "127.0.0.1" and e.internal is False and e.scope_distance == 0])
@@ -695,7 +695,7 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
         "127.0.0.0/31",
         modules=["sslcert"],
         _config={"scope": {"report_distance": 0}, "speculate": True, "modules": {"speculate": {"ports": "9999"}}},
-        _dns_mock={"www.bbottest.notreal": {"A": ["127.0.1.0"]}, "test.notreal": {"A": ["127.0.0.1"]}},
+        _dns_mock={"www.saudittest.notreal": {"A": ["127.0.1.0"]}, "test.notreal": {"A": ["127.0.0.1"]}},
     )
 
     assert len(events) == 7
@@ -705,7 +705,7 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
     assert 0 == len([e for e in events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.0:9999"])
     assert 1 == len([e for e in events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.1:9999"])
     assert 1 == len([e for e in events if e.type == "DNS_NAME" and e.data == "test.notreal" and e.internal is False and e.scope_distance == 0 and str(e.module) == "sslcert"])
-    assert 1 == len([e for e in events if e.type == "DNS_NAME" and e.data == "www.bbottest.notreal" and e.internal is False and e.scope_distance == 1 and str(e.module) == "sslcert" and "affiliate" in e.tags])
+    assert 1 == len([e for e in events if e.type == "DNS_NAME" and e.data == "www.saudittest.notreal" and e.internal is False and e.scope_distance == 1 and str(e.module) == "sslcert" and "affiliate" in e.tags])
     assert 0 == len([e for e in events if e.type == "OPEN_TCP_PORT" and e.data == "test.notreal:9999"])
     assert 0 == len([e for e in events if e.type == "DNS_NAME_UNRESOLVED" and e.data == "notreal"])
 
@@ -716,9 +716,9 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
     assert 1 == len([e for e in all_events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.0:9999" and e.internal is True and e.scope_distance == 0])
     assert 2 == len([e for e in all_events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.1:9999" and e.internal is False and e.scope_distance == 0])
     assert 1 == len([e for e in all_events if e.type == "DNS_NAME" and e.data == "test.notreal" and e.internal is False and e.scope_distance == 0 and str(e.module) == "sslcert"])
-    assert 1 == len([e for e in all_events if e.type == "DNS_NAME" and e.data == "www.bbottest.notreal" and e.internal is False and e.scope_distance == 1 and str(e.module) == "sslcert"])
-    assert 1 == len([e for e in all_events if e.type == "OPEN_TCP_PORT" and e.data == "www.bbottest.notreal:9999" and e.internal is True and e.scope_distance == 1 and str(e.module) == "speculate"])
-    assert 1 == len([e for e in all_events if e.type == "DNS_NAME_UNRESOLVED" and e.data == "bbottest.notreal" and e.internal is True and e.scope_distance == 2 and str(e.module) == "speculate"])
+    assert 1 == len([e for e in all_events if e.type == "DNS_NAME" and e.data == "www.saudittest.notreal" and e.internal is False and e.scope_distance == 1 and str(e.module) == "sslcert"])
+    assert 1 == len([e for e in all_events if e.type == "OPEN_TCP_PORT" and e.data == "www.saudittest.notreal:9999" and e.internal is True and e.scope_distance == 1 and str(e.module) == "speculate"])
+    assert 1 == len([e for e in all_events if e.type == "DNS_NAME_UNRESOLVED" and e.data == "saudittest.notreal" and e.internal is True and e.scope_distance == 2 and str(e.module) == "speculate"])
     assert 1 == len([e for e in all_events if e.type == "OPEN_TCP_PORT" and e.data == "test.notreal:9999" and e.internal is True and e.scope_distance == 0 and str(e.module) == "speculate"])
 
     assert len(all_events_nodups) == 11
@@ -728,9 +728,9 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
     assert 1 == len([e for e in all_events_nodups if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.0:9999" and e.internal is True and e.scope_distance == 0])
     assert 1 == len([e for e in all_events_nodups if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.1:9999" and e.internal is False and e.scope_distance == 0])
     assert 1 == len([e for e in all_events_nodups if e.type == "DNS_NAME" and e.data == "test.notreal" and e.internal is False and e.scope_distance == 0 and str(e.module) == "sslcert"])
-    assert 1 == len([e for e in all_events_nodups if e.type == "DNS_NAME" and e.data == "www.bbottest.notreal" and e.internal is False and e.scope_distance == 1 and str(e.module) == "sslcert"])
-    assert 1 == len([e for e in all_events_nodups if e.type == "OPEN_TCP_PORT" and e.data == "www.bbottest.notreal:9999" and e.internal is True and e.scope_distance == 1 and str(e.module) == "speculate"])
-    assert 1 == len([e for e in all_events_nodups if e.type == "DNS_NAME_UNRESOLVED" and e.data == "bbottest.notreal" and e.internal is True and e.scope_distance == 2 and str(e.module) == "speculate"])
+    assert 1 == len([e for e in all_events_nodups if e.type == "DNS_NAME" and e.data == "www.saudittest.notreal" and e.internal is False and e.scope_distance == 1 and str(e.module) == "sslcert"])
+    assert 1 == len([e for e in all_events_nodups if e.type == "OPEN_TCP_PORT" and e.data == "www.saudittest.notreal:9999" and e.internal is True and e.scope_distance == 1 and str(e.module) == "speculate"])
+    assert 1 == len([e for e in all_events_nodups if e.type == "DNS_NAME_UNRESOLVED" and e.data == "saudittest.notreal" and e.internal is True and e.scope_distance == 2 and str(e.module) == "speculate"])
     assert 1 == len([e for e in all_events_nodups if e.type == "OPEN_TCP_PORT" and e.data == "test.notreal:9999" and e.internal is True and e.scope_distance == 0 and str(e.module) == "speculate"])
 
     for _graph_output_events in (graph_output_events, graph_output_batch_events):
@@ -741,9 +741,9 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
         assert 0 == len([e for e in _graph_output_events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.0:9999"])
         assert 1 == len([e for e in _graph_output_events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.1:9999" and e.internal is False and e.scope_distance == 0])
         assert 1 == len([e for e in _graph_output_events if e.type == "DNS_NAME" and e.data == "test.notreal" and e.internal is False and e.scope_distance == 0 and str(e.module) == "sslcert"])
-        assert 1 == len([e for e in _graph_output_events if e.type == "DNS_NAME" and e.data == "www.bbottest.notreal" and e.internal is False and e.scope_distance == 1 and str(e.module) == "sslcert"])
-        assert 0 == len([e for e in _graph_output_events if e.type == "OPEN_TCP_PORT" and e.data == "www.bbottest.notreal:9999"])
-        assert 0 == len([e for e in _graph_output_events if e.type == "DNS_NAME_UNRESOLVED" and e.data == "bbottest.notreal"])
+        assert 1 == len([e for e in _graph_output_events if e.type == "DNS_NAME" and e.data == "www.saudittest.notreal" and e.internal is False and e.scope_distance == 1 and str(e.module) == "sslcert"])
+        assert 0 == len([e for e in _graph_output_events if e.type == "OPEN_TCP_PORT" and e.data == "www.saudittest.notreal:9999"])
+        assert 0 == len([e for e in _graph_output_events if e.type == "DNS_NAME_UNRESOLVED" and e.data == "saudittest.notreal"])
         assert 0 == len([e for e in _graph_output_events if e.type == "OPEN_TCP_PORT" and e.data == "test.notreal:9999"])
 
     # sslcert with out-of-scope chain
@@ -752,7 +752,7 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
         modules=["sslcert"],
         whitelist=["127.0.1.0"],
         _config={"scope": {"search_distance": 1, "report_distance": 0}, "speculate": True, "modules": {"speculate": {"ports": "9999"}}},
-        _dns_mock={"www.bbottest.notreal": {"A": ["127.0.0.1"]}, "test.notreal": {"A": ["127.0.1.0"]}},
+        _dns_mock={"www.saudittest.notreal": {"A": ["127.0.0.1"]}, "test.notreal": {"A": ["127.0.1.0"]}},
     )
 
     assert len(events) == 4
@@ -762,7 +762,7 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
     assert 0 == len([e for e in events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.0:9999"])
     assert 0 == len([e for e in events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.1:9999"])
     assert 1 == len([e for e in events if e.type == "DNS_NAME" and e.data == "test.notreal" and e.internal is False and e.scope_distance == 0 and str(e.module) == "sslcert"])
-    assert 0 == len([e for e in events if e.type == "DNS_NAME" and e.data == "www.bbottest.notreal"])
+    assert 0 == len([e for e in events if e.type == "DNS_NAME" and e.data == "www.saudittest.notreal"])
     assert 0 == len([e for e in events if e.type == "OPEN_TCP_PORT" and e.data == "test.notreal:9999"])
 
     assert len(all_events) == 11
@@ -772,7 +772,7 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
     assert 1 == len([e for e in all_events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.0:9999" and e.internal is True and e.scope_distance == 2])
     assert 2 == len([e for e in all_events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.1:9999" and e.internal is True and e.scope_distance == 1])
     assert 1 == len([e for e in all_events if e.type == "DNS_NAME" and e.data == "test.notreal" and e.internal is False and e.scope_distance == 0 and str(e.module) == "sslcert"])
-    assert 1 == len([e for e in all_events if e.type == "DNS_NAME" and e.data == "www.bbottest.notreal" and e.internal is True and e.scope_distance == 3 and str(e.module) == "sslcert"])
+    assert 1 == len([e for e in all_events if e.type == "DNS_NAME" and e.data == "www.saudittest.notreal" and e.internal is True and e.scope_distance == 3 and str(e.module) == "sslcert"])
     assert 1 == len([e for e in all_events if e.type == "OPEN_TCP_PORT" and e.data == "test.notreal:9999" and e.internal is True and e.scope_distance == 0 and str(e.module) == "speculate"])
 
     assert len(all_events_nodups) == 9
@@ -782,7 +782,7 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
     assert 1 == len([e for e in all_events_nodups if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.0:9999" and e.internal is True and e.scope_distance == 2])
     assert 1 == len([e for e in all_events_nodups if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.1:9999" and e.internal is True and e.scope_distance == 1])
     assert 1 == len([e for e in all_events_nodups if e.type == "DNS_NAME" and e.data == "test.notreal" and e.internal is False and e.scope_distance == 0 and str(e.module) == "sslcert"])
-    assert 1 == len([e for e in all_events_nodups if e.type == "DNS_NAME" and e.data == "www.bbottest.notreal" and e.internal is True and e.scope_distance == 3 and str(e.module) == "sslcert"])
+    assert 1 == len([e for e in all_events_nodups if e.type == "DNS_NAME" and e.data == "www.saudittest.notreal" and e.internal is True and e.scope_distance == 3 and str(e.module) == "sslcert"])
     assert 1 == len([e for e in all_events_nodups if e.type == "OPEN_TCP_PORT" and e.data == "test.notreal:9999" and e.internal is True and e.scope_distance == 0 and str(e.module) == "speculate"])
 
     for _graph_output_events in (graph_output_events, graph_output_batch_events):
@@ -793,17 +793,17 @@ async def test_manager_scope_accuracy(bbot_scanner, bbot_httpserver, bbot_other_
         assert 0 == len([e for e in graph_output_events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.0:9999"])
         assert 1 == len([e for e in graph_output_events if e.type == "OPEN_TCP_PORT" and e.data == "127.0.0.1:9999" and e.internal is True and e.scope_distance == 1])
         assert 1 == len([e for e in graph_output_events if e.type == "DNS_NAME" and e.data == "test.notreal" and e.internal is False and e.scope_distance == 0 and str(e.module) == "sslcert"])
-        assert 0 == len([e for e in graph_output_events if e.type == "DNS_NAME" and e.data == "www.bbottest.notreal"])
+        assert 0 == len([e for e in graph_output_events if e.type == "DNS_NAME" and e.data == "www.saudittest.notreal"])
         assert 0 == len([e for e in graph_output_events if e.type == "OPEN_TCP_PORT" and e.data == "test.notreal:9999"])
 
 
 @pytest.mark.asyncio
-async def test_manager_blacklist(bbot_scanner, bbot_httpserver, caplog):
+async def test_manager_blacklist(saudit_scanner, saudit_httpserver, caplog):
 
-    bbot_httpserver.expect_request(uri="/").respond_with_data(response_data="<a href='http://www-prod.test.notreal:8888'/><a href='http://www-dev.test.notreal:8888'/>")
+    saudit_httpserver.expect_request(uri="/").respond_with_data(response_data="<a href='http://www-prod.test.notreal:8888'/><a href='http://www-dev.test.notreal:8888'/>")
 
     # dns search distance = 1, report distance = 0
-    scan = bbot_scanner(
+    scan = saudit_scanner(
         "http://127.0.0.1:8888",
         modules=["httpx"],
         config={"excavate": True, "dns": {"minimal": False, "search_distance": 1}, "scope": {"report_distance": 0}},
@@ -825,8 +825,8 @@ async def test_manager_blacklist(bbot_scanner, bbot_httpserver, caplog):
 
 
 @pytest.mark.asyncio
-async def test_manager_scope_tagging(bbot_scanner):
-    scan = bbot_scanner("test.notreal")
+async def test_manager_scope_tagging(saudit_scanner):
+    scan = saudit_scanner("test.notreal")
     e1 = scan.make_event("www.test.notreal", parent=scan.root_event, tags=["affiliate"])
     assert e1.scope_distance == 1
     assert "distance-1" in e1.tags
@@ -851,17 +851,17 @@ async def test_manager_scope_tagging(bbot_scanner):
 
 
 @pytest.mark.asyncio
-async def test_scope_accuracy_with_special_urls(bbot_scanner, bbot_httpserver):
+async def test_scope_accuracy_with_special_urls(saudit_scanner, saudit_httpserver):
     """
-    This is a regression test for https://github.com/blacklanternsecurity/bbot/issues/2785
+    This is a regression test for https://github.com/blacklanternsecurity/saudit/issues/2785
 
     The original bug was that the "special URL" filtering logic (for Javascript URls etc.)
     was causing special URLs to be rejected by critical internal modules like `_scan_egress`, leading to the output of unwanted URLs.
     """
-    bbot_httpserver.expect_request(uri="/v2/users/spacex").respond_with_data(response_data="")
-    bbot_httpserver.expect_request(uri="/u/spacex").respond_with_data(response_data="<a href='http://127.0.0.1:8888/asdf.js'/>")
+    saudit_httpserver.expect_request(uri="/v2/users/spacex").respond_with_data(response_data="")
+    saudit_httpserver.expect_request(uri="/u/spacex").respond_with_data(response_data="<a href='http://127.0.0.1:8888/asdf.js'/>")
 
-    scan = bbot_scanner("ORG:spacex", modules=["httpx", "social", "dockerhub"], config={"speculate": True, "excavate": True})
+    scan = saudit_scanner("ORG:spacex", modules=["httpx", "social", "dockerhub"], config={"speculate": True, "excavate": True})
 
     await scan._prep()
     scan.modules["dockerhub"].site_url = "http://127.0.0.1:8888"

@@ -11,7 +11,7 @@ from ..core.event import is_event
 
 
 class BaseModule:
-    """The base class for all BBOT modules.
+    """The base class for all SAUDIT modules.
 
     Attributes:
         watched_events (List): Event types to watch.
@@ -22,7 +22,7 @@ class BaseModule:
 
         flags (List): Flags indicating the type of module (must have at least "safe" or "aggressive" and "passive" or "active").
 
-        deps_modules (List): Other BBOT modules this module depends on. Empty list by default.
+        deps_modules (List): Other SAUDIT modules this module depends on. Empty list by default.
 
         deps_pip (List): Python dependencies to install via pip. Empty list by default.
 
@@ -127,7 +127,7 @@ class BaseModule:
         """Initializes a module instance.
 
         Args:
-            scan: The BBOT scan object associated with this module instance.
+            scan: The SAUDIT scan object associated with this module instance.
 
         Attributes:
             scan: The scan object associated with this module.
@@ -541,7 +541,7 @@ class BaseModule:
         """Update an existing event for the scan.
 
         This is the counterpart to :meth:`make_event` for modifying an existing
-        :class:`bbot.core.event.base.BaseEvent` instance.
+        :class:`saudit.core.event.base.BaseEvent` instance.
 
         Raises a validation error if the update could not be applied, unless
         ``raise_error`` is set to False.
@@ -1342,7 +1342,7 @@ class BaseModule:
         if retry_after is not None:
             # we don't allow retry-after smaller than 1 second
             # this is to prevent cases where APIs erroneously return a retry-after value of 0
-            # e.g. https://github.com/blacklanternsecurity/bbot/issues/2826
+            # e.g. https://github.com/blacklanternsecurity/saudit/issues/2826
             return max(1.0, float(retry_after))
 
     def _prepare_api_iter_req(self, url, page, page_size, offset, **requests_kwargs):

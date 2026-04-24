@@ -1,13 +1,13 @@
 import discord
 from discord.ext import commands
 
-from bbot.scanner import Scanner
-from bbot.modules.output.discord import Discord
+from saudit.scanner import Scanner
+from saudit.modules.output.discord import Discord
 
 
-class BBOTDiscordBot(commands.Cog):
+class SAUDITDiscordBot(commands.Cog):
     """
-    A simple Discord bot capable of running a BBOT scan.
+    A simple Discord bot capable of running a SAUDIT scan.
 
     To set up:
         1. Go to Discord Developer Portal (https://discord.com/developers)
@@ -34,7 +34,7 @@ class BBOTDiscordBot(commands.Cog):
     def __init__(self):
         self.current_scan = None
 
-    @commands.command(name="scan", description="Scan a target with BBOT.")
+    @commands.command(name="scan", description="Scan a target with SAUDIT.")
     async def scan(self, ctx, target: str):
         if self.current_scan is not None:
             self.current_scan.stop()
@@ -66,6 +66,6 @@ if __name__ == "__main__":
     @bot.event
     async def on_ready():
         print(f"We have logged in as {bot.user}")
-        await bot.add_cog(BBOTDiscordBot())
+        await bot.add_cog(SAUDITDiscordBot())
 
     bot.run("DISCORD_BOT_TOKEN_HERE")

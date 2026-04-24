@@ -2,7 +2,7 @@
 
 **Autonomous web reconnaissance and vulnerability detection scanner.**
 
-SuizerAudit is a focused fork of [bbot](https://github.com/blacklanternsecurity/bbot) tailored for web application security auditing. It extends the bbot engine with purpose-built modules for JavaScript analysis, API discovery, and canary-based vulnerability detection — delivering Burp Scanner-level coverage in a single automated run.
+SuizerAudit is a focused fork of [saudit](https://github.com/blacklanternsecurity/saudit) tailored for web application security auditing. It extends the saudit engine with purpose-built modules for JavaScript analysis, API discovery, and canary-based vulnerability detection — delivering Burp Scanner-level coverage in a single automated run.
 
 ---
 
@@ -125,5 +125,5 @@ config:
 
 ## Credits
 
-Built on top of [bbot](https://github.com/blacklanternsecurity/bbot) by Black Lantern Security.  
+Built on top of [saudit](https://github.com/blacklanternsecurity/saudit) by Black Lantern Security.  
 Custom modules and saudit engine by [@suizer](https://github.com/Suizer).

@@ -24,7 +24,7 @@ log = logging.getLogger("saudit.core.helpers.depsinstaller")
 
 class DepsInstaller:
     CORE_DEPS = {
-        # core BBOT dependencies in the format of binary: package_name
+        # core SAUDIT dependencies in the format of binary: package_name
         # each one will only be installed if the binary is not found
         "unzip": "unzip",
         "zipinfo": "unzip",
@@ -117,7 +117,7 @@ class DepsInstaller:
 
         self.os_platform = os_platform()
 
-        # respect BBOT's http timeout
+        # respect SAUDIT's http timeout
         self.web_config = self.parent_helper.config.get("web", {})
         http_timeout = self.web_config.get("http_timeout", 30)
         os.environ["ANSIBLE_TIMEOUT"] = str(http_timeout)
@@ -169,7 +169,7 @@ class DepsInstaller:
                 preloaded = self.all_modules_preloaded[m]
                 log.debug(f"Installing {m} - Preloaded Deps {preloaded['deps']}")
                 # make a hash of the dependencies and check if it's already been handled
-                # take into consideration whether the venv or bbot home directory changes
+                # take into consideration whether the venv or saudit home directory changes
                 module_hash = self.parent_helper.sha1(
                     json.dumps(preloaded["deps"], sort_keys=True)
                     + self.venv
@@ -270,7 +270,7 @@ class DepsInstaller:
 
         command = [sys.executable, "-m", "pip", "install", "--upgrade"] + packages
 
-        # if no custom constraints are provided, use the constraints of the currently installed version of bbot
+        # if no custom constraints are provided, use the constraints of the currently installed version of saudit
         if constraints is not None:
             constraints = get_python_constraints()
 
@@ -425,7 +425,7 @@ class DepsInstaller:
             return
         with self.ensure_root_lock:
             # first check if the environment variable is set
-            _sudo_password = os.environ.get("BBOT_SUDO_PASS", None)
+            _sudo_password = os.environ.get("SAUDIT_SUDO_PASS", None)
             if _sudo_password is not None or os.geteuid() == 0 or can_sudo_without_password():
                 # if we're already root or we can sudo without a password, there's no need to prompt
                 return
@@ -482,14 +482,14 @@ class DepsInstaller:
         if to_install:
             playbook.append(
                 {
-                    "name": "Install Core BBOT Dependencies",
+                    "name": "Install Core SAUDIT Dependencies",
                     "package": {"name": list(to_install), "state": "present"},
                     "become": True,
                 }
             )
         # run playbook
         if playbook:
-            log.info(f"Installing core BBOT dependencies: {','.join(sorted(to_install_friendly))}")
+            log.info(f"Installing core SAUDIT dependencies: {','.join(sorted(to_install_friendly))}")
             self.ensure_root()
             success, _ = self.ansible_run(tasks=playbook)
             overall_success &= success
@@ -512,7 +512,7 @@ class DepsInstaller:
             self._sudo_temp_keyfile.write_bytes(random_key)
             self._sudo_temp_keyfile.chmod(0o600)
             # export path to environment variable, for use in askpass script
-            os.environ["BBOT_SUDO_KEYFILE"] = str(self._sudo_temp_keyfile.resolve())
+            os.environ["SAUDIT_SUDO_KEYFILE"] = str(self._sudo_temp_keyfile.resolve())
 
     @property
     def encrypted_sudo_pw(self):

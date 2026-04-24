@@ -6,12 +6,12 @@ import subprocess
 from pathlib import Path
 
 from .base import ModuleTestBase
-from saudit.test.bbot_fixtures import bbot_test_dir
+from saudit.test.saudit_fixtures import saudit_test_dir
 
 
 class TestGit_Clone(ModuleTestBase):
     config_overrides = {
-        "modules": {"git_clone": {"api_key": "asdf", "output_folder": str(bbot_test_dir / "test_git_files")}}
+        "modules": {"git_clone": {"api_key": "asdf", "output_folder": str(saudit_test_dir / "test_git_files")}}
     }
     modules_overrides = ["github_org", "speculate", "git_clone"]
 
@@ -162,7 +162,7 @@ class TestGit_Clone(ModuleTestBase):
         )
 
     async def setup_after_prep(self, module_test):
-        temp_path = Path("/tmp/.bbot_test")
+        temp_path = Path("/tmp/.saudit_test")
         shutil.rmtree(temp_path / "test_keys", ignore_errors=True)
         subprocess.run(["git", "init", "test_keys"], cwd=temp_path)
         temp_repo_path = temp_path / "test_keys"
@@ -173,9 +173,9 @@ class TestGit_Clone(ModuleTestBase):
             [
                 "git",
                 "-c",
-                "user.name='BBOT Test'",
+                "user.name='SAUDIT Test'",
                 "-c",
-                "user.email='bbot@blacklanternsecurity.com'",
+                "user.email='saudit@blacklanternsecurity.com'",
                 "commit",
                 "-m",
                 "Initial commit",
@@ -199,7 +199,7 @@ class TestGit_Clone(ModuleTestBase):
             e
             for e in events
             if e.type == "FILESYSTEM"
-            and "git_repos/.bbot_test/test_keys" in e.data["path"]
+            and "git_repos/.saudit_test/test_keys" in e.data["path"]
             and "git" in e.tags
             and e.scope_distance == 1
         ]

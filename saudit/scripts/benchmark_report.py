@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Branch-based benchmark comparison tool for BBOT performance tests.
+Branch-based benchmark comparison tool for SAUDIT performance tests.
 
 This script takes two git branches, runs benchmarks on each, and generates
 a comparison report showing performance differences between them.
@@ -43,7 +43,7 @@ def run_benchmarks(output_file: Path, repo_path: Path = None) -> bool:
     print(f"Running benchmarks, saving to {output_file}")
 
     # Check if benchmarks directory exists
-    benchmarks_dir = repo_path / "bbot/test/benchmarks" if repo_path else Path("bbot/test/benchmarks")
+    benchmarks_dir = repo_path / "saudit/test/benchmarks" if repo_path else Path("saudit/test/benchmarks")
     if not benchmarks_dir.exists():
         print(f"Benchmarks directory not found: {benchmarks_dir}")
         print("This branch likely doesn't have benchmark tests yet.")
@@ -56,7 +56,7 @@ def run_benchmarks(output_file: Path, repo_path: Path = None) -> bool:
             "python",
             "-m",
             "pytest",
-            "bbot/test/benchmarks/",
+            "saudit/test/benchmarks/",
             "--benchmark-only",
             f"--benchmark-json={output_file}",
             "-q",

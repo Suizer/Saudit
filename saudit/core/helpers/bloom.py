@@ -8,7 +8,7 @@ class BloomFilter:
     """
     Simple bloom filter implementation capable of roughly 400K lookups/s.
 
-    BBOT uses bloom filters in scenarios like DNS brute-forcing, where it's useful to keep track
+    SAUDIT uses bloom filters in scenarios like DNS brute-forcing, where it's useful to keep track
     of which mutations have been tried so far.
 
     A 100-megabyte bloom filter (800M bits) can store 10M entries with a .01% false-positive rate.

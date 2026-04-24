@@ -10,19 +10,19 @@ class DummyCookies(Cookies):
         pass
 
 
-class BBOTAsyncClient(httpx.AsyncClient):
+class SAUDITAsyncClient(httpx.AsyncClient):
     """
-    A subclass of httpx.AsyncClient tailored with BBOT-specific configurations and functionalities.
+    A subclass of httpx.AsyncClient tailored with SAUDIT-specific configurations and functionalities.
     This class provides rate limiting, logging, configurable timeouts, user-agent customization, custom
     headers, and proxy settings. Additionally, it allows the disabling of cookies, making it suitable
     for use across an entire scan.
 
     Attributes:
-        _bbot_scan (object): BBOT scan object containing configuration details.
+        _saudit_scan (object): SAUDIT scan object containing configuration details.
         _persist_cookies (bool): Flag to determine whether cookies should be persisted across requests.
 
     Examples:
-        >>> async with BBOTAsyncClient(_bbot_scan=bbot_scan_object) as client:
+        >>> async with SAUDITAsyncClient(_saudit_scan=saudit_scan_object) as client:
         >>>     response = await client.request("GET", "https://example.com")
         >>>     print(response.status_code)
         200
@@ -70,7 +70,7 @@ class BBOTAsyncClient(httpx.AsyncClient):
             cookies = {}
 
         # user agent
-        user_agent = self._web_config.get("user_agent", "BBOT")
+        user_agent = self._web_config.get("user_agent", "SAUDIT")
         if "User-Agent" not in headers:
             headers["User-Agent"] = user_agent
         kwargs["headers"] = headers

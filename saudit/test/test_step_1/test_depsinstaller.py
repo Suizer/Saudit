@@ -1,9 +1,9 @@
-from ..bbot_fixtures import *
+from ..saudit_fixtures import *
 
 
 @pytest.mark.asyncio
-async def test_depsinstaller(monkeypatch, bbot_scanner):
-    scan = bbot_scanner(
+async def test_depsinstaller(monkeypatch, saudit_scanner):
+    scan = saudit_scanner(
         "127.0.0.1",
     )
 

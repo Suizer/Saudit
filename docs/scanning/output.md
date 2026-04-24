@@ -1,9 +1,9 @@
 # Output
 
-By default, BBOT saves its output in TXT, JSON, and CSV formats. The filenames are logged at the end of each scan:
-![bbot output](https://github.com/blacklanternsecurity/bbot/assets/20261699/bb3da441-2682-408f-b955-19b268823b82)
+By default, SAUDIT saves its output in TXT, JSON, and CSV formats. The filenames are logged at the end of each scan:
+![saudit output](https://github.com/blacklanternsecurity/saudit/assets/20261699/bb3da441-2682-408f-b955-19b268823b82)
 
-Every BBOT scan gets a unique and mildly-entertaining name like **`demonic_jimmy`**. Output for that scan, including scan stats and any web screenshots, etc., are saved to a folder by that name in `~/.bbot/scans`. The most recent 20 scans are kept, and older ones are removed. You can change the location of BBOT's output with `--output`, and you can also pick a custom scan name with `--name`.
+Every SAUDIT scan gets a unique and mildly-entertaining name like **`demonic_jimmy`**. Output for that scan, including scan stats and any web screenshots, etc., are saved to a folder by that name in `~/.saudit/scans`. The most recent 20 scans are kept, and older ones are removed. You can change the location of SAUDIT's output with `--output`, and you can also pick a custom scan name with `--name`.
 
 If you reuse a scan name, it will append to its original output files and leverage the previous.
 
@@ -13,9 +13,9 @@ Multiple simultaneous output formats are possible because of **output modules**.
 
 ### STDOUT
 
-The `stdout` output module is what you see when you execute BBOT in the terminal. By default it looks the same as the [`txt`](#txt) module, but it has options you can customize. You can filter by event type, choose the data format (`text`, `json`), and which fields you want to see:
+The `stdout` output module is what you see when you execute SAUDIT in the terminal. By default it looks the same as the [`txt`](#txt) module, but it has options you can customize. You can filter by event type, choose the data format (`text`, `json`), and which fields you want to see:
 
-<!-- BBOT MODULE OPTIONS STDOUT -->
+<!-- SAUDIT MODULE OPTIONS STDOUT -->
 | Config Option                | Type   | Description                                      | Default   |
 |------------------------------|--------|--------------------------------------------------|-----------|
 | modules.stdout.accept_dupes  | bool   | Whether to show duplicate events, default True   | True      |
@@ -23,7 +23,7 @@ The `stdout` output module is what you see when you execute BBOT in the terminal
 | modules.stdout.event_types   | list   | Which events to display, default all event types | []        |
 | modules.stdout.format        | str    | Which text format to display, choices: text,json | text      |
 | modules.stdout.in_scope_only | bool   | Whether to only show in-scope events             | False     |
-<!-- END BBOT MODULE OPTIONS STDOUT -->
+<!-- END SAUDIT MODULE OPTIONS STDOUT -->
 
 ### TXT
 
@@ -31,7 +31,7 @@ The `stdout` output module is what you see when you execute BBOT in the terminal
 
 ```bash
 # grep out only the DNS_NAMEs
-cat ~/.bbot/scans/extreme_johnny/output.txt | grep '[DNS_NAME]' | cut -f2
+cat ~/.saudit/scans/extreme_johnny/output.txt | grep '[DNS_NAME]' | cut -f2
 evilcorp.com
 www.evilcorp.com
 mail.evilcorp.com
@@ -53,7 +53,7 @@ The `csv` output module produces a CSV like this:
 If you manually enable the `json` output module, it will go to stdout:
 
 ```bash
-bbot -t evilcorp.com -om json | jq
+saudit -t evilcorp.com -om json | jq
 ```
 
 You will then see [events](events.md) like this:
@@ -78,7 +78,7 @@ You can filter on the JSON output with `jq`:
 
 ```bash
 # pull out only the .data attribute of every DNS_NAME
-$ jq -r 'select(.type=="DNS_NAME") | .data' ~/.bbot/scans/extreme_johnny/output.json
+$ jq -r 'select(.type=="DNS_NAME") | .data' ~/.saudit/scans/extreme_johnny/output.json
 evilcorp.com
 www.evilcorp.com
 mail.evilcorp.com
@@ -86,9 +86,9 @@ mail.evilcorp.com
 
 ### Discord / Slack / Teams
 
-![bbot-discord](https://github.com/blacklanternsecurity/bbot/assets/20261699/6d88045c-8eac-43b6-8de9-c621ecf60c2d)
+![saudit-discord](https://github.com/blacklanternsecurity/saudit/assets/20261699/6d88045c-8eac-43b6-8de9-c621ecf60c2d)
 
-BBOT supports output via webhooks to `discord`, `slack`, and `teams`. To use them, you must specify a webhook URL either in the config:
+SAUDIT supports output via webhooks to `discord`, `slack`, and `teams`. To use them, you must specify a webhook URL either in the config:
 
 ```yaml title="discord_preset.yml"
 config:
@@ -99,7 +99,7 @@ config:
 
 ...or on the command line:
 ```bash
-bbot -t evilcorp.com -om discord -c modules.discord.webhook_url=https://discord.com/api/webhooks/1234/deadbeef
+saudit -t evilcorp.com -om discord -c modules.discord.webhook_url=https://discord.com/api/webhooks/1234/deadbeef
 ```
 
 By default, only `VULNERABILITY` and `FINDING` events are sent, but this can be customized by setting `event_types` in the config like so:
@@ -116,7 +116,7 @@ config:
 
 ...or on the command line:
 ```bash
-bbot -t evilcorp.com -om discord -c modules.discord.event_types=["STORAGE_BUCKET","FINDING","VULNERABILITY"]
+saudit -t evilcorp.com -om discord -c modules.discord.event_types=["STORAGE_BUCKET","FINDING","VULNERABILITY"]
 ```
 
 You can also filter on the severity of `VULNERABILITY` events by setting `min_severity`:
@@ -135,7 +135,7 @@ The `http` output module sends [events](events.md) in JSON format to a desired H
 
 ```bash
 # POST scan results to localhost
-bbot -t evilcorp.com -om http -c modules.http.url=http://localhost:8000
+saudit -t evilcorp.com -om http -c modules.http.url=http://localhost:8000
 ```
 
 You can customize the HTTP method if needed. Authentication is also supported:
@@ -155,11 +155,11 @@ config:
 
 ### Elasticsearch
 
-When outputting to Elastic, use the `http` output module with the following settings (replace `<your_index>` with your desired index, e.g. `bbot`):
+When outputting to Elastic, use the `http` output module with the following settings (replace `<your_index>` with your desired index, e.g. `saudit`):
 
 ```bash
 # send scan results directly to elasticsearch
-bbot -t evilcorp.com -om http -c \
+saudit -t evilcorp.com -om http -c \
   modules.http.url=http://localhost:8000/<your_index>/_doc \
   modules.http.siem_friendly=true \
   modules.http.username=elastic \
@@ -194,7 +194,7 @@ config:
       hectoken: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
       # Defaults to `main` if not set
       index: my-specific-index
-      # Defaults to `bbot` if not set
+      # Defaults to `saudit` if not set
       source: /my/source.json
 ```
 
@@ -214,16 +214,16 @@ The `sqlite` output module produces a SQLite database containing all events, sca
 
 ```bash
 # specifying a custom database path
-bbot -t evilcorp.com -om sqlite -c modules.sqlite.database=/tmp/bbot.sqlite
+saudit -t evilcorp.com -om sqlite -c modules.sqlite.database=/tmp/saudit.sqlite
 ```
 
 ### Postgres
 
-The `postgres` output module allows you to ingest events, scans, and targets into a Postgres database. By default, it will connect to the server on `localhost` with a username of `postgres` and password of `bbotislife`. You can change this behavior in the config.
+The `postgres` output module allows you to ingest events, scans, and targets into a Postgres database. By default, it will connect to the server on `localhost` with a username of `postgres` and password of `sauditislife`. You can change this behavior in the config.
 
 ```bash
 # specifying an alternate database
-bbot -t evilcorp.com -om postgres -c modules.postgres.database=custom_bbot_db
+saudit -t evilcorp.com -om postgres -c modules.postgres.database=custom_saudit_db
 ```
 
 ```yaml title="postgres_preset.yml"
@@ -231,19 +231,19 @@ config:
   modules:
     postgres:
       host: psq.fsociety.local
-      database: custom_bbot_db
+      database: custom_saudit_db
       port: 5432
       username: postgres
-      password: bbotislife
+      password: sauditislife
 ```
 
 ### MySQL
 
-The `mysql` output module allows you to ingest events, scans, and targets into a MySQL database. By default, it will connect to the server on `localhost` with a username of `root` and password of `bbotislife`. You can change this behavior in the config.
+The `mysql` output module allows you to ingest events, scans, and targets into a MySQL database. By default, it will connect to the server on `localhost` with a username of `root` and password of `sauditislife`. You can change this behavior in the config.
 
 ```bash
 # specifying an alternate database
-bbot -t evilcorp.com -om mysql -c modules.mysql.database=custom_bbot_db
+saudit -t evilcorp.com -om mysql -c modules.mysql.database=custom_saudit_db
 ```
 
 ```yaml title="mysql_preset.yml"
@@ -251,10 +251,10 @@ config:
   modules:
     mysql:
       host: mysql.fsociety.local
-      database: custom_bbot_db
+      database: custom_saudit_db
       port: 3306
       username: root
-      password: bbotislife
+      password: sauditislife
 ```
 
 ### Subdomains
@@ -270,24 +270,24 @@ portal.evilcorp.com
 
 ## Neo4j
 
-Neo4j is the funnest (and prettiest) way to view and interact with BBOT data.
+Neo4j is the funnest (and prettiest) way to view and interact with SAUDIT data.
 
-![neo4j](https://github.com/blacklanternsecurity/bbot/assets/20261699/0192d548-5c60-42b6-9a1e-32ba7b921cdf)
+![neo4j](https://github.com/blacklanternsecurity/saudit/assets/20261699/0192d548-5c60-42b6-9a1e-32ba7b921cdf)
 
 - You can get Neo4j up and running with a single docker command:
 
 ```bash
 # start Neo4j in the background with docker
-docker run -d -p 7687:7687 -p 7474:7474 -v "$(pwd)/neo4j/:/data/" -e NEO4J_AUTH=neo4j/bbotislife neo4j
+docker run -d -p 7687:7687 -p 7474:7474 -v "$(pwd)/neo4j/:/data/" -e NEO4J_AUTH=neo4j/sauditislife neo4j
 ```
 
-- After that, run bbot with `-om neo4j`
+- After that, run saudit with `-om neo4j`
 
 ```bash
-bbot -f subdomain-enum -t evilcorp.com -om neo4j
+saudit -f subdomain-enum -t evilcorp.com -om neo4j
 ```
 
-- Log in at [http://localhost:7474](http://localhost:7474) with `neo4j` / `bbotislife`
+- Log in at [http://localhost:7474](http://localhost:7474) with `neo4j` / `sauditislife`
 
 ### Cypher Queries and Tips
 
@@ -295,13 +295,13 @@ Neo4j uses the Cypher Query Language for its graph query language. Cypher uses c
 
 Cypher queries can be broken down into three required pieces; selection, filter, and presentation. The selection piece identifies what data that will be searched against - 90% of the time the "MATCH" clause will be enough but there are means to read from csv or json data files. In all of these examples the "MATCH" clause will be used. The filter piece helps to focus in on the required data and used the "WHERE" clause to accomplish this effort (most basic operators can be used). Finally, the presentation section identifies how the data should be presented back to the querier. While neo4j is a graph database, it can be used in a traditional table view.
 
-A simple query to grab every URL event with ".com" in the BBOT data field would look like this:
+A simple query to grab every URL event with ".com" in the SAUDIT data field would look like this:
 `MATCH (u:URL) WHERE u.data contains ".com" RETURN u`
 
 In this query the following can be identified:
-- Within the MATCH statement "u" is a variable and can be any value needed by the user while the "URL" label is a direct relationship to the BBOT event type.
-- The WHERE statement allows the query to filter on any of the BBOT event properties like data, tag, or even the label itself.
-- The RETURN statement is a general presentation of the whole URL event but this can be narrowed down to present any of the specific properties of the BBOT event (`RETURN u.data, u.tags`).
+- Within the MATCH statement "u" is a variable and can be any value needed by the user while the "URL" label is a direct relationship to the SAUDIT event type.
+- The WHERE statement allows the query to filter on any of the SAUDIT event properties like data, tag, or even the label itself.
+- The RETURN statement is a general presentation of the whole URL event but this can be narrowed down to present any of the specific properties of the SAUDIT event (`RETURN u.data, u.tags`).
 
 The following are a few recommended queries to get started with:
 
@@ -313,7 +313,7 @@ RETURN n.data, n.tags
 ```
 
 ```cypher
-// Get the count of labels/BBOT events in the Neo4j Database
+// Get the count of labels/SAUDIT events in the Neo4j Database
 MATCH (n)
 RETURN labels(n), count(n)
 ```
@@ -343,10 +343,10 @@ Additional note: these sample queries are dependent on the existence of the data
 
 ### Web_parameters
 
-The `web_parameters` output module will utilize BBOT web parameter extraction capabilities, and output the resulting parameters to a file (web_parameters.txt, by default). Web parameter extraction is disabled by default, but will automatically be enabled when a module is included that consumes WEB_PARAMETER events (including the `web_parameters` output module itself).
+The `web_parameters` output module will utilize SAUDIT web parameter extraction capabilities, and output the resulting parameters to a file (web_parameters.txt, by default). Web parameter extraction is disabled by default, but will automatically be enabled when a module is included that consumes WEB_PARAMETER events (including the `web_parameters` output module itself).
 
-This can be useful for those who want to discover new common web parameters or those which may be associated with a specific target or organization. This could be very useful for further parameter bruteforcing, or even fed back into bbot via the paramminer modules. For example:
+This can be useful for those who want to discover new common web parameters or those which may be associated with a specific target or organization. This could be very useful for further parameter bruteforcing, or even fed back into saudit via the paramminer modules. For example:
 
 ```bash
-bbot -t evilcorp.com -m paramminer_getparams -c modules.paramminer_getparams.wordlist=/path/to/your/new/wordlist.txt
+saudit -t evilcorp.com -m paramminer_getparams -c modules.paramminer_getparams.wordlist=/path/to/your/new/wordlist.txt
 ``` 

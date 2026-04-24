@@ -88,7 +88,7 @@ url_regexes = [re.compile(r, re.I) for r in _url_regexes]
 _double_slash_regex = r"/{2,}"
 double_slash_regex = re.compile(_double_slash_regex)
 
-# event type regexes, used throughout BBOT for autodetection of event types, validation, and excavation.
+# event type regexes, used throughout SAUDIT for autodetection of event types, validation, and excavation.
 event_type_regexes = OrderedDict(
     (
         (k, tuple(re.compile(r, re.I) for r in regexes))

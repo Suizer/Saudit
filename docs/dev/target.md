@@ -1,9 +1,9 @@
-::: bbot.scanner.target.BaseTarget
+::: saudit.scanner.target.BaseTarget
 
-::: bbot.scanner.target.ScanSeeds
+::: saudit.scanner.target.ScanSeeds
 
-::: bbot.scanner.target.ScanWhitelist
+::: saudit.scanner.target.ScanWhitelist
 
-::: bbot.scanner.target.ScanBlacklist
+::: saudit.scanner.target.ScanBlacklist
 
-::: bbot.scanner.target.BBOTTarget
+::: saudit.scanner.target.SAUDITTarget

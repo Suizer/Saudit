@@ -1,11 +1,11 @@
 from pathlib import Path
 from .base import ModuleTestBase, tempapkfile
-from saudit.test.bbot_fixtures import bbot_test_dir
+from saudit.test.saudit_fixtures import saudit_test_dir
 
 
 class TestAPKPure(ModuleTestBase):
     modules_overrides = ["apkpure", "google_playstore", "speculate"]
-    config_overrides = {"modules": {"apkpure": {"output_folder": str(bbot_test_dir / "test_apkpure_files")}}}
+    config_overrides = {"modules": {"apkpure": {"output_folder": str(saudit_test_dir / "test_apkpure_files")}}}
     apk_file = tempapkfile()
 
     async def setup_after_prep(self, module_test):
@@ -18,16 +18,16 @@ class TestAPKPure(ModuleTestBase):
             <title>"blacklanternsecurity" - Android Apps on Google Play</title>
             </head>
             <body>
-            <a href="/store/apps/details?id=com.bbot.test&pcampaignid=dontmatchme&pli=1"/>
+            <a href="/store/apps/details?id=com.saudit.test&pcampaignid=dontmatchme&pli=1"/>
             </body>
             </html>""",
         )
         module_test.httpx_mock.add_response(
-            url="https://play.google.com/store/apps/details?id=com.bbot.test",
+            url="https://play.google.com/store/apps/details?id=com.saudit.test",
             text="""<!DOCTYPE html>
             <html>
             <head>
-            <title>BBOT</title>
+            <title>SAUDIT</title>
             </head>
             <body>
             <meta name="appstore:developer_url" content="https://www.blacklanternsecurity.com">
@@ -37,11 +37,11 @@ class TestAPKPure(ModuleTestBase):
             </html>""",
         )
         module_test.httpx_mock.add_response(
-            url="https://d.apkpure.com/b/XAPK/com.bbot.test?version=latest",
+            url="https://d.apkpure.com/b/XAPK/com.saudit.test?version=latest",
             content=self.apk_file,
             headers={
                 "Content-Type": "application/vnd.android.package-archive",
-                "Content-Disposition": "attachment; filename=com.bbot.test.apk",
+                "Content-Disposition": "attachment; filename=com.saudit.test.apk",
             },
         )
 
@@ -63,11 +63,11 @@ class TestAPKPure(ModuleTestBase):
                 for e in events
                 if e.type == "MOBILE_APP"
                 and "android" in e.tags
-                and e.data["id"] == "com.bbot.test"
-                and e.data["url"] == "https://play.google.com/store/apps/details?id=com.bbot.test"
+                and e.data["id"] == "com.saudit.test"
+                and e.data["url"] == "https://play.google.com/store/apps/details?id=com.saudit.test"
             ]
-        ), "Failed to find bbot android app"
-        filesystem_event = [e for e in events if e.type == "FILESYSTEM" and "com.bbot.test.apk" in e.data["path"]]
+        ), "Failed to find saudit android app"
+        filesystem_event = [e for e in events if e.type == "FILESYSTEM" and "com.saudit.test.apk" in e.data["path"]]
         assert 1 == len(filesystem_event), "Failed to download apk"
         file = Path(filesystem_event[0].data["path"])
         assert file.is_file(), "Destination apk doesn't exist"

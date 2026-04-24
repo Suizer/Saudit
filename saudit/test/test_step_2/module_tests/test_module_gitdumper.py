@@ -1,6 +1,6 @@
 from pathlib import Path
 from .base import ModuleTestBase
-from saudit.test.bbot_fixtures import bbot_test_dir
+from saudit.test.saudit_fixtures import saudit_test_dir
 
 
 class TestGitDumper_Dirlisting(ModuleTestBase):
@@ -9,7 +9,7 @@ class TestGitDumper_Dirlisting(ModuleTestBase):
     ]
 
     modules_overrides = ["git", "gitdumper", "httpx"]
-    config_overrides = {"modules": {"gitdumper": {"output_folder": str(bbot_test_dir / "test_output")}}}
+    config_overrides = {"modules": {"gitdumper": {"output_folder": str(saudit_test_dir / "test_output")}}}
 
     index_html = """<html>
         <head>

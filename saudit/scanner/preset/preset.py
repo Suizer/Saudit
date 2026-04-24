@@ -58,7 +58,7 @@ class BasePreset(type):
 
 class Preset(metaclass=BasePreset):
     """
-    A preset is the central config for a BBOT scan. It contains everything a scan needs to run --
+    A preset is the central config for a SAUDIT scan. It contains everything a scan needs to run --
         targets, modules, flags, config options like API keys, etc.
 
     You can create a preset manually and pass it into `Scanner(preset=preset)`.
@@ -68,7 +68,7 @@ class Preset(metaclass=BasePreset):
         This works by merging each preset in turn using `Preset.merge()`.
         The order matters. In case of a conflict, the last preset to be merged wins priority.
 
-    Presets can be loaded from or saved to YAML. BBOT has a number of ready-made presets for common tasks like
+    Presets can be loaded from or saved to YAML. SAUDIT has a number of ready-made presets for common tasks like
     subdomain enumeration, web spidering, dirbusting, etc.
 
     Presets are highly customizable via `conditions`, which use the Jinja2 templating engine.
@@ -93,10 +93,10 @@ class Preset(metaclass=BasePreset):
         require_flags (set): Require modules to have these flags. When set, automatically removes offending modules.
         exclude_flags (set): Exclude modules that have any of these flags. When set, automatically removes offending modules.
         module_dirs (set): Custom directories from which to load modules (alias to `self.module_loader.module_dirs`). When set, automatically preloads contained modules.
-        config (omegaconf.dictconfig.DictConfig): BBOT config (alias to `core.config`)
-        core (BBOTCore): Local copy of BBOTCore object.
-        verbose (bool): Whether log level is currently set to verbose. When set, updates log level for all BBOT log handlers.
-        debug (bool): Whether log level is currently set to debug. When set, updates log level for all BBOT log handlers.
+        config (omegaconf.dictconfig.DictConfig): SAUDIT config (alias to `core.config`)
+        core (SAUDITCore): Local copy of SAUDITCore object.
+        verbose (bool): Whether log level is currently set to verbose. When set, updates log level for all SAUDIT log handlers.
+        debug (bool): Whether log level is currently set to debug. When set, updates log level for all SAUDIT log handlers.
         silent (bool): Whether logging is currently disabled. When set to True, silences all stderr.
 
     Examples:
@@ -154,15 +154,15 @@ class Preset(metaclass=BasePreset):
             config (dict, optional): Additional scan configuration settings.
             include (list[str], optional): names or filenames of other presets to include.
             presets (list[str], optional): an alias for `include`.
-            output_dir (str or Path, optional): Directory to store scan output. Defaults to BBOT home directory (`~/.bbot`).
+            output_dir (str or Path, optional): Directory to store scan output. Defaults to SAUDIT home directory (`~/.saudit`).
             scan_name (str, optional): Human-readable name of the scan. If not specified, it will be random, e.g. "demonic_jimmy".
             name (str, optional): Human-readable name of the preset. Used mainly for logging.
             description (str, optional): Description of the preset.
             conditions (list[str], optional): Custom conditions to be executed before scan start. Written in Jinja2.
             force_start (bool, optional): If True, ignore conditional aborts and failed module setups. Just run the scan!
-            verbose (bool, optional): Set the BBOT logger to verbose mode.
-            debug (bool, optional): Set the BBOT logger to debug mode.
-            silent (bool, optional): Silence all stderr (effectively disables the BBOT logger).
+            verbose (bool, optional): Set the SAUDIT logger to verbose mode.
+            debug (bool, optional): Set the SAUDIT logger to debug mode.
+            silent (bool, optional): Silence all stderr (effectively disables the SAUDIT logger).
             _exclude (list[Path], optional): Preset filenames to exclude from inclusion. Used internally to prevent infinite recursion in circular or self-referencing presets.
             _log (bool, optional): Whether to enable logging for the preset. This will record which modules/flags are enabled, etc.
         """
@@ -243,7 +243,7 @@ class Preset(metaclass=BasePreset):
             for _filename in _exclude:
                 self._preset_files_loaded.add(Path(_filename).resolve())
 
-        # bbot core config
+        # saudit core config
         self.core = CORE.copy()
         if config is None:
             config = omegaconf.OmegaConf.create({})
@@ -400,7 +400,7 @@ class Preset(metaclass=BasePreset):
 
     def bake(self, scan=None):
         """
-        Return a "baked" copy of this preset, ready for use by a BBOT scan.
+        Return a "baked" copy of this preset, ready for use by a SAUDIT scan.
 
         Baking a preset finalizes it by populating `preset.modules` based on flags,
         performing final validations, and substituting environment variables in preloaded modules.
@@ -480,9 +480,9 @@ class Preset(metaclass=BasePreset):
                 baked_preset.add_module(output_module, module_type="output", raise_error=False)
 
         # create target object
-        from saudit.scanner.target import BBOTTarget
+        from saudit.scanner.target import SAUDITTarget
 
-        baked_preset._target = BBOTTarget(
+        baked_preset._target = SAUDITTarget(
             *list(self._seeds),
             whitelist=self._whitelist,
             blacklist=self._blacklist,
@@ -616,17 +616,17 @@ class Preset(metaclass=BasePreset):
     @property
     def environ(self):
         if self._environ is None:
-            from .environ import BBOTEnviron
+            from .environ import SAUDITEnviron
 
-            self._environ = BBOTEnviron(self)
+            self._environ = SAUDITEnviron(self)
         return self._environ
 
     @property
     def args(self):
         if self._args is None:
-            from .args import BBOTArgs
+            from .args import SAUDITArgs
 
-            self._args = BBOTArgs(self)
+            self._args = SAUDITArgs(self)
         return self._args
 
     def in_scope(self, host):
@@ -685,7 +685,7 @@ class Preset(metaclass=BasePreset):
         """
         Load a preset from a yaml file and merge it into this one.
 
-        If the full path is not specified, BBOT will look in all the usual places for it.
+        If the full path is not specified, SAUDIT will look in all the usual places for it.
 
         The file extension is optional.
 
@@ -704,7 +704,7 @@ class Preset(metaclass=BasePreset):
     @classmethod
     def from_yaml_file(cls, filename, _exclude=None, _log=False):
         """
-        Create a preset from a YAML file. If the full path is not specified, BBOT will look in all the usual places for it.
+        Create a preset from a YAML file. If the full path is not specified, SAUDIT will look in all the usual places for it.
 
         The file extension is optional.
 

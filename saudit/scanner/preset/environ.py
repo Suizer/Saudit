@@ -70,14 +70,14 @@ add_to_path(local_bin_dir)
 omegaconf.OmegaConf.register_new_resolver("env", env_resolver)
 
 
-class BBOTEnviron:
+class SAUDITEnviron:
     def __init__(self, preset):
         self.preset = preset
 
     def flatten_config(self, config, base="saudit"):
         """
         Flatten a JSON-like config into a list of environment variables:
-            {"modules": [{"httpx": {"timeout": 5}}]} --> "BBOT_MODULES_HTTPX_TIMEOUT=5"
+            {"modules": [{"httpx": {"timeout": 5}}]} --> "SAUDIT_MODULES_HTTPX_TIMEOUT=5"
         """
         if type(config) == omegaconf.dictconfig.DictConfig:
             for k, v in config.items():
@@ -93,28 +93,28 @@ class BBOTEnviron:
         """
         environ = dict(os.environ)
 
-        # ensure bbot_tools
+        # ensure saudit_tools
         environ["SAUDIT_TOOLS"] = str(self.preset.core.tools_dir)
         add_to_path(str(self.preset.core.tools_dir), environ=environ)
-        # ensure bbot_cache
+        # ensure saudit_cache
         environ["SAUDIT_CACHE"] = str(self.preset.core.cache_dir)
-        # ensure bbot_temp
+        # ensure saudit_temp
         environ["SAUDIT_TEMP"] = str(self.preset.core.temp_dir)
-        # ensure bbot_lib
+        # ensure saudit_lib
         environ["SAUDIT_LIB"] = str(self.preset.core.lib_dir)
-        # export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:~/.bbot/lib/
+        # export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:~/.saudit/lib/
         add_to_path(str(self.preset.core.lib_dir), k="LD_LIBRARY_PATH", environ=environ)
 
         # platform variables
         environ["SAUDIT_OS_PLATFORM"] = os_platform()
-        environ["BBOT_OS"] = os_platform_friendly()
+        environ["SAUDIT_OS"] = os_platform_friendly()
         environ["SAUDIT_CPU_ARCH"] = cpu_architecture()
         environ["SAUDIT_CPU_ARCH_GOLANG"] = cpu_architecture_golang()
         environ["SAUDIT_CPU_ARCH_RUST"] = cpu_architecture_rust()
 
         # copy config to environment
-        bbot_environ = self.flatten_config(self.preset.config)
-        environ.update(bbot_environ)
+        saudit_environ = self.flatten_config(self.preset.config)
+        environ.update(saudit_environ)
 
         # handle HTTP proxy
         http_proxy = self.preset.config.get("web", {}).get("http_proxy", "")

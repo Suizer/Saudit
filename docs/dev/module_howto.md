@@ -1,10 +1,10 @@
-# How to Write a BBOT Module
+# How to Write a SAUDIT Module
 
-Here we'll go over a basic example of writing a custom BBOT module.
+Here we'll go over a basic example of writing a custom SAUDIT module.
 
 ## Create the python file
 
-1. Create a new `.py` file in `bbot/modules` (or in a [custom module directory](#load-modules-from-custom-locations))
+1. Create a new `.py` file in `saudit/modules` (or in a [custom module directory](#load-modules-from-custom-locations))
 1. At the top of the file, import `BaseModule`
 1. Declare a class that inherits from `BaseModule`
    - the class must have the same name as your file (case-insensitive)
@@ -15,8 +15,8 @@ Here we'll go over a basic example of writing a custom BBOT module.
 
 Here is an example of a simple module that performs whois lookups:
 
-```python title="bbot/modules/whois.py"
-from bbot.modules.base import BaseModule
+```python title="saudit/modules/whois.py"
+from saudit.modules.base import BaseModule
 
 class whois(BaseModule):
     watched_events = ["DNS_NAME"] # watch for DNS_NAME events
@@ -51,15 +51,15 @@ class whois(BaseModule):
 After saving the module, you can run it with `-m`:
 
 ```bash
-# run a scan enabling the module in bbot/modules/mymodule.py
-bbot -t evilcorp.com -m whois
+# run a scan enabling the module in saudit/modules/mymodule.py
+saudit -t evilcorp.com -m whois
 ```
 
 ### Debugging Your Module
 
-BBOT has a variety of colorful logging functions like `self.hugesuccess()` that can be useful for debugging.
+SAUDIT has a variety of colorful logging functions like `self.hugesuccess()` that can be useful for debugging.
 
-**BBOT log levels**:
+**SAUDIT log levels**:
 
 - `critical`: bright red
 - `hugesuccess`: bright green
@@ -117,7 +117,7 @@ async def setup(self):
 
 Each module can have its own set of config options. These live in the `options` and `options_desc` attributes on your class. Both are dictionaries; `options` is for defaults and `options_desc` is for descriptions. Here is a typical example:
 
-```python title="bbot/modules/nmap.py"
+```python title="saudit/modules/nmap.py"
 class nmap(BaseModule):
     # ...
     options = {
@@ -144,12 +144,12 @@ class nmap(BaseModule):
 Once you've defined these variables, you can pass the options via `-c`:
 
 ```bash
-bbot -m nmap -c modules.nmap.top_ports=250
+saudit -m nmap -c modules.nmap.top_ports=250
 ```
 
 ... or via the config:
 
-```yaml title="~/.config/bbot/bbot.yml"
+```yaml title="~/.config/saudit/saudit.yml"
 modules:
   nmap:
     top_ports: 250
@@ -163,7 +163,7 @@ self.config.get("top_ports")
 
 ## Module Dependencies
 
-BBOT automates module dependencies with **Ansible**. If your module relies on a third-party binary, OS package, or python library, you can specify them in the `deps_*` attributes of your module.
+SAUDIT automates module dependencies with **Ansible**. If your module relies on a third-party binary, OS package, or python library, you can specify them in the `deps_*` attributes of your module.
 
 ```python
 class MyModule(BaseModule):
@@ -180,28 +180,28 @@ class MyModule(BaseModule):
             "name": "Download massdns source code",
             "git": {
                 "repo": "https://github.com/blechschmidt/massdns.git",
-                "dest": "#{BBOT_TEMP}/massdns",
+                "dest": "#{SAUDIT_TEMP}/massdns",
                 "single_branch": True,
                 "version": "master",
             },
         },
         {
             "name": "Build massdns",
-            "command": {"chdir": "#{BBOT_TEMP}/massdns", "cmd": "make", "creates": "#{BBOT_TEMP}/massdns/bin/massdns"},
+            "command": {"chdir": "#{SAUDIT_TEMP}/massdns", "cmd": "make", "creates": "#{SAUDIT_TEMP}/massdns/bin/massdns"},
         },
         {
             "name": "Install massdns",
-            "copy": {"src": "#{BBOT_TEMP}/massdns/bin/massdns", "dest": "#{BBOT_TOOLS}/", "mode": "u+x,g+x,o+x"},
+            "copy": {"src": "#{SAUDIT_TEMP}/massdns/bin/massdns", "dest": "#{SAUDIT_TOOLS}/", "mode": "u+x,g+x,o+x"},
         },
     ]
 ```
 
 ## Load Modules from Custom Locations
 
-If you have a custom module and you want to use it with BBOT, you can add its parent folder to `module_dirs`. This saves you from having to copy it into the BBOT install location. To add a custom module directory, add it to `module_dirs` in your preset:
+If you have a custom module and you want to use it with SAUDIT, you can add its parent folder to `module_dirs`. This saves you from having to copy it into the SAUDIT install location. To add a custom module directory, add it to `module_dirs` in your preset:
 
 ```yaml title="my_preset.yml"
-# load BBOT modules from these additional paths
+# load SAUDIT modules from these additional paths
 module_dirs:
   - /home/user/my_modules
 ```

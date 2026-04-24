@@ -12,8 +12,8 @@ class TestHTTP(ModuleTestBase):
                 "url": downstream_url,
                 "method": "PUT",
                 "bearer": "auth_token",
-                "username": "bbot_user",
-                "password": "bbot_password",
+                "username": "saudit_user",
+                "password": "saudit_password",
             }
         }
     }

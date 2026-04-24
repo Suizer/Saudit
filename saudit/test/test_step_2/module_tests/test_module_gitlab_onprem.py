@@ -15,31 +15,31 @@ class TestGitlab_OnPrem(ModuleTestBase):
                 {
                     "id": 33,
                     "description": None,
-                    "name": "bbot",
-                    "name_with_namespace": "bbot / BBOT",
-                    "path": "bbot",
-                    "path_with_namespace": "bbotgroup/bbot",
+                    "name": "saudit",
+                    "name_with_namespace": "saudit / SAUDIT",
+                    "path": "saudit",
+                    "path_with_namespace": "sauditgroup/saudit",
                     "created_at": "2023-09-07T15:14:05.540Z",
                     "default_branch": "master",
                     "tag_list": [],
                     "topics": [],
-                    "ssh_url_to_repo": "git@127.0.0.1:8888:bbot/bbot.git",
-                    "http_url_to_repo": "http://127.0.0.1:8888/bbotgroup/bbot.git",
-                    "web_url": "http://127.0.0.1:8888/bbotgroup/bbot",
-                    "readme_url": "http://127.0.0.1:8888/bbotgroup/bbot/-/blob/master/README.md",
+                    "ssh_url_to_repo": "git@127.0.0.1:8888:saudit/saudit.git",
+                    "http_url_to_repo": "http://127.0.0.1:8888/sauditgroup/saudit.git",
+                    "web_url": "http://127.0.0.1:8888/sauditgroup/saudit",
+                    "readme_url": "http://127.0.0.1:8888/sauditgroup/saudit/-/blob/master/README.md",
                     "forks_count": 0,
                     "avatar_url": None,
                     "star_count": 1,
                     "last_activity_at": "2024-03-11T19:13:20.691Z",
                     "namespace": {
                         "id": 9,
-                        "name": "bbotgroup",
-                        "path": "bbotgroup",
+                        "name": "sauditgroup",
+                        "path": "sauditgroup",
                         "kind": "group",
-                        "full_path": "bbotgroup",
+                        "full_path": "sauditgroup",
                         "parent_id": None,
                         "avatar_url": "/uploads/-/system/group/avatar/9/index.png",
-                        "web_url": "http://127.0.0.1:8888/groups/bbotgroup",
+                        "web_url": "http://127.0.0.1:8888/groups/sauditgroup",
                     },
                 },
             ],
@@ -50,9 +50,9 @@ class TestGitlab_OnPrem(ModuleTestBase):
             [
                 {
                     "id": 9,
-                    "web_url": "http://127.0.0.1:8888/groups/bbotgroup",
-                    "name": "bbotgroup",
-                    "path": "bbotgroup",
+                    "web_url": "http://127.0.0.1:8888/groups/sauditgroup",
+                    "name": "sauditgroup",
+                    "path": "sauditgroup",
                     "description": "OSINT automation for hackers.",
                     "visibility": "public",
                     "share_with_group_lock": False,
@@ -75,8 +75,8 @@ class TestGitlab_OnPrem(ModuleTestBase):
                     },
                     "avatar_url": "http://127.0.0.1:8888/uploads/-/system/group/avatar/9/index.png",
                     "request_access_enabled": False,
-                    "full_name": "bbotgroup",
-                    "full_path": "bbotgroup",
+                    "full_name": "sauditgroup",
+                    "full_path": "sauditgroup",
                     "created_at": "2018-05-15T14:31:12.027Z",
                     "parent_id": None,
                     "organization_id": 1,
@@ -89,73 +89,73 @@ class TestGitlab_OnPrem(ModuleTestBase):
             ]
         )
         module_test.httpserver.expect_request(
-            "/api/v4/groups/bbotgroup/projects", query_string="simple=true", headers={"Authorization": "Bearer asdf"}
+            "/api/v4/groups/sauditgroup/projects", query_string="simple=true", headers={"Authorization": "Bearer asdf"}
         ).respond_with_json(
             [
                 {
                     "id": 33,
                     "description": None,
-                    "name": "bbot2",
-                    "name_with_namespace": "bbotgroup / bbot2",
-                    "path": "bbot2",
-                    "path_with_namespace": "bbotgroup/bbot2",
+                    "name": "saudit2",
+                    "name_with_namespace": "sauditgroup / saudit2",
+                    "path": "saudit2",
+                    "path_with_namespace": "sauditgroup/saudit2",
                     "created_at": "2023-09-07T15:14:05.540Z",
                     "default_branch": "master",
                     "tag_list": [],
                     "topics": [],
-                    "ssh_url_to_repo": "git@blacklanternsecurity.com:bbotgroup/bbot2.git",
-                    "http_url_to_repo": "http://127.0.0.1:8888/bbotgroup/bbot2.git",
-                    "web_url": "http://127.0.0.1:8888/bbotgroup/bbot2",
-                    "readme_url": "http://127.0.0.1:8888/bbotgroup/bbot2/-/blob/master/README.md",
+                    "ssh_url_to_repo": "git@blacklanternsecurity.com:sauditgroup/saudit2.git",
+                    "http_url_to_repo": "http://127.0.0.1:8888/sauditgroup/saudit2.git",
+                    "web_url": "http://127.0.0.1:8888/sauditgroup/saudit2",
+                    "readme_url": "http://127.0.0.1:8888/sauditgroup/saudit2/-/blob/master/README.md",
                     "forks_count": 0,
                     "avatar_url": None,
                     "star_count": 1,
                     "last_activity_at": "2024-03-11T19:13:20.691Z",
                     "namespace": {
                         "id": 9,
-                        "name": "bbotgroup",
-                        "path": "bbotgroup",
+                        "name": "sauditgroup",
+                        "path": "sauditgroup",
                         "kind": "group",
-                        "full_path": "bbotgroup",
+                        "full_path": "sauditgroup",
                         "parent_id": None,
                         "avatar_url": "/uploads/-/system/group/avatar/9/index.png",
-                        "web_url": "http://127.0.0.1:8888/groups/bbotgroup",
+                        "web_url": "http://127.0.0.1:8888/groups/sauditgroup",
                     },
                 },
             ]
         )
         module_test.httpserver.expect_request(
-            "/api/v4/users/bbotgroup/projects", query_string="simple=true", headers={"Authorization": "Bearer asdf"}
+            "/api/v4/users/sauditgroup/projects", query_string="simple=true", headers={"Authorization": "Bearer asdf"}
         ).respond_with_json(
             [
                 {
                     "id": 33,
                     "description": None,
-                    "name": "bbot3",
-                    "name_with_namespace": "bbotgroup / bbot3",
-                    "path": "bbot3",
-                    "path_with_namespace": "bbotgroup/bbot3",
+                    "name": "saudit3",
+                    "name_with_namespace": "sauditgroup / saudit3",
+                    "path": "saudit3",
+                    "path_with_namespace": "sauditgroup/saudit3",
                     "created_at": "2023-09-07T15:14:05.540Z",
                     "default_branch": "master",
                     "tag_list": [],
                     "topics": [],
-                    "ssh_url_to_repo": "git@blacklanternsecurity.com:bbotgroup/bbot3.git",
-                    "http_url_to_repo": "http://127.0.0.1:8888/bbotgroup/bbot3.git",
-                    "web_url": "http://127.0.0.1:8888/bbotgroup/bbot3",
-                    "readme_url": "http://127.0.0.1:8888/bbotgroup/bbot3/-/blob/master/README.md",
+                    "ssh_url_to_repo": "git@blacklanternsecurity.com:sauditgroup/saudit3.git",
+                    "http_url_to_repo": "http://127.0.0.1:8888/sauditgroup/saudit3.git",
+                    "web_url": "http://127.0.0.1:8888/sauditgroup/saudit3",
+                    "readme_url": "http://127.0.0.1:8888/sauditgroup/saudit3/-/blob/master/README.md",
                     "forks_count": 0,
                     "avatar_url": None,
                     "star_count": 1,
                     "last_activity_at": "2024-03-11T19:13:20.691Z",
                     "namespace": {
                         "id": 9,
-                        "name": "bbotgroup",
-                        "path": "bbotgroup",
+                        "name": "sauditgroup",
+                        "path": "sauditgroup",
                         "kind": "group",
-                        "full_path": "bbotgroup",
+                        "full_path": "sauditgroup",
                         "parent_id": None,
                         "avatar_url": "/uploads/-/system/group/avatar/9/index.png",
-                        "web_url": "http://127.0.0.1:8888/groups/bbotgroup",
+                        "web_url": "http://127.0.0.1:8888/groups/sauditgroup",
                     },
                 },
             ]
@@ -177,8 +177,8 @@ class TestGitlab_OnPrem(ModuleTestBase):
                 for e in events
                 if e.type == "SOCIAL"
                 and e.data["platform"] == "gitlab"
-                and e.data["profile_name"] == "bbotgroup"
-                and e.data["url"] == "http://127.0.0.1:8888/bbotgroup"
+                and e.data["profile_name"] == "sauditgroup"
+                and e.data["url"] == "http://127.0.0.1:8888/sauditgroup"
                 and str(e.module) == "gitlab_onprem"
             ]
         )
@@ -188,7 +188,7 @@ class TestGitlab_OnPrem(ModuleTestBase):
                 for e in events
                 if e.type == "CODE_REPOSITORY"
                 and "git" in e.tags
-                and e.data["url"] == "http://127.0.0.1:8888/bbotgroup/bbot"
+                and e.data["url"] == "http://127.0.0.1:8888/sauditgroup/saudit"
             ]
         )
         assert 1 == len(
@@ -197,7 +197,7 @@ class TestGitlab_OnPrem(ModuleTestBase):
                 for e in events
                 if e.type == "CODE_REPOSITORY"
                 and "git" in e.tags
-                and e.data["url"] == "http://127.0.0.1:8888/bbotgroup/bbot2"
+                and e.data["url"] == "http://127.0.0.1:8888/sauditgroup/saudit2"
             ]
         )
         assert 1 == len(
@@ -206,6 +206,6 @@ class TestGitlab_OnPrem(ModuleTestBase):
                 for e in events
                 if e.type == "CODE_REPOSITORY"
                 and "git" in e.tags
-                and e.data["url"] == "http://127.0.0.1:8888/bbotgroup/bbot3"
+                and e.data["url"] == "http://127.0.0.1:8888/sauditgroup/saudit3"
             ]
         )

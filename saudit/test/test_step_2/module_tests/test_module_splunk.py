@@ -11,16 +11,16 @@ class TestSplunk(ModuleTestBase):
             "splunk": {
                 "url": downstream_url,
                 "hectoken": "HECTOKEN",
-                "index": "bbot_index",
-                "source": "bbot_source",
+                "index": "saudit_index",
+                "source": "saudit_source",
             }
         }
     }
 
     def verify_data(self, j):
-        if not j["source"] == "bbot_source":
+        if not j["source"] == "saudit_source":
             return False
-        if not j["index"] == "bbot_index":
+        if not j["index"] == "saudit_index":
             return False
         data = j["event"]
         if not data["data"] == "blacklanternsecurity.com" and data["type"] == "DNS_NAME":

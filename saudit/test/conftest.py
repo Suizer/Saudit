@@ -25,7 +25,7 @@ root_logger.addHandler(debug_handler)
 
 test_config = OmegaConf.load(Path(__file__).parent / "test.conf")
 
-os.environ["BBOT_DEBUG"] = "True"
+os.environ["SAUDIT_DEBUG"] = "True"
 CORE.logger.log_level = logging.DEBUG
 
 # silence all stderr output:
@@ -61,7 +61,7 @@ def stop_server(server):
 
 
 @pytest.fixture
-def bbot_httpserver():
+def saudit_httpserver():
     server = HTTPServer(host="127.0.0.1", port=8888, threaded=True)
     server.start()
 
@@ -75,7 +75,7 @@ def bbot_httpserver():
 
 
 @pytest.fixture
-def bbot_httpserver_ssl():
+def saudit_httpserver_ssl():
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     current_dir = Path(__file__).parent
     keyfile = str(current_dir / "testsslkey.pem")
@@ -111,7 +111,7 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture
-def bbot_httpserver_allinterfaces():
+def saudit_httpserver_allinterfaces():
     server = HTTPServer(host="0.0.0.0", port=5556, threaded=True)
     server.start()
 
@@ -127,7 +127,7 @@ def bbot_httpserver_allinterfaces():
 class Interactsh_mock:
     def __init__(self, name):
         self.name = name
-        self.log = logging.getLogger(f"bbot.interactsh.{self.name}")
+        self.log = logging.getLogger(f"saudit.interactsh.{self.name}")
         self.interactions = asyncio.Queue()  # Use an asyncio queue for async access
         self.correlation_id = "deadbeef-dead-beef-dead-beefdeadbeef"
         self.stop = False
@@ -340,8 +340,8 @@ def pytest_sessionfinish(session, exitstatus):
         for handler in handlers:
             logger.removeHandler(handler)
 
-    # Wipe out BBOT home dir
-    shutil.rmtree("/tmp/.bbot_test", ignore_errors=True)
+    # Wipe out SAUDIT home dir
+    shutil.rmtree("/tmp/.saudit_test", ignore_errors=True)
 
     yield
 

@@ -1,9 +1,9 @@
-from ..bbot_fixtures import *  # noqa: F401
+from ..saudit_fixtures import *  # noqa: F401
 from saudit.modules.base import BaseModule
 
 
 @pytest.mark.asyncio
-async def test_manager_deduplication(bbot_scanner):
+async def test_manager_deduplication(saudit_scanner):
 
     class DefaultModule(BaseModule):
         _name = "default_module"
@@ -47,7 +47,7 @@ async def test_manager_deduplication(bbot_scanner):
 
 
     async def do_scan(*args, _config={}, _dns_mock={}, scan_callback=None, **kwargs):
-        scan = bbot_scanner(*args, config=_config, **kwargs)
+        scan = saudit_scanner(*args, config=_config, **kwargs)
         default_module = DefaultModule(scan)
         everything_module = EverythingModule(scan)
         no_suppress_dupes = NoSuppressDupes(scan)

@@ -26,7 +26,7 @@ class Splunk(BaseOutputModule):
 
     async def setup(self):
         self.url = self.config.get("url", "")
-        self.source = self.config.get("source", "bbot")
+        self.source = self.config.get("source", "saudit")
         self.index = self.config.get("index", "main")
         self.timeout = self.config.get("timeout", 10)
         self.headers = {}

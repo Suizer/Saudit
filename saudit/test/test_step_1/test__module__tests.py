@@ -25,8 +25,8 @@ def test__module__tests():
     # make sure each test file has a test class
     for file in _module_test_files:
         module_name = file.stem
-        import_path = f"bbot.test.test_step_2.module_tests.{module_name}"
-        module_test_variables = importlib.import_module(import_path, "bbot")
+        import_path = f"saudit.test.test_step_2.module_tests.{module_name}"
+        module_test_variables = importlib.import_module(import_path, "saudit")
         module_pass = False
         for var_name in dir(module_test_variables):
             if var_name.startswith("Test"):
