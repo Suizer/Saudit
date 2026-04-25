@@ -164,11 +164,13 @@ class SAUDITArgs:
         if self.parsed.name is not None:
             args_preset.scan_name = self.parsed.name
         elif self.parsed.targets:
-            raw = self.parsed.targets[0]
+            from datetime import datetime
+            raw  = self.parsed.targets[0]
             host = urlparse(raw).hostname or raw.split("//")[-1].split("/")[0]
             slug = re.sub(r"[^a-z0-9]+", "_", host.lower()).strip("_")
+            ts   = datetime.now().strftime("%Y%m%d_%H%M%S")
             if slug:
-                args_preset.scan_name = slug
+                args_preset.scan_name = f"{slug}_{ts}"
         if self.parsed.output_dir is not None:
             args_preset.output_dir = self.parsed.output_dir
         if self.parsed.force:

@@ -1,8 +1,8 @@
 description: >
-  Initial recon — full passive fingerprinting with no payload injection.
-  Crawls the entire target, detects technologies, discovers APIs,
-  analyzes JavaScript, checks for exposed secrets and outdated libraries.
-  Designed to give the pentester a complete picture before any active testing.
+  Initial recon — active fingerprinting and light enumeration.
+  Crawls the target, detects technologies, discovers APIs, analyzes JavaScript,
+  checks for exposed secrets and outdated libraries, and brute-forces common paths.
+  Includes active modules (ffuf, nuclei): authorized use only.
 
 modules:
   - httpx
