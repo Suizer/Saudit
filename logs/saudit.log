@@ -1,0 +1,2 @@
+2026-04-26 00:57:13,837 [ERROR] saudit.cli cli.py:295 Failed to create directory at /Users/matias/.config/saudit: [Errno 1] Operation not permitted: '/Users/matias/.config/saudit/.6xzsmr51v5'
+2026-04-26 00:57:13,839 [ERROR] saudit.cli cli.py:295 Failed to create directory at /Users/matias/.config/saudit: [Errno 1] Operation not permitted: '/Users/matias/.config/saudit/.bkm6jxw70y'

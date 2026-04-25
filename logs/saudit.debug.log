@@ -1,0 +1,60 @@
+2026-04-26 00:57:13,846 [TRACE] saudit.cli cli.py:296 Traceback (most recent call last):
+  File "/Users/matias/Proyectos/Saudit/saudit/core/helpers/misc.py", line 1501, in mkdir
+    touchfile.touch()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/pathlib.py", line 1305, in touch
+    fd = self._raw_open(flags, mode)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/pathlib.py", line 1117, in _raw_open
+    return self._accessor.open(self, flags, mode)
+PermissionError: [Errno 1] Operation not permitted: '/Users/matias/.config/saudit/.bkm6jxw70y'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/matias/Proyectos/Saudit/saudit/cli.py", line 52, in _main
+    preset.parse_args()
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 510, in parse_args
+    self.merge(self.args.preset_from_args())
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 629, in args
+    self._args = SAUDITArgs(self)
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/args.py", line 92, in __init__
+    self.parser = self.create_parser()
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/args.py", line 298, in create_parser
+    help=f"Modules to enable. Choices: {','.join(sorted(self.preset.module_loader.scan_module_choices))}",
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 612, in module_loader
+    self._module_loader.ensure_config_files()
+  File "/Users/matias/Proyectos/Saudit/saudit/core/modules.py", line 689, in ensure_config_files
+    mkdir(files.config_dir)
+  File "/Users/matias/Proyectos/Saudit/saudit/core/helpers/misc.py", line 1505, in mkdir
+    raise errors.DirectoryCreationError(f"Failed to create directory at {path}: {e}")
+saudit.errors.DirectoryCreationError: Failed to create directory at /Users/matias/.config/saudit: [Errno 1] Operation not permitted: '/Users/matias/.config/saudit/.bkm6jxw70y'
+
+2026-04-26 00:57:13,846 [TRACE] saudit.cli cli.py:296 Traceback (most recent call last):
+  File "/Users/matias/Proyectos/Saudit/saudit/core/helpers/misc.py", line 1501, in mkdir
+    touchfile.touch()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/pathlib.py", line 1305, in touch
+    fd = self._raw_open(flags, mode)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/pathlib.py", line 1117, in _raw_open
+    return self._accessor.open(self, flags, mode)
+PermissionError: [Errno 1] Operation not permitted: '/Users/matias/.config/saudit/.6xzsmr51v5'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/matias/Proyectos/Saudit/saudit/cli.py", line 52, in _main
+    preset.parse_args()
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 510, in parse_args
+    self.merge(self.args.preset_from_args())
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 629, in args
+    self._args = SAUDITArgs(self)
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/args.py", line 92, in __init__
+    self.parser = self.create_parser()
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/args.py", line 298, in create_parser
+    help=f"Modules to enable. Choices: {','.join(sorted(self.preset.module_loader.scan_module_choices))}",
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 612, in module_loader
+    self._module_loader.ensure_config_files()
+  File "/Users/matias/Proyectos/Saudit/saudit/core/modules.py", line 689, in ensure_config_files
+    mkdir(files.config_dir)
+  File "/Users/matias/Proyectos/Saudit/saudit/core/helpers/misc.py", line 1505, in mkdir
+    raise errors.DirectoryCreationError(f"Failed to create directory at {path}: {e}")
+saudit.errors.DirectoryCreationError: Failed to create directory at /Users/matias/.config/saudit: [Errno 1] Operation not permitted: '/Users/matias/.config/saudit/.6xzsmr51v5'
+

@@ -47,8 +47,8 @@ class SAUDITArgs:
         ),
         (
             "Everything everywhere all at once",
-            "Subdomains, emails, cloud buckets, port scan, basic web, web screenshots, nuclei",
-            "saudit -t evilcorp.com -p kitchen-sink",
+            "Initial recon with crawling, tech detection, API discovery, and vulnerability checks",
+            "saudit -t evilcorp.com -p initial",
         ),
     ]
 
@@ -231,14 +231,17 @@ class SAUDITArgs:
         return args_preset
 
     def create_parser(self, *args, **kwargs):
+        preset_choices = ",".join(sorted(self.preset.all_presets))
         kwargs.update(
             {
-                "description": "Bighuge BLS OSINT Tool",
+                "description": "Saudit by suizer",
                 "formatter_class": argparse.RawTextHelpFormatter,
                 "epilog": self.epilog,
+                "add_help": False,
             }
         )
         p = argparse.ArgumentParser(*args, **kwargs)
+        p.add_argument("-h", "--help", "-help", action="help", help="show this help message and exit")
 
         target = p.add_argument_group(title="Target")
         target.add_argument(
@@ -275,7 +278,7 @@ class SAUDITArgs:
             "-p",
             "--preset",
             nargs="*",
-            help="Enable SAUDIT preset(s)",
+            help=f"Enable SAUDIT preset(s). Choices: {preset_choices}",
             metavar="PRESET",
             default=[],
         )
