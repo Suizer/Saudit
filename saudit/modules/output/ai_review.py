@@ -274,39 +274,33 @@ class ai_review(BaseOutputModule):
             )
             return
 
-        seeds  = list(self.scan.target.seeds.inputs)
-        target = seeds[0] if seeds else ""
+        seeds    = list(self.scan.target.seeds.inputs)
+        target   = seeds[0] if seeds else ""
         waf_hint = _waf_hint(self._wafs)
-        sections: list[str] = []
+        wrote    = False
 
         print(f"\n{_CYN}[AI]{_R} Backend: {_WHT}{self._backend}{_R}", flush=True)
+
+        # Fix 5: write header to disk immediately so html_report can start reading
+        self._init_output_file(target)
 
         print(f"{_CYN}[AI]{_R} Analysing findings…", flush=True)
         findings_md = await self._analyze_findings(target, waf_hint)
         if findings_md:
-            sections.append(findings_md)
+            self._append_section(findings_md)
             self._print_section(findings_md)
+            wrote = True
 
         if self._analyze_maps:
             delay = _GEMINI_DELAY if self._backend == "gemini" else _OLLAMA_DELAY
-            map_sections = await self._analyze_source_maps(target, waf_hint, delay)
-            sections.extend(map_sections)
+            # Fix 5: async generator — each chunk is written to disk as it completes
+            async for section_md in self._analyze_source_maps(target, waf_hint, delay):
+                self._append_section(section_md)
+                wrote = True
 
-        if not sections:
+        if not wrote:
             print(f"{_DIM}[AI] Nothing to report.{_R}", flush=True)
-            return
-
-        header = (
-            f"# AI Review — {target}\n"
-            f"_Generated {datetime.now().strftime('%Y-%m-%d %H:%M')} "
-            f"via {self._backend} "
-            f"({self._ollama_model if self._backend == 'ollama' else 'gemini-1.5-flash'})_\n\n"
-            f"**WAF:** {', '.join(self._wafs) or 'None detected'}  \n"
-            f"**Technologies:** {', '.join(sorted(set(self._technologies))) or 'Unknown'}\n\n---\n"
-        )
-        md = header + "\n\n---\n".join(sections)
-        with suppress(Exception):
-            self.output_file.write_text(md, encoding="utf-8")
+        else:
             print(f"{_GRN}[AI]{_R} Saved → {self.output_file}", flush=True)
 
     # ── Findings analysis ─────────────────────────────────────────────────────
@@ -316,7 +310,7 @@ class ai_review(BaseOutputModule):
         if not all_items and not self._technologies and not self._api_specs:
             return ""
 
-        # 5.1 — Deduplicate by (url, description) to avoid model confusion
+        # Deduplicate by (url, description)
         seen, deduped = set(), []
         for f in all_items:
             key = (f.get("url", "").rstrip("/"), f.get("description", "")[:120].lower())
@@ -328,51 +322,25 @@ class ai_review(BaseOutputModule):
         secrets       = [f for f in all_items if f.get("is_secret")]
         exposed_files = [f for f in all_items if f.get("exposed_file") and not f.get("is_secret")]
         regular       = [f for f in all_items if not f.get("is_secret") and not f.get("exposed_file")]
-
         regular.sort(key=lambda f: _SEV_ORDER.get(f.get("severity", "info"), 4))
 
-        # Critical exposure block
+        # Build context blocks
         critical_lines = []
         if secrets:
-            critical_lines.append("\n[HARDCODED SECRETS — treat as critical]")
+            critical_lines.append("[HARDCODED SECRETS — treat as critical]")
             for f in secrets[:20]:
                 desc = f.get("description", "")
                 url  = f.get("url", "")
                 critical_lines.append(f"  • {desc}" + (f"  →  {url}" if url else ""))
-
         if exposed_files:
-            critical_lines.append("\n[SENSITIVE FILES DIRECTLY ACCESSIBLE]")
+            critical_lines.append("[SENSITIVE FILES DIRECTLY ACCESSIBLE]")
             for f in exposed_files[:20]:
-                url  = f.get("url", "")
-                desc = f.get("description", "")
-                critical_lines.append(f"  • {url or desc}")
-
+                critical_lines.append(f"  • {f.get('url') or f.get('description', '')}")
         critical_block = "\n".join(critical_lines)
 
-        # Regular findings block
-        by_sev = defaultdict(list)
-        for f in regular:
-            by_sev[f.get("severity", "info")].append(f)
-
-        findings_lines = []
-        for sev in ("critical", "high", "medium", "low", "info"):
-            items = by_sev.get(sev, [])
-            if not items:
-                continue
-            findings_lines.append(f"\n[{sev.upper()}]")
-            for f in items[:30]:
-                desc = f.get("name") or f.get("description", "")
-                url  = f.get("url", "")
-                mod  = f.get("module", "")
-                findings_lines.append(f"  • [{mod}] {desc}" + (f"  →  {url}" if url else ""))
-
-        findings_block = "\n".join(findings_lines) or "No additional findings."
-        tech_block     = ", ".join(sorted(set(self._technologies))) or "unknown"
-
-        # 4.2 — Verified API endpoints from Swagger/GraphQL introspection
         api_lines = []
         if self._api_specs:
-            api_lines.append("\n[SWAGGER / GRAPHQL — verified endpoints and schema]")
+            api_lines.append("[VERIFIED API ENDPOINTS — swagger/graphql/jsfuzzer]")
             for f in self._api_specs[:30]:
                 desc = f.get("description", "")
                 url  = f.get("url", "")
@@ -380,66 +348,45 @@ class ai_review(BaseOutputModule):
                 api_lines.append(f"  • [{mod}] {desc}" + (f"  →  {url}" if url else ""))
         api_block = "\n".join(api_lines)
 
-        prompt = f"""Target base URL: {target}
-Technologies: {tech_block}
+        by_sev = defaultdict(list)
+        for f in regular:
+            by_sev[f.get("severity", "info")].append(f)
+        findings_lines = []
+        for sev in ("critical", "high", "medium", "low", "info"):
+            for f in by_sev.get(sev, [])[:30]:
+                desc = f.get("name") or f.get("description", "")
+                url  = f.get("url", "")
+                mod  = f.get("module", "")
+                findings_lines.append(f"[{sev.upper()}][{mod}] {desc}" + (f"  →  {url}" if url else ""))
+        findings_block = "\n".join(findings_lines) or "No additional findings."
+        tech_block     = ", ".join(sorted(set(self._technologies))) or "unknown"
 
-WAF context:
-{waf_hint}
+        # ── Call 1: score regular findings by real exploitability ─────────────
+        print(f"{_DIM}[AI] Step 1/3 — scoring {len(regular)} findings…{_R}", flush=True)
+        ranked_regular = await self._score_findings(regular)
 
-━━━ CRITICAL EXPOSURE (always prioritize these) ━━━
-{critical_block or "None found."}
+        # Critical exposures always included; take top 7 from scored regular findings
+        top_items = secrets + exposed_files + ranked_regular[:7]
 
-━━━ VERIFIED API ENDPOINTS (Swagger/GraphQL — use these for direct attacks) ━━━
-{api_block or "None found."}
+        # ── Call 2: generate focused commands for top items ─────────────────���──
+        print(f"{_DIM}[AI] Step 2/3 — commands for {len(top_items)} items…{_R}", flush=True)
+        commands_md = await self._generate_commands(
+            top_items, target, waf_hint, critical_block, api_block, tech_block
+        )
+        if not commands_md:
+            return ""
 
-━━━ ADDITIONAL FINDINGS (sorted high → low) ━━━
-{findings_block}
+        # ── Call 3: self-review — verify URLs and fix flags ────────────────────
+        print(f"{_DIM}[AI] Step 3/3 — self-review…{_R}", flush=True)
+        known_urls = {f.get("url", "") for f in all_items + self._api_specs if f.get("url")}
+        final_md   = await self._self_review_commands(commands_md, known_urls, target)
 
-RULES:
-- Every command must use the exact URL "{target}" — no placeholders.
-- Items in CRITICAL EXPOSURE must always appear in the Attack Plan.
-- Prioritize: exposed files > hardcoded secrets > injection points > misconfigs.
-
-Produce exactly these sections:
-
-## Attack Plan
-3-5 attack vectors ranked by real exploitability. One sentence WHY each is high priority.
-Start with any CRITICAL EXPOSURE items above.
-
-## Commands
-Exact ready-to-run command for each attack vector using "{target}" and real paths/params.
-Apply WAF evasion from the WAF context.
-
-### Example format:
-### Exposed KeePass file — /ftp/incident-support.kdbx
-```bash
-curl -s "{target}/ftp/incident-support.kdbx" -o incident-support.kdbx
-file incident-support.kdbx
-# Then crack offline: hashcat -m 13400 incident-support.kdbx rockyou.txt
-```
-
-### SQL Injection — /api/Users
-```bash
-sqlmap -u "{target}/api/Users?id=1" \\
-  --dbs --level 3 --risk 2 \\
-  --tamper=space2comment,between \\
-  --random-agent --batch
-```
-
-## Next saudit Modules
-Only use real module names: ffuf, nuclei, jsfuzzer, swagger_probe, graphql_introspection,
-wpscan, gitdumper, generic_ssrf, host_header, badsecrets, retirejs, hunt, httpx.
-Format: `module_name` — reason
-
-## Quick Wins
-Max 3 items exploitable in under 5 minutes. Include exact curl/browser URL for each."""
-
-        return await self._call(prompt)
+        return final_md or commands_md  # fallback to unreviewed if review returns empty
 
     # ── Source-map analysis ───────────────────────────────────────────────────
 
-    async def _analyze_source_maps(self, target: str, waf_hint: str, delay: float) -> list[str]:
-        results = []
+    async def _analyze_source_maps(self, target: str, waf_hint: str, delay: float):
+        """Async generator — yields each analysed chunk as it completes (fix 5)."""
         jsfuzzer_dir = self.scan.home / "jsfuzzer_files"
 
         source_files = []
@@ -454,30 +401,26 @@ Max 3 items exploitable in under 5 minutes. Include exact curl/browser URL for e
         # Sort high-value files first so the model sees auth/api code before vendor bundles
         _HV_KEYWORDS = {"auth", "api", "user", "login", "token", "secret",
                         "password", "admin", "config", "session", "permission", "role"}
-        source_files.sort(
-            key=lambda f: -sum(kw in f.name.lower() for kw in _HV_KEYWORDS)
-        )
+        source_files.sort(key=lambda f: -sum(kw in f.name.lower() for kw in _HV_KEYWORDS))
 
-        # 4.1 — Minified JS fallback: fetch .js URLs collected during scan
+        # Minified JS fallback
         if not source_files:
             if self._js_urls:
-                print(f"{_CYN}[AI]{_R} No source maps — fetching {len(self._js_urls)} JS file(s) directly…",
+                print(f"{_CYN}[AI]{_R} No source maps — fetching {len(self._js_urls)} JS file(s)…",
                       flush=True)
-                return await self._analyze_minified_js(target, waf_hint)
-            return results
+                for section in await self._analyze_minified_js(target, waf_hint):
+                    yield section
+            return
 
         print(f"{_CYN}[AI]{_R} Reviewing {len(source_files)} source file(s)…", flush=True)
-
         chunks = self._chunk_files(source_files)
         for i, (label, code) in enumerate(chunks, 1):
             print(f"{_DIM}[AI] Map chunk {i}/{len(chunks)}: {label[:60]}{_R}", flush=True)
             md = await self._analyze_code_chunk(target, waf_hint, label, code)
             if md:
-                results.append(md)
+                yield md
             if i < len(chunks):
                 await asyncio.sleep(delay)
-
-        return results
 
     async def _analyze_minified_js(self, target: str, waf_hint: str) -> list[str]:
         """Fetch collected .js URLs and analyze the minified/bundled code."""
@@ -538,48 +481,247 @@ Auth patterns, privilege checks, or IDOR indicators visible in the code."""
         return [result] if result else []
 
     async def _analyze_code_chunk(self, target: str, waf_hint: str, label: str, code: str) -> str:
-        prompt = f"""You are reviewing JavaScript/TypeScript source code recovered from webpack source maps.
+        # ── Call 1: extract structured endpoints + secrets as JSON ────────────
+        endpoints_json = await self._extract_endpoints_json(code[:_CHUNK_CHARS], label)
+
+        if not endpoints_json:
+            # Fallback to single-call if JSON extraction failed
+            return await self._analyze_code_chunk_single(target, waf_hint, label, code)
+
+        # ── Call 2: generate attack commands from structured data ──────────────
+        return await self._generate_map_commands(endpoints_json, code[:_CHUNK_CHARS],
+                                                  label, target, waf_hint)
+
+    async def _analyze_code_chunk_single(self, target: str, waf_hint: str,
+                                          label: str, code: str) -> str:
+        """Single-call fallback for when JSON extraction fails."""
+        prompt = f"""Review JavaScript/TypeScript source code from webpack source maps.
 Authorized penetration test against: {target}
-
-WAF context:
-{waf_hint}
-
-Source files: {label}
+WAF context: {waf_hint}
+Source: {label}
 
 ```javascript
 {code[:_CHUNK_CHARS]}
 ```
 
-RULES: Every command must use the exact URL "{target}" — no placeholders.
-
-Produce exactly these sections:
+RULES: Use exact URL "{target}" — no placeholders.
 
 ## Endpoints Discovered
-Table of every API endpoint found:
 | Method | Path | Parameters | Auth required |
 |--------|------|------------|---------------|
 
 ## Attack Commands
-Ready-to-run command for each interesting endpoint using "{target}" and real param names.
-Apply WAF evasion from the context above.
-
-### IDOR — GET /api/users/:id
-```bash
-for i in $(seq 1 20); do
-  curl -sk "{target}/api/users/$i" | python3 -m json.tool
-done
-```
+Ready-to-run commands using "{target}" and real param names. Apply WAF evasion.
 
 ## Hardcoded Secrets
-| Type | Variable name | Value |
-|------|--------------|-------|
-Only real secrets — skip public CDN keys, tracking IDs, and test values.
+| Type | Variable | Value (truncated) |
+|------|----------|-------------------|
+Only real secrets — skip CDN keys, tracking IDs, test values.
 
 ## Logic Flaws
-Auth bypasses, privilege escalation, IDOR patterns, business logic issues.
-Include proof-of-concept code where possible."""
+Auth bypasses, IDOR patterns, privilege escalation. Include PoC where possible."""
+        return await self._call(prompt)
+
+    # ── Fix 5: incremental file writing ──────────────────────────────────────
+
+    def _init_output_file(self, target: str):
+        """Write the report header immediately so html_report can start reading."""
+        model_id = self._ollama_model if self._backend == "ollama" else "gemini-1.5-flash"
+        header = (
+            f"# AI Review — {target}\n"
+            f"_Generated {datetime.now().strftime('%Y-%m-%d %H:%M')} "
+            f"via {self._backend} ({model_id})_\n\n"
+            f"**WAF:** {', '.join(self._wafs) or 'None detected'}  \n"
+            f"**Technologies:** {', '.join(sorted(set(self._technologies))) or 'Unknown'}\n\n"
+            f"---\n"
+        )
+        with suppress(Exception):
+            self.output_file.parent.mkdir(parents=True, exist_ok=True)
+            self.output_file.write_text(header, encoding="utf-8")
+
+    def _append_section(self, md: str):
+        """Append a section to the report file as it completes."""
+        with suppress(Exception):
+            with self.output_file.open("a", encoding="utf-8") as f:
+                f.write(f"\n\n{md}\n\n---\n")
+
+    # ── Fix 4: three-call pipeline helpers ───────────────────────────────────
+
+    async def _score_findings(self, items: list) -> list:
+        """Call 1 — ask model to score findings by real exploitability, return sorted list."""
+        if not items:
+            return []
+
+        lines = []
+        for i, f in enumerate(items, 1):
+            desc  = f.get("name") or f.get("description", "")
+            url   = f.get("url", "")
+            flags = f.get("severity", "info").upper()
+            lines.append(f"{i}. [{flags}] {desc}" + (f"  →  {url}" if url else ""))
+
+        prompt = (
+            "Score each security finding by real exploitability (1–10).\n"
+            "10 = immediately exploitable with zero interaction.\n"
+            "1  = theoretical, requires many assumptions.\n\n"
+            "Findings:\n" + "\n".join(lines) + "\n\n"
+            "Return ONLY a JSON array. No explanation, no markdown fences.\n"
+            'Format: [{"id": 1, "score": 9}, {"id": 2, "score": 3}, ...]'
+        )
+        raw    = await self._call(prompt)
+        scored = self._extract_json(raw, fallback=[])
+
+        if not isinstance(scored, list) or not scored:
+            return items  # fallback: keep original severity order
+
+        score_map = {int(e.get("id", 0)): int(e.get("score", 0))
+                     for e in scored if isinstance(e, dict)}
+        indexed   = {id(f): i for i, f in enumerate(items, 1)}
+        return sorted(items, key=lambda f: -score_map.get(indexed.get(id(f), 0), 0))
+
+    async def _generate_commands(self, top_items: list, target: str, waf_hint: str,
+                                  critical_block: str, api_block: str, tech_block: str) -> str:
+        """Call 2 — generate exact attack commands for the top-scored items only."""
+        if not top_items:
+            return ""
+
+        items_text = []
+        for f in top_items:
+            desc  = f.get("name") or f.get("description", "")
+            url   = f.get("url", "")
+            sev   = f.get("severity", "info").upper()
+            label = "SECRET" if f.get("is_secret") else ("EXPOSED_FILE" if f.get("exposed_file") else sev)
+            items_text.append(f"• [{label}] {desc}" + (f"  →  {url}" if url else ""))
+
+        prompt = f"""Authorized penetration test.
+Target: {target}
+Technologies: {tech_block}
+WAF context: {waf_hint}
+
+Critical exposures (ALWAYS include in plan):
+{critical_block or "None."}
+
+Verified API endpoints:
+{api_block or "None."}
+
+Top findings to attack:
+{chr(10).join(items_text)}
+
+RULES:
+- Use exact URL "{target}" in every command — zero placeholders.
+- Apply WAF evasion from the WAF context.
+- Critical exposures must always appear first in Attack Plan.
+
+Produce ONLY these sections (no other text):
+
+## Attack Plan
+3–5 vectors ranked by real impact. One sentence WHY each is exploitable NOW.
+
+## Commands
+One ### subsection per vector. Exact bash commands.
+
+## Quick Wins
+Max 3 items exploitable in under 5 minutes with exact URL or command."""
 
         return await self._call(prompt)
+
+    async def _self_review_commands(self, commands_md: str,
+                                     known_urls: set, target: str) -> str:
+        """Call 3 — model reviews its own output and corrects hallucinated URLs/flags."""
+        if not commands_md:
+            return ""
+
+        url_sample = "\n".join(sorted(known_urls)[:40]) or "(no URLs recorded)"
+        prompt = f"""You wrote these penetration testing commands for {target}.
+Review them and fix any errors.
+
+Known URLs confirmed to exist in this scan:
+{url_sample}
+
+Commands to review:
+{commands_md}
+
+Rules:
+1. If a URL path in a command does NOT appear in the known URLs list, prepend that
+   command line with: # [UNVERIFIED PATH — confirm manually]
+2. Fix any invalid tool flags (e.g. sqlmap missing -u, curl missing URL argument).
+3. Keep all ## and ### section headers exactly as-is.
+4. Return the complete corrected commands. No explanation outside the commands."""
+
+        reviewed = await self._call(prompt)
+        return reviewed if reviewed else commands_md
+
+    async def _extract_endpoints_json(self, code: str, label: str) -> list | None:
+        """Call 1 for source maps — extract endpoints + secrets as JSON."""
+        prompt = (
+            f"Extract security-relevant information from this JavaScript/TypeScript source: {label}\n\n"
+            "Return ONLY valid JSON. No markdown, no explanation.\n"
+            "Format:\n"
+            '{"endpoints": [{"method": "GET", "path": "/api/users", "params": ["id"], "auth": true}], '
+            '"secrets": [{"type": "API_KEY", "name": "STRIPE_KEY", "value": "sk-..."}]}\n\n'
+            f"Code:\n```javascript\n{code[:_CHUNK_CHARS]}\n```"
+        )
+        raw    = await self._call(prompt)
+        result = self._extract_json(raw, fallback=None)
+        if not isinstance(result, dict):
+            return None
+        endpoints = result.get("endpoints", [])
+        secrets   = result.get("secrets", [])
+        return {"endpoints": endpoints, "secrets": secrets} if (endpoints or secrets) else None
+
+    async def _generate_map_commands(self, data: dict, code: str, label: str,
+                                      target: str, waf_hint: str) -> str:
+        """Call 2 for source maps — generate attack commands from structured endpoint data."""
+        endpoints = data.get("endpoints", [])
+        secrets   = data.get("secrets", [])
+
+        ep_lines = [f"  {e.get('method','?')} {e.get('path','?')}  params={e.get('params',[])}  auth={e.get('auth','?')}"
+                    for e in endpoints[:25]]
+        sec_lines = [f"  {s.get('type','?')} — {s.get('name','?')}: {str(s.get('value',''))[:60]}"
+                     for s in secrets[:10]]
+
+        prompt = f"""Authorized penetration test against: {target}
+WAF context: {waf_hint}
+Source: {label}
+
+Endpoints found:
+{chr(10).join(ep_lines) or "  (none)"}
+
+Secrets found:
+{chr(10).join(sec_lines) or "  (none)"}
+
+RULES: Use exact URL "{target}" — no placeholders. Apply WAF evasion.
+
+## Endpoints Discovered
+| Method | Path | Parameters | Auth required |
+|--------|------|------------|---------------|
+
+## Attack Commands
+One ### subsection per interesting endpoint or secret. Exact bash commands.
+
+## Logic Flaws
+Auth bypasses, IDOR, privilege escalation patterns from the endpoint structure."""
+
+        return await self._call(prompt)
+
+    def _extract_json(self, text: str, fallback=None):
+        """Robustly extract JSON from model output that may include prose or markdown."""
+        import json, re
+        # Strip markdown fences
+        text = re.sub(r"```(?:json)?\s*", "", text).strip().rstrip("`").strip()
+        # Try full text
+        try:
+            return json.loads(text)
+        except (json.JSONDecodeError, ValueError):
+            pass
+        # Find first complete JSON array or object
+        for pattern in (r"\[[\s\S]*\]", r"\{[\s\S]*\}"):
+            m = re.search(pattern, text)
+            if m:
+                try:
+                    return json.loads(m.group())
+                except (json.JSONDecodeError, ValueError):
+                    continue
+        return fallback
 
     # ── Backend abstraction ───────────────────────────────────────────────────
 
