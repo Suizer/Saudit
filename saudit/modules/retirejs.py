@@ -39,20 +39,20 @@ class retirejs(BaseModule):
     }
 
     deps_ansible = [
-        # Download Node.js binary (Linux x64)
+        # Download Node.js binary (platform-aware)
         {
-            "name": "Download Node.js binary (Linux x64)",
+            "name": "Download Node.js binary",
             "get_url": {
-                "url": "https://nodejs.org/dist/v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-linux-x64.tar.xz",
-                "dest": "#{SAUDIT_TEMP}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-linux-x64.tar.xz",
+                "url": "https://nodejs.org/dist/v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-#{SAUDIT_OS_PLATFORM}-#{SAUDIT_CPU_ARCH_NODE}.#{SAUDIT_NODE_ARCHIVE_EXT}",
+                "dest": "#{SAUDIT_TEMP}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-#{SAUDIT_OS_PLATFORM}-#{SAUDIT_CPU_ARCH_NODE}.#{SAUDIT_NODE_ARCHIVE_EXT}",
                 "mode": "0644",
             },
         },
-        # Extract Node.js binary (x64)
+        # Extract Node.js binary
         {
-            "name": "Extract Node.js binary (x64)",
+            "name": "Extract Node.js binary",
             "unarchive": {
-                "src": "#{SAUDIT_TEMP}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-linux-x64.tar.xz",
+                "src": "#{SAUDIT_TEMP}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-#{SAUDIT_OS_PLATFORM}-#{SAUDIT_CPU_ARCH_NODE}.#{SAUDIT_NODE_ARCHIVE_EXT}",
                 "dest": "#{SAUDIT_TOOLS}",
                 "remote_src": True,
             },
@@ -62,10 +62,10 @@ class retirejs(BaseModule):
             "name": "Remove existing node directory",
             "file": {"path": "#{SAUDIT_TOOLS}/node", "state": "absent"},
         },
-        # Rename extracted directory to 'node' (x64)
+        # Rename extracted directory to 'node'
         {
-            "name": "Rename Node.js directory (x64)",
-            "command": "mv #{SAUDIT_TOOLS}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-linux-x64 #{SAUDIT_TOOLS}/node",
+            "name": "Rename Node.js directory",
+            "command": "mv #{SAUDIT_TOOLS}/node-v#{SAUDIT_MODULES_RETIREJS_NODE_VERSION}-#{SAUDIT_OS_PLATFORM}-#{SAUDIT_CPU_ARCH_NODE} #{SAUDIT_TOOLS}/node",
         },
         # Set permissions on entire Node.js bin directory
         {

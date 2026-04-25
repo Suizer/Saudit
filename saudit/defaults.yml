@@ -1,7 +1,7 @@
 ### BASIC OPTIONS ###
 
 # SuizerAudit working directory
-home: ~/.saudit
+home: scans
 # How many scan results to keep before cleaning up the older ones
 keep_scans: 20
 # Interval for displaying status messages

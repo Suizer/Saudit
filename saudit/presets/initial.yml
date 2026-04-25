@@ -1,0 +1,60 @@
+description: >
+  Initial recon — full passive fingerprinting with no payload injection.
+  Crawls the entire target, detects technologies, discovers APIs,
+  analyzes JavaScript, checks for exposed secrets and outdated libraries.
+  Designed to give the pentester a complete picture before any active testing.
+
+modules:
+  - httpx
+  - robots
+  - securitytxt
+  - ntlm
+  - wafw00f
+  - badsecrets
+  - ffuf
+  - jsfuzzer
+  - swagger_probe
+  - graphql_introspection
+  - nuclei
+  - retirejs
+  - git
+  - hunt
+
+output_modules:
+  - html_report
+  - json
+  - progress
+  - ai_review
+  - stdout
+
+config:
+  scope:
+    strict: true
+    search_distance: 0
+    report_distance: 0
+
+  dns:
+    search_distance: 0
+
+  web:
+    spider_distance: 3
+    spider_depth: 5
+    spider_links_per_page: 30
+
+  modules:
+    nuclei:
+      tags: tech
+    jsfuzzer:
+      severity_filter:
+        - critical
+        - high
+        - medium
+        - info
+    ffuf:
+      wordlist: "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/raft-medium-directories.txt"
+      lines: 0
+      rate: 100
+
+  consulting:
+    request_delay_min: 0.5
+    request_delay_max: 1.5

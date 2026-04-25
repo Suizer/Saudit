@@ -14,6 +14,7 @@ class ffuf(BaseModule):
 
     options = {
         "wordlist": "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/raft-small-directories.txt",
+        "extra_wordlist": "",
         "lines": 5000,
         "max_depth": 0,
         "extensions": "",
@@ -23,6 +24,7 @@ class ffuf(BaseModule):
 
     options_desc = {
         "wordlist": "Specify wordlist to use when finding directories",
+        "extra_wordlist": "URL or path to a second wordlist merged into the primary one",
         "lines": "take only the first N lines from the wordlist when finding directories",
         "max_depth": "the maximum directory depth to attempt to solve",
         "extensions": "Optionally include a list of extensions to extend the keyword with (comma separated)",
@@ -39,6 +41,8 @@ class ffuf(BaseModule):
 
     async def setup_deps(self):
         self.wordlist = await self.helpers.wordlist(self.config.get("wordlist"))
+        extra_url = self.config.get("extra_wordlist", "")
+        self._extra_wordlist = await self.helpers.wordlist(extra_url) if extra_url else None
         return True
 
     async def setup(self):
@@ -46,7 +50,12 @@ class ffuf(BaseModule):
         self.canary = "".join(random.choice(string.ascii_lowercase) for i in range(10))
         wordlist_url = self.config.get("wordlist", "")
         self.debug(f"Using wordlist [{wordlist_url}]")
-        self.wordlist_lines = self.generate_wordlist(self.wordlist)
+        primary = set(self.generate_wordlist(self.wordlist))
+        if self._extra_wordlist:
+            extra = set(self.generate_wordlist(self._extra_wordlist))
+            self.debug(f"Merging extra wordlist ({len(extra)} words)")
+            primary |= extra
+        self.wordlist_lines = list(primary)
         self.tempfile, tempfile_len = self.generate_templist()
         self.rate = self.config.get("rate", 0)
         self.verbose(f"Generated dynamic wordlist with length [{str(tempfile_len)}]")

@@ -104,6 +104,9 @@ class SAUDITEnviron:
         environ["SAUDIT_LIB"] = str(self.preset.core.lib_dir)
         # export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:~/.saudit/lib/
         add_to_path(str(self.preset.core.lib_dir), k="LD_LIBRARY_PATH", environ=environ)
+        # macOS: also export DYLD_LIBRARY_PATH
+        if os_platform() == "darwin":
+            add_to_path(str(self.preset.core.lib_dir), k="DYLD_LIBRARY_PATH", environ=environ)
 
         # platform variables
         environ["SAUDIT_OS_PLATFORM"] = os_platform()
@@ -111,6 +114,10 @@ class SAUDITEnviron:
         environ["SAUDIT_CPU_ARCH"] = cpu_architecture()
         environ["SAUDIT_CPU_ARCH_GOLANG"] = cpu_architecture_golang()
         environ["SAUDIT_CPU_ARCH_RUST"] = cpu_architecture_rust()
+        # Node.js uses x64/arm64 naming and tar.xz on Linux, tar.gz on macOS
+        _node_raw_arch = cpu_architecture()
+        environ["SAUDIT_CPU_ARCH_NODE"] = "arm64" if _node_raw_arch.startswith("aarch") else "x64"
+        environ["SAUDIT_NODE_ARCHIVE_EXT"] = "tar.gz" if os_platform() == "darwin" else "tar.xz"
 
         # copy config to environment
         saudit_environ = self.flatten_config(self.preset.config)

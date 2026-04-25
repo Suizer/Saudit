@@ -173,8 +173,19 @@ class SAUDITArgs:
         if self.parsed.custom_headers:
             args_preset.core.merge_custom({"web": {"http_headers": self.parsed.custom_headers}})
 
+        if self.parsed.bearer:
+            merged_headers = dict(self.parsed.custom_headers)
+            merged_headers["Authorization"] = f"Bearer {self.parsed.bearer}"
+            args_preset.core.merge_custom({"web": {"http_headers": merged_headers}})
+
         if self.parsed.custom_cookies:
             args_preset.core.merge_custom({"web": {"http_cookies": self.parsed.custom_cookies}})
+
+        if self.parsed.from_report:
+            args_preset.core.merge_custom(
+                {"modules": {"from_report": {"report_file": self.parsed.from_report}}}
+            )
+            args_preset.explicit_scan_modules.add("from_report")
 
         if self.parsed.custom_yara_rules:
             args_preset.core.merge_custom(
@@ -236,6 +247,19 @@ class SAUDITArgs:
             "--strict-scope",
             action="store_true",
             help="Don't consider subdomains of target/whitelist to be in-scope",
+        )
+        target.add_argument(
+            "--bearer",
+            default=None,
+            metavar="TOKEN",
+            help="Send this Bearer token in every HTTP request (sets Authorization: Bearer <TOKEN>)",
+        )
+        target.add_argument(
+            "-r",
+            "--from-report",
+            default=None,
+            metavar="FILE",
+            help="Re-seed scan from a previous scan's output.json (NDJSON)",
         )
         presets = p.add_argument_group(title="Presets")
         presets.add_argument(
