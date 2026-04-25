@@ -124,6 +124,5 @@ config:
 ---
 
 ## Credits
-
-Built on top of [saudit](https://github.com/blacklanternsecurity/saudit) by Black Lantern Security.  
+ 
 Custom modules and saudit engine by [@suizer](https://github.com/Suizer).
