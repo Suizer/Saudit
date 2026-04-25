@@ -43,7 +43,7 @@ _GEMINI_URL = (
     "gemini-1.5-flash:generateContent?key={key}"
 )
 
-_CHUNK_CHARS  = 500_000
+_CHUNK_CHARS  = 110_000   # safe upper bound for 32k-context models (leaves room for prompt + 4k response)
 _OLLAMA_DELAY = 0.5
 _GEMINI_DELAY = 4.0
 
@@ -246,9 +246,14 @@ class ai_review(BaseOutputModule):
 
         record["is_secret"] = "secret" in tags
 
-        # Route Swagger/GraphQL findings to dedicated API specs list
+        # Route structured API findings to dedicated list instead of regular findings
+        # swagger_probe / graphql_introspection → already structured endpoint data
+        # jsfuzzer with tag "endpoint" → AST-extracted endpoint, more reliable than raw code
         module = record["module"]
-        if module in ("swagger_probe", "graphql_introspection"):
+        tags_set = set(record["tags"])
+        if module in ("swagger_probe", "graphql_introspection") or (
+            module == "jsfuzzer" and "endpoint" in tags_set
+        ):
             self._api_specs.append(record)
             return
 
@@ -445,6 +450,13 @@ Max 3 items exploitable in under 5 minutes. Include exact curl/browser URL for e
             ]
             if not source_files:
                 source_files = [f for f in jsfuzzer_dir.rglob("*.map") if f.is_file()]
+
+        # Sort high-value files first so the model sees auth/api code before vendor bundles
+        _HV_KEYWORDS = {"auth", "api", "user", "login", "token", "secret",
+                        "password", "admin", "config", "session", "permission", "role"}
+        source_files.sort(
+            key=lambda f: -sum(kw in f.name.lower() for kw in _HV_KEYWORDS)
+        )
 
         # 4.1 — Minified JS fallback: fetch .js URLs collected during scan
         if not source_files:
