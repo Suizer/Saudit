@@ -1,6 +1,7 @@
 import re
 import logging
 import argparse
+from urllib.parse import urlparse
 from omegaconf import OmegaConf
 
 from saudit.errors import *
@@ -159,9 +160,15 @@ class SAUDITArgs:
         if deps_config:
             args_preset.core.merge_custom({"deps": deps_config})
 
-        # other scan options
+        # other scan options — default scan name is a slug of the first target
         if self.parsed.name is not None:
             args_preset.scan_name = self.parsed.name
+        elif self.parsed.targets:
+            raw = self.parsed.targets[0]
+            host = urlparse(raw).hostname or raw.split("//")[-1].split("/")[0]
+            slug = re.sub(r"[^a-z0-9]+", "_", host.lower()).strip("_")
+            if slug:
+                args_preset.scan_name = slug
         if self.parsed.output_dir is not None:
             args_preset.output_dir = self.parsed.output_dir
         if self.parsed.force:

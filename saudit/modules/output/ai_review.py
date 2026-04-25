@@ -152,7 +152,7 @@ Rules:
 
 
 class ai_review(BaseOutputModule):
-    watched_events = ["FINDING", "VULNERABILITY", "TECHNOLOGY", "WAF"]
+    watched_events = ["FINDING", "VULNERABILITY", "TECHNOLOGY", "WAF", "URL_UNVERIFIED"]
     meta = {
         "description": "Local AI (Ollama) post-scan analysis with WAF-aware commands and source-map review",
         "created_date": "2025-01-01",
@@ -181,13 +181,30 @@ class ai_review(BaseOutputModule):
         self._vulns        = []
         self._technologies = []
         self._wafs         = []
+        self._api_specs    = []   # findings from swagger_probe / graphql_introspection
+        self._js_urls      = []   # .js URLs for minified-JS fallback (capped at 15)
         return True
 
     # ── Event collection ──────────────────────────────────────────────────────
 
+    async def filter_event(self, event):
+        # Only accept .js URL_UNVERIFIED events; pass all other watched types through
+        if event.type == "URL_UNVERIFIED":
+            url = str(event.data) if isinstance(event.data, str) else event.data.get("url", "")
+            if not url.lower().split("?")[0].endswith(".js"):
+                return False, "not a .js URL"
+        return True, "accepted"
+
     async def handle_event(self, event):
         data = event.data
         tags = list(getattr(event, "tags", []) or [])
+
+        # Collect JS URLs for minified-JS fallback (max 15)
+        if event.type == "URL_UNVERIFIED":
+            if len(self._js_urls) < 15:
+                url = str(data) if isinstance(data, str) else data.get("url", str(data))
+                self._js_urls.append(url)
+            return
 
         if event.type == "TECHNOLOGY":
             if isinstance(data, dict):
@@ -228,6 +245,12 @@ class ai_review(BaseOutputModule):
             record["exposed_file"] = False
 
         record["is_secret"] = "secret" in tags
+
+        # Route Swagger/GraphQL findings to dedicated API specs list
+        module = record["module"]
+        if module in ("swagger_probe", "graphql_introspection"):
+            self._api_specs.append(record)
+            return
 
         if event.type == "VULNERABILITY":
             record["name"] = data.get("name", record["description"])
@@ -285,8 +308,17 @@ class ai_review(BaseOutputModule):
 
     async def _analyze_findings(self, target: str, waf_hint: str) -> str:
         all_items = self._vulns + self._findings
-        if not all_items and not self._technologies:
+        if not all_items and not self._technologies and not self._api_specs:
             return ""
+
+        # 5.1 — Deduplicate by (url, description) to avoid model confusion
+        seen, deduped = set(), []
+        for f in all_items:
+            key = (f.get("url", "").rstrip("/"), f.get("description", "")[:120].lower())
+            if key not in seen:
+                seen.add(key)
+                deduped.append(f)
+        all_items = deduped
 
         secrets       = [f for f in all_items if f.get("is_secret")]
         exposed_files = [f for f in all_items if f.get("exposed_file") and not f.get("is_secret")]
@@ -332,6 +364,17 @@ class ai_review(BaseOutputModule):
         findings_block = "\n".join(findings_lines) or "No additional findings."
         tech_block     = ", ".join(sorted(set(self._technologies))) or "unknown"
 
+        # 4.2 — Verified API endpoints from Swagger/GraphQL introspection
+        api_lines = []
+        if self._api_specs:
+            api_lines.append("\n[SWAGGER / GRAPHQL — verified endpoints and schema]")
+            for f in self._api_specs[:30]:
+                desc = f.get("description", "")
+                url  = f.get("url", "")
+                mod  = f.get("module", "")
+                api_lines.append(f"  • [{mod}] {desc}" + (f"  →  {url}" if url else ""))
+        api_block = "\n".join(api_lines)
+
         prompt = f"""Target base URL: {target}
 Technologies: {tech_block}
 
@@ -340,6 +383,9 @@ WAF context:
 
 ━━━ CRITICAL EXPOSURE (always prioritize these) ━━━
 {critical_block or "None found."}
+
+━━━ VERIFIED API ENDPOINTS (Swagger/GraphQL — use these for direct attacks) ━━━
+{api_block or "None found."}
 
 ━━━ ADDITIONAL FINDINGS (sorted high → low) ━━━
 {findings_block}
@@ -390,17 +436,22 @@ Max 3 items exploitable in under 5 minutes. Include exact curl/browser URL for e
     async def _analyze_source_maps(self, target: str, waf_hint: str, delay: float) -> list[str]:
         results = []
         jsfuzzer_dir = self.scan.home / "jsfuzzer_files"
-        if not jsfuzzer_dir.is_dir():
-            return results
 
-        source_files = [
-            f for f in (jsfuzzer_dir / "unpacked_sources").rglob("*")
-            if f.is_file() and f.suffix in (".js", ".ts", ".jsx", ".tsx", ".vue")
-        ]
-        if not source_files:
-            source_files = [f for f in jsfuzzer_dir.rglob("*.map") if f.is_file()]
+        source_files = []
+        if jsfuzzer_dir.is_dir():
+            source_files = [
+                f for f in (jsfuzzer_dir / "unpacked_sources").rglob("*")
+                if f.is_file() and f.suffix in (".js", ".ts", ".jsx", ".tsx", ".vue")
+            ]
+            if not source_files:
+                source_files = [f for f in jsfuzzer_dir.rglob("*.map") if f.is_file()]
 
+        # 4.1 — Minified JS fallback: fetch .js URLs collected during scan
         if not source_files:
+            if self._js_urls:
+                print(f"{_CYN}[AI]{_R} No source maps — fetching {len(self._js_urls)} JS file(s) directly…",
+                      flush=True)
+                return await self._analyze_minified_js(target, waf_hint)
             return results
 
         print(f"{_CYN}[AI]{_R} Reviewing {len(source_files)} source file(s)…", flush=True)
@@ -415,6 +466,64 @@ Max 3 items exploitable in under 5 minutes. Include exact curl/browser URL for e
                 await asyncio.sleep(delay)
 
         return results
+
+    async def _analyze_minified_js(self, target: str, waf_hint: str) -> list[str]:
+        """Fetch collected .js URLs and analyze the minified/bundled code."""
+        code_parts = []
+        total_chars = 0
+        for js_url in self._js_urls:
+            if total_chars >= _CHUNK_CHARS:
+                break
+            try:
+                resp = await self.helpers.request(js_url)
+                if resp and resp.text:
+                    snippet = resp.text[:30_000]
+                    code_parts.append(f"// === {js_url} ===\n{snippet}\n")
+                    total_chars += len(snippet)
+            except Exception:
+                continue
+
+        if not code_parts:
+            return []
+
+        label = f"{len(code_parts)} minified JS file(s)"
+        code  = "".join(code_parts)
+        prompt = f"""You are analyzing minified/bundled JavaScript from {target}.
+No source maps were available — this is raw bundled/obfuscated JS.
+Authorized penetration test.
+
+WAF context:
+{waf_hint}
+
+Files: {label}
+
+```javascript
+{code[:_CHUNK_CHARS]}
+```
+
+Despite obfuscation, extract what you can find. Rules: use "{target}" in every command — no placeholders.
+
+Produce exactly these sections:
+
+## Endpoints Discovered
+Table of every API endpoint or fetch/axios/XMLHttpRequest call found:
+| Method | Path | Parameters | Notes |
+|--------|------|------------|-------|
+
+## Hardcoded Secrets
+| Type | Value (truncated) | Context |
+|------|-------------------|---------|
+Only real secrets (API keys, tokens, passwords). Skip CDN IDs and tracking pixels.
+
+## Attack Commands
+Ready-to-run commands for interesting endpoints or secrets found.
+Apply WAF evasion from the context above.
+
+## Logic Flaws
+Auth patterns, privilege checks, or IDOR indicators visible in the code."""
+
+        result = await self._call(prompt)
+        return [result] if result else []
 
     async def _analyze_code_chunk(self, target: str, waf_hint: str, label: str, code: str) -> str:
         prompt = f"""You are reviewing JavaScript/TypeScript source code recovered from webpack source maps.
