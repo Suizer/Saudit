@@ -172,6 +172,7 @@ class ai_review(BaseOutputModule):
     output_filename = "AI_REVIEW.md"
 
     async def setup(self):
+        self._prep_output_dir("AI_REVIEW.md")
         self._analyze_maps = self.config.get("analyze_maps", True)
         self._ollama_model = self._resolve_env("OLLAMA_MODEL", self.config.get("ollama_model", "qwen2.5-coder:7b"))
         self._gemini_key   = self._resolve_env("GEMINI_API_KEY", self.config.get("gemini_key", ""))
