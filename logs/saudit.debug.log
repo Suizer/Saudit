@@ -58,3 +58,33 @@ Traceback (most recent call last):
     raise errors.DirectoryCreationError(f"Failed to create directory at {path}: {e}")
 saudit.errors.DirectoryCreationError: Failed to create directory at /Users/matias/.config/saudit: [Errno 1] Operation not permitted: '/Users/matias/.config/saudit/.6xzsmr51v5'
 
+2026-04-26 01:20:33,151 [TRACE] saudit.cli cli.py:296 Traceback (most recent call last):
+  File "/Users/matias/Proyectos/Saudit/saudit/cli.py", line 77, in _main
+    for row in preset.presets_table().splitlines():
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 989, in presets_table
+    loaded_preset = loaded_preset.bake()
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 475, in bake
+    baked_preset.add_module(module, module_type, raise_error=False)
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 547, in add_module
+    self.add_module(module_dep, raise_error=False)
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 539, in add_module
+    is_valid, reason, preloaded = self._is_valid_module(module_name, module_type, raise_error=raise_error)
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 869, in _is_valid_module
+    raise ValidationError(get_closest_match(module, module_choices, msg=f"{module_type} module"))
+saudit.errors.ValidationError: Could not find scan module "social". Did you mean "wpscan"?
+
+2026-04-26 01:20:38,715 [TRACE] saudit.cli cli.py:296 Traceback (most recent call last):
+  File "/Users/matias/Proyectos/Saudit/saudit/cli.py", line 77, in _main
+    for row in preset.presets_table().splitlines():
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 989, in presets_table
+    loaded_preset = loaded_preset.bake()
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 475, in bake
+    baked_preset.add_module(module, module_type, raise_error=False)
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 547, in add_module
+    self.add_module(module_dep, raise_error=False)
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 539, in add_module
+    is_valid, reason, preloaded = self._is_valid_module(module_name, module_type, raise_error=raise_error)
+  File "/Users/matias/Proyectos/Saudit/saudit/scanner/preset/preset.py", line 869, in _is_valid_module
+    raise ValidationError(get_closest_match(module, module_choices, msg=f"{module_type} module"))
+saudit.errors.ValidationError: Could not find scan module "social". Did you mean "wpscan"?
+

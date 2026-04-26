@@ -1,0 +1,2 @@
+2026-04-26 01:23:33,265 [TRACE] saudit.cli cli.py:211 Command: /Users/matias/Library/Python/3.9/bin/saudit -t http://localhost:3000 --allow-deadly -p webpeas-stealth
+2026-04-26 02:15:41,320 [TRACE] saudit.cli cli.py:211 Command: /Users/matias/Library/Python/3.9/bin/saudit -t http://localhost:3000 --allow-deadly -p webpeas-stealth

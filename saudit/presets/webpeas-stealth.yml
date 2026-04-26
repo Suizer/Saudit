@@ -19,6 +19,7 @@ output_modules:
   - webpeas
   - json
   - stdout
+  - ai_review
 
 config:
   scope:

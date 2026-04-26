@@ -1,0 +1,99 @@
+2026-04-26 02:15:42,842 [HUGESUCCESS] saudit.scanner scanner.py:1206 Starting scan localhost_20260426_021540
+2026-04-26 02:15:59,439 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) jsfuzzer(13:1:53), httpx(0:10:1), swagger_probe(1:1:0)
+2026-04-26 02:15:59,439 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: URL: 10, HTTP_RESPONSE: 10, DNS_NAME: 3, FINDING: 3, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:15:59,439 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: 54 events in queue (640 processed in the past 15 seconds)
+2026-04-26 02:16:14,440 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(49:1:0), swagger_probe(12:1:0), bypass403(9:1:0), badsecrets(0:1:0)
+2026-04-26 02:16:14,440 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 56, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1, TECHNOLOGY: 1
+2026-04-26 02:16:14,440 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (766 processed in the past 15 seconds)
+2026-04-26 02:16:18,228 [INFO] saudit.modules.swagger_probe base.py:1611 Found embedded OpenAPI spec in http://localhost:3000/api-docs/swagger-ui-init.js
+2026-04-26 02:16:18,229 [INFO] saudit.modules.swagger_probe base.py:1611 Emitted 1 endpoints from NextGen B2B API spec
+2026-04-26 02:16:29,441 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(49:1:0), bypass403(9:1:0), badsecrets(0:1:0)
+2026-04-26 02:16:29,441 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 59, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:16:29,441 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (40 processed in the past 15 seconds)
+2026-04-26 02:16:44,442 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(45:1:0), bypass403(9:1:0), badsecrets(0:1:0)
+2026-04-26 02:16:44,442 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 60, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:16:44,442 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (11 processed in the past 15 seconds)
+2026-04-26 02:16:59,443 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(45:1:0), bypass403(7:1:0)
+2026-04-26 02:16:59,444 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 63, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:16:59,444 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (30 processed in the past 15 seconds)
+2026-04-26 02:17:14,445 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(36:1:0), bypass403(7:1:0)
+2026-04-26 02:17:14,446 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 64, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:17:14,446 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (13 processed in the past 15 seconds)
+2026-04-26 02:17:29,448 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(36:1:0), bypass403(7:1:0)
+2026-04-26 02:17:29,448 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 66, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:17:29,448 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (20 processed in the past 15 seconds)
+2026-04-26 02:17:44,449 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(31:1:0), bypass403(6:1:0)
+2026-04-26 02:17:44,449 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 67, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:17:44,449 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (14 processed in the past 15 seconds)
+2026-04-26 02:17:59,452 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(30:1:0), bypass403(6:1:0)
+2026-04-26 02:17:59,452 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 68, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:17:59,453 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (11 processed in the past 15 seconds)
+2026-04-26 02:18:25,448 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(28:1:0), bypass403(6:1:0)
+2026-04-26 02:18:25,448 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 69, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:18:25,449 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (11 processed in the past 15 seconds)
+2026-04-26 02:18:40,450 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(23:1:0), bypass403(2:1:0)
+2026-04-26 02:18:40,451 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 72, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:18:40,451 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (31 processed in the past 15 seconds)
+2026-04-26 02:18:55,452 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(14:1:0), bypass403(2:1:0)
+2026-04-26 02:18:55,453 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 73, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:18:55,453 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (12 processed in the past 15 seconds)
+2026-04-26 02:19:10,455 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) api_probe(10:1:0), bypass403(2:1:0)
+2026-04-26 02:19:10,455 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 74, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:19:10,456 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (11 processed in the past 15 seconds)
+2026-04-26 02:19:25,457 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) bypass403(1:1:0), api_probe(0:1:0)
+2026-04-26 02:19:25,458 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 77, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:19:25,458 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (32 processed in the past 15 seconds)
+2026-04-26 02:19:40,460 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) bypass403(1:1:0)
+2026-04-26 02:19:40,460 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 78, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:19:40,460 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (9 processed in the past 15 seconds)
+2026-04-26 02:19:55,462 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) bypass403(1:1:0)
+2026-04-26 02:19:55,462 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 78, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:19:55,462 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (0 processed in the past 15 seconds)
+2026-04-26 02:20:10,464 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) bypass403(0:1:0)
+2026-04-26 02:20:10,464 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 79, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:20:10,464 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (10 processed in the past 15 seconds)
+2026-04-26 02:20:25,467 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) bypass403(0:1:0)
+2026-04-26 02:20:25,468 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 79, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:20:25,468 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (0 processed in the past 15 seconds)
+2026-04-26 02:23:09,165 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Modules running (incoming:processing:outgoing) bypass403(0:1:0)
+2026-04-26 02:23:09,166 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: Events produced so far: FINDING: 79, URL: 21, HTTP_RESPONSE: 21, DNS_NAME: 3, TECHNOLOGY: 2, SCAN: 1, URL_UNVERIFIED: 1, OPEN_TCP_PORT: 1
+2026-04-26 02:23:09,166 [INFO] saudit.scanner scanner.py:1191 localhost_20260426_021540: No events in queue (0 processed in the past 15 seconds)
+2026-04-26 02:23:16,454 [INFO] saudit.scanner scanner.py:790 Finishing scan
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | Module        | Produced                      | Consumed                                 |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +===============+===============================+==========================================+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | jsfuzzer      | 57 (56 FINDING, 1 TECHNOLOGY) | 8 (8 URL)                                |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | httpx         | 42 (21 HTTP_RESPONSE, 21 URL) | 23 (2 OPEN_TCP_PORT, 21 URL_UNVERIFIED)  |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | api_probe     | 17 (17 FINDING)               | 36 (36 FINDING)                          |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | bypass403     | 6 (6 FINDING)                 | 6 (6 URL)                                |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | host          | 2 (2 DNS_NAME)                | 0                                        |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | swagger_probe | 2 (1 FINDING, 1 TECHNOLOGY)   | 3 (3 URL)                                |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | speculate     | 1 (1 OPEN_TCP_PORT)           | 86 (1 DNS_NAME, 21 HTTP_RESPONSE, 13     |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 |               |                               | URL, 51 URL_UNVERIFIED)                  |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | excavate      | 1 (1 DNS_NAME)                | 21 (21 HTTP_RESPONSE)                    |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | dnsresolve    | 0                             | 205 (3 DNS_NAME, 1 EMAIL_ADDRESS, 81     |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 |               |                               | FINDING, 21 HTTP_RESPONSE, 4             |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 |               |                               | OPEN_TCP_PORT, 1 PROTOCOL, 2 TECHNOLOGY, |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 |               |                               | 29 URL, 63 URL_UNVERIFIED)               |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | cloudcheck    | 0                             | 205 (3 DNS_NAME, 1 EMAIL_ADDRESS, 81     |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 |               |                               | FINDING, 21 HTTP_RESPONSE, 4             |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 |               |                               | OPEN_TCP_PORT, 1 PROTOCOL, 2 TECHNOLOGY, |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 |               |                               | 29 URL, 63 URL_UNVERIFIED)               |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | securitytxt   | 0                             | 1 (1 DNS_NAME)                           |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | robots        | 0                             | 1 (1 URL)                                |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 | badsecrets    | 0                             | 21 (21 HTTP_RESPONSE)                    |
+2026-04-26 02:23:16,778 [INFO] saudit.modules.aggregate base.py:1611 +---------------+-------------------------------+------------------------------------------+
+2026-04-26 02:28:11,320 [INFO] saudit.modules.output.json base.py:1611 Saved JSON output to /Users/matias/Proyectos/Saudit/saudit/core/scans/localhost_20260426_021540/output.json
+2026-04-26 02:28:11,347 [INFO] saudit.modules.jsfuzzer base.py:1611 JS files preserved for review at /Users/matias/Proyectos/Saudit/saudit/core/scans/localhost_20260426_021540/js_analysis

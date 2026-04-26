@@ -1,0 +1,25 @@
+2026-04-26 01:23:25,803 [HUGEINFO] saudit.scanner scanner.py:1196 Scan seeded with 1 targets (1 in whitelist)
+2026-04-26 01:23:25,853 [INFO] saudit.core.helpers.depsinstaller installer.py:481 Installing Ansible Community General Collection
+2026-04-26 01:23:26,271 [INFO] saudit.core.helpers.depsinstaller installer.py:486 Successfully installed Ansible Community General Collection
+2026-04-26 01:23:26,271 [INFO] saudit.core.helpers.depsinstaller installer.py:503 Installing core SAUDIT dependencies: openssl_dev_headers
+2026-04-26 01:23:28,258 [SUCCESS] saudit.core.helpers.depsinstaller installer.py:451 Authentication successful
+2026-04-26 01:23:29,384 [HUGEINFO] saudit.core.helpers.depsinstaller installer.py:193 Installing module dependencies. Please be patient, this may take a while.
+2026-04-26 01:23:29,384 [INFO] saudit.core.helpers.depsinstaller installer.py:359 Running 1 Ansible tasks for httpx
+2026-04-26 01:23:31,802 [INFO] saudit.core.helpers.depsinstaller installer.py:362 Successfully ran 1 Ansible tasks for httpx
+2026-04-26 01:23:31,802 [INFO] saudit.core.helpers.depsinstaller installer.py:277 Installing the following pip packages: badsecrets~=0.13.47
+2026-04-26 01:23:32,437 [INFO] saudit.core.helpers.depsinstaller installer.py:299 Requirement already satisfied: zipp>=0.5 in /Users/matias/Library/Python/3.9/lib/python/site-packages (from importlib-metadata>=3.6.0->flask->flask-unsign<2.0.0,>=1.2.1->badsecrets~=0.13.47) (3.23.1)
+2026-04-26 01:23:32,589 [INFO] saudit.scanner scanner.py:1191 Loaded 9/9 scan modules (api_probe,badsecrets,bypass403,httpx,jsfuzzer,ntlm,robots,securitytxt,swagger_probe)
+2026-04-26 01:23:32,607 [INFO] saudit.scanner scanner.py:1191 Loaded 6/6 internal modules (aggregate,cloudcheck,dnsresolve,excavate,speculate,unarchive)
+2026-04-26 01:23:32,610 [INFO] saudit.scanner scanner.py:1191 Loaded 3/3 output modules, (json,stdout,webpeas)
+2026-04-26 01:23:32,645 [INFO] saudit.modules.internal.speculate base.py:1611 No portscanner enabled. Assuming open ports: 80, 443
+2026-04-26 01:23:33,265 [SUCCESS] saudit.scanner scanner.py:1201 Setup succeeded for 20/20 modules.
+2026-04-26 01:23:33,266 [HUGESUCCESS] saudit.cli cli.py:225 Scan ready. Press enter to execute localhost_20260426_012325
+2026-04-26 01:28:28,923 [HUGESUCCESS] saudit.scanner scanner.py:1206 Scan localhost_20260426_012325 completed in 4 minutes, 53 seconds with status FINISHED
+2026-04-26 02:15:40,964 [HUGEINFO] saudit.scanner scanner.py:1196 Scan seeded with 1 targets (1 in whitelist)
+2026-04-26 02:15:41,126 [INFO] saudit.scanner scanner.py:1191 Loaded 9/9 scan modules (api_probe,badsecrets,bypass403,httpx,jsfuzzer,ntlm,robots,securitytxt,swagger_probe)
+2026-04-26 02:15:41,137 [INFO] saudit.scanner scanner.py:1191 Loaded 6/6 internal modules (aggregate,cloudcheck,dnsresolve,excavate,speculate,unarchive)
+2026-04-26 02:15:41,141 [INFO] saudit.scanner scanner.py:1191 Loaded 4/4 output modules, (ai_review,json,stdout,webpeas)
+2026-04-26 02:15:41,196 [INFO] saudit.modules.internal.speculate base.py:1611 No portscanner enabled. Assuming open ports: 80, 443
+2026-04-26 02:15:41,320 [SUCCESS] saudit.scanner scanner.py:1201 Setup succeeded for 21/21 modules.
+2026-04-26 02:15:41,320 [HUGESUCCESS] saudit.cli cli.py:225 Scan ready. Press enter to execute localhost_20260426_021540
+2026-04-26 02:28:11,356 [HUGESUCCESS] saudit.scanner scanner.py:1206 Scan localhost_20260426_021540 completed in 7 minutes, 33 seconds with status FINISHED
