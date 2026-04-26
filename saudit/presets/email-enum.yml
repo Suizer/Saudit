@@ -1,4 +1,4 @@
-description: Enumerate email addresses from APIs, web crawling, etc.
+description: Collect email addresses from SSL certificates and web crawling
 
 flags:
   - email-enum

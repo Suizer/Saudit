@@ -968,7 +968,7 @@ class Preset(metaclass=BasePreset):
                             relative_preset = original_filename.relative_to(preset_path)
                             local_preset = self.preset_dir / relative_preset
                             mkdir(local_preset.parent, check_writable=False)
-                            if not local_preset.exists():
+                            if not local_preset.exists() and not local_preset.is_symlink():
                                 local_preset.symlink_to(original_filename)
 
                         presets[local_preset.stem] = (loaded_preset, category, preset_path, original_filename)

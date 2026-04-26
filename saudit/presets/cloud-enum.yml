@@ -1,4 +1,4 @@
-description: Enumerate cloud resources such as storage buckets, etc.
+description: Detect cloud infrastructure (Azure, OAuth endpoints, bad DNS records)
 
 include:
   - subdomain-enum

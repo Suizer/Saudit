@@ -90,7 +90,6 @@ web:
   # Custom HTTP headers (e.g. cookies, etc.)
   # in the format { "Header-Key": "header_value" }
   # These are attached to all in-scope HTTP requests
-  # Note that some modules (e.g. github) may end up sending these to out-of-scope resources
   http_headers: {}
   # How many times to retry API requests
   # Note that this is a separate mechanism on top of HTTP retries

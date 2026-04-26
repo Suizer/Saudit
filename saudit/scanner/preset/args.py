@@ -25,30 +25,29 @@ class SAUDITArgs:
 
     scan_examples = [
         (
-            "Subdomains",
-            "Perform a full subdomain enumeration on evilcorp.com",
-            "saudit -t evilcorp.com -p subdomain-enum",
+            "Stealth web scan",
+            "Passive-first recon with JS analysis, API discovery, and WebPeas output",
+            "saudit -t https://app.evilcorp.com -p webpeas-stealth",
         ),
         (
-            "Subdomains (passive only)",
-            "Perform a passive-only subdomain enumeration on evilcorp.com",
-            "saudit -t evilcorp.com -p subdomain-enum -rf passive",
+            "Authenticated scan",
+            "Stealth scan extended with authenticated parameter mining (pass session via --bearer or -C)",
+            "saudit -t https://app.evilcorp.com -p authenticated --bearer <token>",
         ),
-
         (
-            "Subdomains + basic web scan",
-            "A basic web scan includes robots.txt, storage buckets, IIS shortnames, and other non-intrusive web modules",
-            "saudit -t evilcorp.com -p subdomain-enum web-basic",
+            "Initial recon",
+            "Active fingerprinting: crawl, JS analysis, API discovery, nuclei tech scan, secret detection",
+            "saudit -t https://app.evilcorp.com -p initial",
+        ),
+        (
+            "Consulting (URL-only scope)",
+            "Full consulting report scoped to a single URL, no subdomain expansion",
+            "saudit -t https://app.evilcorp.com -p consulting-url-only -o ./results",
         ),
         (
             "Web spider",
-            "Crawl www.evilcorp.com up to a max depth of 2, automatically extracting emails, secrets, etc.",
-            "saudit -t www.evilcorp.com -p spider -c web.spider_distance=2 web.spider_depth=2",
-        ),
-        (
-            "Everything everywhere all at once",
-            "Initial recon with crawling, tech detection, API discovery, and vulnerability checks",
-            "saudit -t evilcorp.com -p initial",
+            "Crawl and extract emails, secrets, and technologies up to depth 3",
+            "saudit -t https://app.evilcorp.com -p spider -c web.spider_distance=3 web.spider_depth=4",
         ),
     ]
 

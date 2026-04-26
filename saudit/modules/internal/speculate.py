@@ -21,8 +21,6 @@ class speculate(BaseInternalModule):
         "HTTP_RESPONSE",
         "STORAGE_BUCKET",
         "SOCIAL",
-        "AZURE_TENANT",
-        "USERNAME",
     ]
     produced_events = ["DNS_NAME", "OPEN_TCP_PORT", "IP_ADDRESS", "FINDING", "ORG_STUB"]
     flags = ["passive"]
@@ -172,7 +170,7 @@ class speculate(BaseInternalModule):
                     context="speculated {event.type}: {event.data}",
                 )
 
-        # ORG_STUB from TLD, SOCIAL, AZURE_TENANT
+        # ORG_STUB from TLD, SOCIAL
         org_stubs = set()
         if event.type == "DNS_NAME" and event.scope_distance == 0:
             tldextracted = self.helpers.tldextract(event.data)
@@ -187,9 +185,6 @@ class speculate(BaseInternalModule):
             stub = event.data.get("stub", "")
             if stub:
                 org_stubs.add(stub.lower())
-        elif event.type == "AZURE_TENANT":
-            tenant_names = event.data.get("tenant-names", [])
-            org_stubs.update(set(tenant_names))
         for stub in org_stubs:
             stub_hash = hash(stub)
             if stub_hash not in self.org_stubs_seen:
@@ -197,11 +192,3 @@ class speculate(BaseInternalModule):
                 stub_event = self.make_event(stub, "ORG_STUB", parent=event)
                 if stub_event:
                     await self.emit_event(stub_event, context="speculated {event.type}: {event.data}")
-
-        # USERNAME --> EMAIL
-        if event.type == "USERNAME":
-            email = event.data.split(":", 1)[-1]
-            if validators.soft_validate(email, "email"):
-                email_event = self.make_event(email, "EMAIL_ADDRESS", parent=event, tags=["affiliate"])
-                if email_event:
-                    await self.emit_event(email_event, context="detected {event.type}: {event.data}")

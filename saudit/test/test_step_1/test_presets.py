@@ -478,16 +478,16 @@ async def test_preset_logging():
 def test_preset_module_resolution(clean_default_config):
     preset = Preset().bake()
     sslcert_preloaded = preset.preloaded_module("sslcert")
-    wayback_preloaded = preset.preloaded_module("wayback")
+    asn_preloaded = preset.preloaded_module("asn")
     dotnetnuke_preloaded = preset.preloaded_module("dotnetnuke")
     sslcert_flags = sslcert_preloaded.get("flags", [])
-    wayback_flags = wayback_preloaded.get("flags", [])
+    asn_flags = asn_preloaded.get("flags", [])
     dotnetnuke_flags = dotnetnuke_preloaded.get("flags", [])
     assert "active" in sslcert_flags
-    assert "passive" in wayback_flags
+    assert "passive" in asn_flags
     assert "active" in dotnetnuke_flags
     assert "subdomain-enum" in sslcert_flags
-    assert "subdomain-enum" in wayback_flags
+    assert "subdomain-enum" in asn_flags
     assert "httpx" in dotnetnuke_preloaded["deps"]["modules"]
 
     # make sure we have the expected defaults
@@ -511,48 +511,48 @@ def test_preset_module_resolution(clean_default_config):
     preset = Preset(flags=["subdomain-enum"]).bake()
     assert preset.flags == {"subdomain-enum"}
     assert "sslcert" in preset.modules
-    assert "wayback" in preset.modules
+    assert "asn" in preset.modules
     assert "sslcert" in preset.scan_modules
-    assert "wayback" in preset.scan_modules
+    assert "asn" in preset.scan_modules
 
     # flag + module exclusions
     preset = Preset(flags=["subdomain-enum"], exclude_modules=["sslcert"]).bake()
     assert "sslcert" not in preset.modules
-    assert "wayback" in preset.modules
+    assert "asn" in preset.modules
     assert "sslcert" not in preset.scan_modules
-    assert "wayback" in preset.scan_modules
+    assert "asn" in preset.scan_modules
 
     # flag + flag exclusions
     preset = Preset(flags=["subdomain-enum"], exclude_flags=["active"]).bake()
     assert "sslcert" not in preset.modules
-    assert "wayback" in preset.modules
+    assert "asn" in preset.modules
     assert "sslcert" not in preset.scan_modules
-    assert "wayback" in preset.scan_modules
+    assert "asn" in preset.scan_modules
 
     # flag + flag requirements
     preset = Preset(flags=["subdomain-enum"], require_flags=["passive"]).bake()
     assert "sslcert" not in preset.modules
-    assert "wayback" in preset.modules
+    assert "asn" in preset.modules
     assert "sslcert" not in preset.scan_modules
-    assert "wayback" in preset.scan_modules
+    assert "asn" in preset.scan_modules
 
     # normal module enableement
-    preset = Preset(modules=["sslcert", "dotnetnuke", "wayback"]).bake()
-    assert set(preset.scan_modules) == {"sslcert", "dotnetnuke", "wayback", "httpx"}
+    preset = Preset(modules=["sslcert", "dotnetnuke", "asn"]).bake()
+    assert set(preset.scan_modules) == {"sslcert", "dotnetnuke", "asn", "httpx"}
 
     # modules + flag exclusions
-    preset = Preset(exclude_flags=["active"], modules=["sslcert", "dotnetnuke", "wayback"]).bake()
-    assert set(preset.scan_modules) == {"wayback"}
+    preset = Preset(exclude_flags=["active"], modules=["sslcert", "dotnetnuke", "asn"]).bake()
+    assert set(preset.scan_modules) == {"asn"}
 
     # modules + flag requirements
-    preset = Preset(require_flags=["passive"], modules=["sslcert", "dotnetnuke", "wayback"]).bake()
-    assert set(preset.scan_modules) == {"wayback"}
+    preset = Preset(require_flags=["passive"], modules=["sslcert", "dotnetnuke", "asn"]).bake()
+    assert set(preset.scan_modules) == {"asn"}
 
     # modules + module exclusions
-    preset = Preset(exclude_modules=["sslcert"], modules=["sslcert", "dotnetnuke", "wayback"]).bake()
+    preset = Preset(exclude_modules=["sslcert"], modules=["sslcert", "dotnetnuke", "asn"]).bake()
     baked_preset = preset.bake()
     assert baked_preset.modules == {
-        "wayback",
+        "asn",
         "cloudcheck",
         "python",
         "json",
@@ -906,7 +906,7 @@ scan_name: override2
 target: ["evilcorp2.com"]
 debug: true
 modules:
-  - c99
+  - badsecrets
 config:
   modules:
     asdf:
@@ -917,7 +917,7 @@ name: override3
 scan_name: override3
 target: ["evilcorp3.com"]
 modules:
-  - securitytrails
+  - ntlm
 # test ordering priority
 include:
   - override1
@@ -932,7 +932,7 @@ name: override4
 scan_name: override4
 target: ["evilcorp4.com"]
 modules:
-  - virustotal
+  - securitytxt
 include:
   - override3
 config:
@@ -965,7 +965,7 @@ config:
     assert preset.config["web"]["spider_distance"] == 1
     assert preset.config["web"]["spider_depth"] == 2
     assert preset.config["modules"]["asdf"]["option1"] == "fdsa"
-    assert set(preset.scan_modules) == {"httpx", "c99", "robots", "virustotal", "securitytrails"}
+    assert set(preset.scan_modules) == {"httpx", "badsecrets", "robots", "securitytxt", "ntlm"}
 
 
 def test_preset_require_exclude():
@@ -976,60 +976,54 @@ def test_preset_require_exclude():
 
     # enable by flag, no exclusions/requirements
     preset = Preset(flags=["subdomain-enum"]).bake()
-    assert len(preset.modules) > 25
+    assert len(preset.modules) > 10
     module_flags = list(get_module_flags(preset))
-    dnsbrute_flags = preset.preloaded_module("dnsbrute").get("flags", [])
-    assert "subdomain-enum" in dnsbrute_flags
-    assert "active" in dnsbrute_flags
-    assert "passive" not in dnsbrute_flags
-    assert "aggressive" in dnsbrute_flags
-    assert "safe" not in dnsbrute_flags
-    assert "dnsbrute" in [x[0] for x in module_flags]
-    assert "certspotter" in [x[0] for x in module_flags]
-    assert "c99" in [x[0] for x in module_flags]
+    sslcert_flags = preset.preloaded_module("sslcert").get("flags", [])
+    assert "subdomain-enum" in sslcert_flags
+    assert "active" in sslcert_flags
+    assert "passive" not in sslcert_flags
+    assert "sslcert" in [x[0] for x in module_flags]
+    assert "azure_realm" in [x[0] for x in module_flags]
+    assert "asn" in [x[0] for x in module_flags]
     assert any("passive" in flags for module, flags in module_flags)
     assert any("active" in flags for module, flags in module_flags)
     assert any("safe" in flags for module, flags in module_flags)
-    assert any("aggressive" in flags for module, flags in module_flags)
 
     # enable by flag, one required flag
     preset = Preset(flags=["subdomain-enum"], require_flags=["passive"]).bake()
-    assert len(preset.modules) > 25
+    assert len(preset.modules) > 5
     module_flags = list(get_module_flags(preset))
-    assert "chaos" in [x[0] for x in module_flags]
+    assert "azure_realm" in [x[0] for x in module_flags]
     assert "httpx" not in [x[0] for x in module_flags]
     assert all("passive" in flags for module, flags in module_flags)
     assert not any("active" in flags for module, flags in module_flags)
     assert any("safe" in flags for module, flags in module_flags)
-    assert any("aggressive" in flags for module, flags in module_flags)
 
     # enable by flag, one excluded flag
     preset = Preset(flags=["subdomain-enum"], exclude_flags=["active"]).bake()
-    assert len(preset.modules) > 25
+    assert len(preset.modules) > 5
     module_flags = list(get_module_flags(preset))
-    assert "chaos" in [x[0] for x in module_flags]
+    assert "azure_realm" in [x[0] for x in module_flags]
     assert "httpx" not in [x[0] for x in module_flags]
     assert all("passive" in flags for module, flags in module_flags)
     assert not any("active" in flags for module, flags in module_flags)
     assert any("safe" in flags for module, flags in module_flags)
-    assert any("aggressive" in flags for module, flags in module_flags)
 
     # enable by flag, one excluded module
-    preset = Preset(flags=["subdomain-enum"], exclude_modules=["dnsbrute"]).bake()
-    assert len(preset.modules) > 25
+    preset = Preset(flags=["subdomain-enum"], exclude_modules=["sslcert"]).bake()
+    assert len(preset.modules) > 5
     module_flags = list(get_module_flags(preset))
-    assert "dnsbrute" not in [x[0] for x in module_flags]
+    assert "sslcert" not in [x[0] for x in module_flags]
     assert "httpx" in [x[0] for x in module_flags]
     assert any("passive" in flags for module, flags in module_flags)
     assert any("active" in flags for module, flags in module_flags)
     assert any("safe" in flags for module, flags in module_flags)
-    assert any("aggressive" in flags for module, flags in module_flags)
 
     # enable by flag, multiple required flags
     preset = Preset(flags=["subdomain-enum"], require_flags=["safe", "passive"]).bake()
-    assert len(preset.modules) > 25
+    assert len(preset.modules) > 5
     module_flags = list(get_module_flags(preset))
-    assert "dnsbrute" not in [x[0] for x in module_flags]
+    assert "sslcert" not in [x[0] for x in module_flags]
     assert all("passive" in flags and "safe" in flags for module, flags in module_flags)
     assert all("active" not in flags and "aggressive" not in flags for module, flags in module_flags)
     assert not any("active" in flags for module, flags in module_flags)
@@ -1037,25 +1031,23 @@ def test_preset_require_exclude():
 
     # enable by flag, multiple excluded flags
     preset = Preset(flags=["subdomain-enum"], exclude_flags=["aggressive", "active"]).bake()
-    assert len(preset.modules) > 25
+    assert len(preset.modules) > 5
     module_flags = list(get_module_flags(preset))
-    assert "dnsbrute" not in [x[0] for x in module_flags]
+    assert "sslcert" not in [x[0] for x in module_flags]
     assert all("passive" in flags and "safe" in flags for module, flags in module_flags)
     assert all("active" not in flags and "aggressive" not in flags for module, flags in module_flags)
     assert not any("active" in flags for module, flags in module_flags)
     assert not any("aggressive" in flags for module, flags in module_flags)
 
     # enable by flag, multiple excluded modules
-    preset = Preset(flags=["subdomain-enum"], exclude_modules=["dnsbrute", "c99"]).bake()
-    assert len(preset.modules) > 25
+    preset = Preset(flags=["subdomain-enum"], exclude_modules=["sslcert", "httpx"]).bake()
+    assert len(preset.modules) > 5
     module_flags = list(get_module_flags(preset))
-    assert "dnsbrute" not in [x[0] for x in module_flags]
-    assert "certspotter" in [x[0] for x in module_flags]
-    assert "c99" not in [x[0] for x in module_flags]
+    assert "sslcert" not in [x[0] for x in module_flags]
+    assert "azure_realm" in [x[0] for x in module_flags]
+    assert "httpx" not in [x[0] for x in module_flags]
     assert any("passive" in flags for module, flags in module_flags)
-    assert any("active" in flags for module, flags in module_flags)
     assert any("safe" in flags for module, flags in module_flags)
-    assert any("aggressive" in flags for module, flags in module_flags)
 
 
 @pytest.mark.asyncio
