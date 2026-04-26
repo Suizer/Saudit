@@ -1,7 +1,0 @@
-description: Collect email addresses from SSL certificates and web crawling
-
-flags:
-  - email-enum
-
-output_modules:
-  - emails

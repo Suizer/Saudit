@@ -1,18 +1,15 @@
 description: Recursive web directory brute-force (aggressive)
 
-include:
-  - spider
-
 flags:
   - iis-shortnames
 
 modules:
+  - httpx
   - ffuf
 
 config:
   modules:
     iis_shortnames:
-      # we exploit the shortnames vulnerability to produce URL_HINTs which are consumed by ffuf_shortnames
       detect_only: False
     ffuf:
       depth: 3

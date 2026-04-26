@@ -1,0 +1,36 @@
+description: >
+  Full authenticated web audit — extends web-authenticated with aggressive
+  fuzzing and injection techniques. Tests all parameter instances individually,
+  forces common headers, probes for host header injection, SSRF, HTTP smuggling
+  and URL manipulation bypasses.
+  Use only on authorized targets with explicit written approval.
+
+include:
+  - web-authenticated
+
+modules:
+  - host_header
+  - generic_ssrf
+  - smuggler
+  - url_manipulation
+
+output_modules:
+  - html_report
+  - json
+  - ai_review
+  - stdout
+
+config:
+  url_querystring_collapse: false
+
+  modules:
+    lightfuzz:
+      force_common_headers: true
+      enabled_submodules: [cmdi,crypto,path,serial,sqli,ssti,xss,esi]
+      avoid_wafs: false
+      disable_post: false
+      try_post_as_get: true
+      try_get_as_post: true
+
+    excavate:
+      speculate_params: true

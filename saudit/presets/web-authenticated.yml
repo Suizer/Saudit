@@ -1,0 +1,47 @@
+description: >
+  Authenticated web audit — extends web-basic with parameter discovery and
+  light fuzzing. Requires an active session via --bearer <token> or -C cookie=value.
+  Runs parameter mining across GET params, headers and cookies, then fuzzes
+  discovered parameters for SQLi, XSS, SSTI, SSRF, path traversal and CMDi.
+
+include:
+  - web-basic
+
+modules:
+  - paramminer_getparams
+  - paramminer_headers
+  - paramminer_cookies
+  - reflected_parameters
+  - api_sqli_probe
+  - lightfuzz
+
+output_modules:
+  - html_report
+  - json
+  - ai_review
+  - stdout
+
+config:
+  web:
+    spider_distance: 3
+    spider_depth: 5
+    spider_links_per_page: 30
+
+  modules:
+    paramminer_getparams:
+      wordlist: ""
+      recycle_words: true
+      random: true
+      do_body: false
+
+    paramminer_headers:
+      wordlist: ""
+      recycle_words: true
+      random: true
+
+    reflected_parameters:
+      severity: low
+
+    lightfuzz:
+      enabled_submodules: [cmdi,crypto,path,serial,sqli,ssti,xss,esi]
+      try_post_as_get: true

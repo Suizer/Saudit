@@ -25,64 +25,71 @@ class SAUDITArgs:
 
     scan_examples = [
         (
-            "Stealth web scan",
-            "Passive-first recon with JS analysis, API discovery, and WebPeas output",
-            "saudit -t https://app.evilcorp.com -p webpeas-stealth",
+            "1. Initial recon",
+            "Passive-first fingerprinting — no brute-force. Tech stack, JS analysis, API discovery,\n"
+            "        exposed secrets, security headers, subdomain discovery via SSL certs.",
+            "saudit -t https://target.com -p initial",
         ),
         (
-            "Authenticated scan",
-            "Stealth scan extended with authenticated parameter mining (pass session via --bearer or -C)",
-            "saudit -t https://app.evilcorp.com -p authenticated --bearer <token>",
+            "2. Web audit (no credentials)",
+            "Extends initial with full Nuclei templates, 403 bypass, and subdomain takeover checks.\n"
+            "        Custom wordlist: -c modules.ffuf.wordlist=/path/to/list.txt",
+            "saudit -t https://target.com -p web-basic",
         ),
         (
-            "Initial recon",
-            "Active fingerprinting: crawl, JS analysis, API discovery, nuclei tech scan, secret detection",
-            "saudit -t https://app.evilcorp.com -p initial",
+            "3. Authenticated audit",
+            "Requires an active session. Adds parameter mining (GET, headers, cookies),\n"
+            "        reflected parameter detection, and lightfuzz (SQLi, XSS, SSTI, SSRF, CMDi).",
+            "saudit -t https://target.com -p web-authenticated --bearer <token>\n"
+            "        saudit -t https://target.com -p web-authenticated -C session=abc123",
         ),
         (
-            "Consulting (URL-only scope)",
-            "Full consulting report scoped to a single URL, no subdomain expansion",
-            "saudit -t https://app.evilcorp.com -p consulting-url-only -o ./results",
-        ),
-        (
-            "Web spider",
-            "Crawl and extract emails, secrets, and technologies up to depth 3",
-            "saudit -t https://app.evilcorp.com -p spider -c web.spider_distance=3 web.spider_depth=4",
+            "4. Full authenticated audit",
+            "All modules enabled. POST fuzzing, host header injection, SSRF probing,\n"
+            "        HTTP request smuggling, URL manipulation. Authorized targets only.",
+            "saudit -t https://target.com -p web-authenticated-thorough -C session=abc123",
         ),
     ]
 
     usage_examples = [
         (
-            "List modules",
+            "Override ffuf wordlist",
             "",
-            "saudit -l",
+            "saudit -t https://target.com -p web-basic -c modules.ffuf.wordlist=/opt/wordlists/dirs.txt",
         ),
         (
-            "List output modules",
+            "Increase spider depth",
             "",
-            "saudit -lo",
+            "saudit -t https://target.com -p initial -c web.spider_distance=3 -c web.spider_depth=6",
         ),
         (
-            "List presets",
+            "Run through a proxy",
             "",
-            "saudit -lp",
+            "saudit -t https://target.com -p web-basic --proxy http://127.0.0.1:8080",
         ),
         (
-            "List flags",
+            "Add optional sub-preset (dotnet audit)",
             "",
-            "saudit -lf",
+            "saudit -t https://target.com -p web-basic -p dotnet-audit",
         ),
         (
-            "Show help for a specific module",
+            "List presets / modules / flags",
             "",
-            "saudit -mh <module_name>",
+            "saudit -lp  |  saudit -l  |  saudit -lf",
+        ),
+        (
+            "Show all options for a specific module",
+            "",
+            "saudit -mh nuclei",
         ),
     ]
 
-    epilog = "EXAMPLES\n"
-    for example in (scan_examples, usage_examples):
-        for title, description, command in example:
-            epilog += f"\n    {title}:\n        {command}\n"
+    epilog = "SCAN PRESETS\n"
+    for title, description, command in scan_examples:
+        epilog += f"\n  {title}\n    {description}\n      $ {command}\n"
+    epilog += "\nUSAGE EXAMPLES\n"
+    for title, description, command in usage_examples:
+        epilog += f"\n  {title}\n      $ {command}\n"
 
     def __init__(self, preset):
         self.preset = preset
@@ -233,7 +240,7 @@ class SAUDITArgs:
         preset_choices = ",".join(sorted(self.preset.all_presets))
         kwargs.update(
             {
-                "description": "Saudit by suizer",
+                "description": "Saudit — Autonomous web reconnaissance and vulnerability scanning framework.\nAuthorized penetration testing use only.",
                 "formatter_class": argparse.RawTextHelpFormatter,
                 "epilog": self.epilog,
                 "add_help": False,
@@ -277,7 +284,12 @@ class SAUDITArgs:
             "-p",
             "--preset",
             nargs="*",
-            help=f"Enable SAUDIT preset(s). Choices: {preset_choices}",
+            help=(
+                "Preset(s) to enable. Main presets: initial, web-basic, web-authenticated, web-authenticated-thorough\n"
+                "Optional sub-presets: dotnet-audit, dirbust-light, dirbust-heavy, paramminer,\n"
+                "  lightfuzz-light/medium/heavy, nuclei, nuclei-budget, nuclei-technology\n"
+                "All choices: " + preset_choices
+            ),
             metavar="PRESET",
             default=[],
         )
@@ -285,7 +297,7 @@ class SAUDITArgs:
             "-c",
             "--config",
             nargs="*",
-            help="Custom config options in key=value format: e.g. 'modules.shodan.api_key=1234'",
+            help="Override config in key=value format. e.g. 'modules.ffuf.wordlist=/path/to/list.txt'",
             metavar="CONFIG",
             default=[],
         )

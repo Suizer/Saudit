@@ -1,7 +1,0 @@
-description: Detect cloud infrastructure (Azure, OAuth endpoints, bad DNS records)
-
-include:
-  - subdomain-enum
-
-flags:
-  - cloud-enum

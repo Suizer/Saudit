@@ -1,7 +1,31 @@
-description: Quick web scan
+description: >
+  Standard web audit without authentication.
+  Extends initial recon with full Nuclei template coverage, 403 bypass techniques,
+  subdomain takeover detection, and surface-level directory discovery.
+  Wordlist can be overridden with -c modules.ffuf.wordlist=<path_or_url>.
 
 include:
-  - iis-shortnames
+  - initial
 
-flags:
-  - web-basic
+modules:
+  - bypass403
+  - baddns
+  - nuclei
+  - ffuf
+
+output_modules:
+  - html_report
+  - json
+  - ai_review
+  - stdout
+
+config:
+  modules:
+    nuclei:
+      tags: ""
+    ffuf:
+      wordlist: "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/raft-small-directories.txt"
+      lines: 2000
+      max_depth: 1
+      rate: 50
+      extensions: ""

@@ -1,8 +1,8 @@
 description: >
-  Initial recon — active fingerprinting and light enumeration.
-  Crawls the target, detects technologies, discovers APIs, analyzes JavaScript,
-  checks for exposed secrets and outdated libraries, and brute-forces common paths.
-  Includes active modules (ffuf, nuclei): authorized use only.
+  Initial recon — passive-first fingerprinting with no brute-force.
+  Detects technologies, analyzes JavaScript, discovers APIs and exposed secrets,
+  checks security headers, and performs subdomain discovery via SSL certificates.
+  Safe to run on any authorized target as a first step.
 
 modules:
   - httpx
@@ -10,20 +10,22 @@ modules:
   - securitytxt
   - ntlm
   - wafw00f
+  - sslcert
+  - oauth
+  - azure_realm
   - badsecrets
-  - ffuf
   - jsfuzzer
-  - swagger_probe
-  - graphql_introspection
-  - nuclei
   - retirejs
   - git
+  - swagger_probe
+  - graphql_introspection
   - hunt
+  - security_headers
+  - nuclei
 
 output_modules:
   - html_report
   - json
-  - progress
   - ai_review
   - stdout
 
@@ -50,11 +52,3 @@ config:
         - high
         - medium
         - info
-    ffuf:
-      wordlist: "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/raft-medium-directories.txt"
-      lines: 0
-      rate: 100
-
-  consulting:
-    request_delay_min: 0.5
-    request_delay_max: 1.5

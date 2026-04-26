@@ -231,6 +231,7 @@ class ai_review(BaseOutputModule):
             "severity":    "info",
             "tags":        tags,
             "module":      str(getattr(event, "module", "")),
+            "risk":        data.get("risk", ""),
         }
         for tag in tags:
             if tag.startswith("severity-"):
@@ -557,8 +558,12 @@ Auth bypasses, IDOR patterns, privilege escalation. Include PoC where possible."
         for i, f in enumerate(items, 1):
             desc  = f.get("name") or f.get("description", "")
             url   = f.get("url", "")
+            risk  = f.get("risk", "")
             flags = f.get("severity", "info").upper()
-            lines.append(f"{i}. [{flags}] {desc}" + (f"  →  {url}" if url else ""))
+            line  = f"{i}. [{flags}] {desc}" + (f"  →  {url}" if url else "")
+            if risk:
+                line += f" | {risk}"
+            lines.append(line)
 
         prompt = (
             "Score each security finding by real exploitability (1–10).\n"
@@ -589,9 +594,13 @@ Auth bypasses, IDOR patterns, privilege escalation. Include PoC where possible."
         for f in top_items:
             desc  = f.get("name") or f.get("description", "")
             url   = f.get("url", "")
+            risk  = f.get("risk", "")
             sev   = f.get("severity", "info").upper()
             label = "SECRET" if f.get("is_secret") else ("EXPOSED_FILE" if f.get("exposed_file") else sev)
-            items_text.append(f"• [{label}] {desc}" + (f"  →  {url}" if url else ""))
+            line  = f"• [{label}] {desc}" + (f"  →  {url}" if url else "")
+            if risk:
+                line += f"\n    Risk: {risk}"
+            items_text.append(line)
 
         prompt = f"""Authorized penetration test.
 Target: {target}

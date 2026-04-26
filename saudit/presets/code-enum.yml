@@ -1,4 +1,0 @@
-description: Discover exposed Git repositories and source-code hosting endpoints
-
-flags:
-  - code-enum
