@@ -1,4 +1,48 @@
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+wheels/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing
 .coverage*
+.pytest_cache/
+htmlcov/
+
+# Runtime — scan results, downloaded tools, cache, logs
+saudit/core/scans/
+saudit/core/tools/
+saudit/core/cache/
+saudit/core/logs/
+cache/
+logs/
+
+# Data
 /data/
 /neo4j/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.env
+secrets.yml

@@ -1,4 +1,0 @@
-2026-04-26 00:57:13,837 [ERROR] saudit.cli cli.py:295 Failed to create directory at /Users/matias/.config/saudit: [Errno 1] Operation not permitted: '/Users/matias/.config/saudit/.6xzsmr51v5'
-2026-04-26 00:57:13,839 [ERROR] saudit.cli cli.py:295 Failed to create directory at /Users/matias/.config/saudit: [Errno 1] Operation not permitted: '/Users/matias/.config/saudit/.bkm6jxw70y'
-2026-04-26 01:20:33,149 [ERROR] saudit.cli cli.py:295 Could not find scan module "social". Did you mean "wpscan"?
-2026-04-26 01:20:38,713 [ERROR] saudit.cli cli.py:295 Could not find scan module "social". Did you mean "wpscan"?

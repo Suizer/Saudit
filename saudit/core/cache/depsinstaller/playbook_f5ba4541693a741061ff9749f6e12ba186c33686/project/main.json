@@ -1,1 +1,0 @@
-[{"hosts": "all", "tasks": [{"name": "Download httpx", "unarchive": {"src": "https://github.com/projectdiscovery/httpx/releases/download/v1.2.5/httpx_1.2.5_macOS_arm64.zip", "include": "httpx", "dest": "/Users/matias/Proyectos/Saudit/saudit/core/tools", "remote_src": true}, "become": false}]}]
