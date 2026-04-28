@@ -17,11 +17,15 @@ modules:
   - jsfuzzer
   - retirejs
   - git
+  - code_repository
+  - gitdumper
+  - gitlab_onprem
   - swagger_probe
   - graphql_introspection
   - hunt
   - security_headers
   - nuclei
+  - cms_advisor
 
 output_modules:
   - html_report
@@ -52,3 +56,11 @@ config:
         - high
         - medium
         - info
+    gitlab_onprem:
+      api_key: ""
+
+conditions:
+  - |
+    {% if not config.modules.gitlab_onprem.api_key %}
+      {{ warn("gitlab_onprem: no api_key set — only public repositories will be discovered. Set -c modules.gitlab_onprem.api_key=<token> for full coverage.") }}
+    {% endif %}

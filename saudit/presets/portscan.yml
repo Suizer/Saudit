@@ -1,0 +1,14 @@
+description: >
+  TCP port scan + service fingerprinting.
+  Requires root privileges (masscan). Scans top 100 ports by default.
+  fingerprintx identifies services on open ports (RDP, SSH, MySQL, etc.).
+  Combine with any main preset:
+    saudit -t target.com -p initial -p portscan
+
+modules:
+  - portscan
+  - fingerprintx
+
+conditions:
+  - |
+    {{ warn("portscan requires root privileges (masscan). Run with sudo or as root, or omit -p portscan.") }}

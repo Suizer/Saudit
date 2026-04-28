@@ -46,6 +46,44 @@ _GEMINI_URL = (
 _CHUNK_CHARS  = 110_000   # safe upper bound for 32k-context models (leaves room for prompt + 4k response)
 _OLLAMA_DELAY = 0.5
 _GEMINI_DELAY = 4.0
+_JS_FILE_CAP  = 10        # max source files sent to the model — beyond this it's almost always vendor noise
+
+# Filename fragments that strongly suggest vendor/library bundles with zero security value
+_VENDOR_FRAGMENTS = {
+    "polyfill", "runtime", "jquery", "lodash", "bootstrap", "angular",
+    "moment", "d3.", "highcharts", "fontawesome", "material", "antd",
+    "tailwind", "core-js", "regenerator", "i18n", "locale", "webpackruntime",
+    "vendors~", "framework~", "commons~",
+}
+
+# Regex patterns that indicate actual security-relevant code in a JS file
+# A file must match at least _JS_SIGNAL_THRESHOLD of these to be worth analyzing
+import re as _re
+_CONTENT_SIGNAL_PATTERNS = [
+    _re.compile(r'fetch\s*\('),
+    _re.compile(r'axios\.'),
+    _re.compile(r'XMLHttpRequest'),
+    _re.compile(r'\.ajax\s*\('),
+    _re.compile(r'"Authorization"'),
+    _re.compile(r"'Authorization'"),
+    _re.compile(r'Bearer\s+'),
+    _re.compile(r'api[_\-]?[Kk]ey'),
+    _re.compile(r'password\s*[:=]'),
+    _re.compile(r'secret\s*[:=]'),
+    _re.compile(r'/api/'),
+    _re.compile(r'/v\d+/'),
+    _re.compile(r'/admin'),
+    _re.compile(r'/auth/'),
+    _re.compile(r'/login'),
+    _re.compile(r'/upload'),
+    _re.compile(r'localStorage\.'),
+    _re.compile(r'sessionStorage\.'),
+    _re.compile(r'document\.cookie'),
+    _re.compile(r'\beval\s*\('),
+    _re.compile(r'\bbtoa\s*\('),
+    _re.compile(r'\batob\s*\('),
+]
+_JS_SIGNAL_THRESHOLD = 3  # minimum pattern matches to consider a file worth analyzing
 
 # Extensions that are directly exploitable when exposed via /ftp/ or similar
 _SENSITIVE_EXTENSIONS = {
@@ -138,16 +176,62 @@ def _waf_hint(wafs: list[str]) -> str:
 # ── System prompt ─────────────────────────────────────────────────────────────
 _SYSTEM_PROMPT = """\
 You are a senior penetration tester with 10+ years of experience in web application security.
-You are reviewing results from an authorized automated recon scan.
+You are reviewing results from an authorized automated recon scan produced by Saudit.
 Your output is consumed directly by a human pentester who will execute your suggestions.
 
-Rules:
+## Saudit pipeline context
+
+Saudit runs in layers. Understanding which preset ran tells you what surface was already covered:
+
+  initial (always runs first — passive fingerprinting, no brute-force)
+    httpx, portscan → fingerprintx, sslcert, wafw00f, ntlm, oauth, azure_realm
+    robots, securitytxt, security_headers
+    badsecrets, jsfuzzer → retirejs
+    git → gitdumper, code_repository → gitdumper, gitlab_onprem
+    swagger_probe, graphql_introspection, hunt
+    nuclei (tags:tech only — technology fingerprinting, NOT full template run)
+    cms_advisor (detects WordPress/Mendix and recommends wpscan/mendix_recon)
+
+  web-basic (extends initial — active, unauthenticated)
+    bypass403, baddns, ffuf (surface dirbust)
+    filedownload → extractous (downloads and extracts text from exposed files)
+    api_probe (probes API endpoints found by swagger_probe/graphql_introspection)
+    NOTE: nuclei full templates are NOT included — pentester adds nuclei preset manually
+
+  web-authenticated (extends web-basic — requires valid session)
+    session_check, paramminer_getparams/headers/cookies
+    reflected_parameters, api_sqli_probe, lightfuzz (sqli,xss,ssti,cmdi,path,crypto,serial,esi)
+
+  web-authenticated-thorough (extends web-authenticated — aggressive)
+    host_header, generic_ssrf, smuggler, url_manipulation
+    lightfuzz with force_common_headers, speculate_params
+
+## Module source interpretation
+
+When reading findings, the module field tells you the attack surface:
+- swagger_probe / graphql_introspection → verified API specs — high-value attack entry points
+- jsfuzzer (tag:endpoint) → AST-extracted endpoints from JavaScript — often undocumented
+- git → exposed .git directory — source code likely recoverable
+- gitdumper → source code recovered from exposed .git — treat as full code review opportunity
+- code_repository → links to external repos (GitHub/GitLab/Docker) — recon surface
+- gitlab_onprem → self-hosted GitLab found — enumerate repos for secrets and source code
+- cms_advisor → CMS detected (WordPress/Mendix) — specialized module NOT yet run, pentester must add it
+- api_probe → probed API endpoints for injection — treat findings as confirmed or near-confirmed
+- filedownload / extractous → sensitive file recovered and parsed — treat content as direct evidence
+- badsecrets → hardcoded secret in HTTP headers/cookies — often directly exploitable
+- bypass403 → 403 bypass attempt — confirmed bypasses are high priority
+- nuclei → template-based finding — check template name for CVE or misconfiguration class
+- lightfuzz → parameter fuzzing result — confirmed with active probing
+
+## Rules
 - Always produce EXACT, ready-to-run commands using the actual target URL and parameters from the data.
 - Never use placeholders like <target>, example.com, or <token> — use the real values provided.
 - Adapt every payload to the WAF evasion context provided.
 - Skip generic advice. If something is not directly actionable, omit it.
 - Items in the CRITICAL EXPOSURE section must always appear in the Attack Plan, regardless of tag severity.
 - Prioritize by real exploitability: exposed files > secrets > injection points > misconfigurations.
+- cms_advisor findings are recommendations, not vulnerabilities — list them under Next Steps, not Attack Plan.
+- gitdumper findings mean source code is available — always suggest grep for secrets and hardcoded creds.
 - Be concise but complete. A command block is worth more than a paragraph."""
 
 
@@ -178,12 +262,24 @@ class ai_review(BaseOutputModule):
         self._gemini_key   = self._resolve_env("GEMINI_API_KEY", self.config.get("gemini_key", ""))
         self._backend      = None
 
-        self._findings     = []
-        self._vulns        = []
-        self._technologies = []
-        self._wafs         = []
-        self._api_specs    = []   # findings from swagger_probe / graphql_introspection
-        self._js_urls      = []   # .js URLs for minified-JS fallback (capped at 15)
+        self._findings        = []
+        self._vulns           = []
+        self._technologies    = []
+        self._wafs            = []
+        self._api_specs       = []   # findings from swagger_probe / graphql_introspection / jsfuzzer
+        self._recommendations = []   # cms_advisor / gitdumper advisory findings
+        self._js_urls         = []   # .js URLs for minified-JS fallback (capped at 15)
+
+        # lightfuzz signal tracking — module → finding count
+        self._lightfuzz_signals = {
+            "hunt":                  0,
+            "reflected_parameters":  0,
+            "swagger_probe":         0,
+            "graphql_introspection": 0,
+            "paramminer_getparams":  0,
+            "paramminer_headers":    0,
+            "paramminer_cookies":    0,
+        }
         return True
 
     # ── Event collection ──────────────────────────────────────────────────────
@@ -248,11 +344,19 @@ class ai_review(BaseOutputModule):
 
         record["is_secret"] = "secret" in tags
 
-        # Route structured API findings to dedicated list instead of regular findings
-        # swagger_probe / graphql_introspection → already structured endpoint data
-        # jsfuzzer with tag "endpoint" → AST-extracted endpoint, more reliable than raw code
-        module = record["module"]
+        module   = record["module"]
         tags_set = set(record["tags"])
+
+        # track lightfuzz signal modules
+        if module in self._lightfuzz_signals:
+            self._lightfuzz_signals[module] += 1
+
+        # cms_advisor and gitdumper emit advisory findings, not exploitable vulnerabilities
+        if module in ("cms_advisor", "gitdumper", "gitlab_onprem", "code_repository"):
+            self._recommendations.append(record)
+            return
+
+        # API specs: structured endpoint data from discovery modules
         if module in ("swagger_probe", "graphql_introspection") or (
             module == "jsfuzzer" and "endpoint" in tags_set
         ):
@@ -309,7 +413,7 @@ class ai_review(BaseOutputModule):
 
     async def _analyze_findings(self, target: str, waf_hint: str) -> str:
         all_items = self._vulns + self._findings
-        if not all_items and not self._technologies and not self._api_specs:
+        if not all_items and not self._technologies and not self._api_specs and not self._recommendations:
             return ""
 
         # Deduplicate by (url, description)
@@ -350,6 +454,21 @@ class ai_review(BaseOutputModule):
                 api_lines.append(f"  • [{mod}] {desc}" + (f"  →  {url}" if url else ""))
         api_block = "\n".join(api_lines)
 
+        rec_lines = []
+        if self._recommendations:
+            rec_lines.append("[ADVISORY — specialized modules recommended or source code found]")
+            for f in self._recommendations[:20]:
+                mod  = f.get("module", "")
+                desc = f.get("description", "")
+                url  = f.get("url", "")
+                rec_lines.append(f"  • [{mod}] {desc}" + (f"  →  {url}" if url else ""))
+
+        lightfuzz_rec = self._build_lightfuzz_recommendation()
+        if lightfuzz_rec:
+            rec_lines.append(lightfuzz_rec)
+
+        rec_block = "\n".join(rec_lines)
+
         by_sev = defaultdict(list)
         for f in regular:
             by_sev[f.get("severity", "info")].append(f)
@@ -373,7 +492,7 @@ class ai_review(BaseOutputModule):
         # ── Call 2: generate focused commands for top items ─────────────────���──
         print(f"{_DIM}[AI] Step 2/3 — commands for {len(top_items)} items…{_R}", flush=True)
         commands_md = await self._generate_commands(
-            top_items, target, waf_hint, critical_block, api_block, tech_block
+            top_items, target, waf_hint, critical_block, api_block, tech_block, rec_block
         )
         if not commands_md:
             return ""
@@ -385,10 +504,69 @@ class ai_review(BaseOutputModule):
 
         return final_md or commands_md  # fallback to unreviewed if review returns empty
 
+    # ── Lightfuzz recommendation ──────────────────────────────────────────────
+
+    def _build_lightfuzz_recommendation(self) -> str:
+        s = self._lightfuzz_signals
+        has_reflection   = s["reflected_parameters"] > 0
+        has_hunt         = s["hunt"] > 0
+        has_api          = s["swagger_probe"] > 0 or s["graphql_introspection"] > 0
+        has_paramminer   = s["paramminer_getparams"] > 0 or s["paramminer_headers"] > 0 or s["paramminer_cookies"] > 0
+
+        signal_count = sum([has_reflection, has_hunt, has_api, has_paramminer])
+        if signal_count == 0:
+            return ""
+
+        lines = ["[LIGHTFUZZ RECOMMENDATION — parameter attack surface detected]"]
+
+        if has_reflection:
+            lines.append(
+                f"  • reflected_parameters found {s['reflected_parameters']} reflected param(s) — "
+                "confirmed reflection means direct XSS/SSTI candidates. "
+                "Minimum: saudit [...] -p lightfuzz-xss | Full: saudit [...] -p lightfuzz-light"
+            )
+        if has_hunt:
+            lines.append(
+                f"  • hunt found {s['hunt']} dangerous parameter name(s) (redirect, file, cmd, url, etc.) — "
+                "injection-prone surface confirmed by naming. "
+                "Recommended: saudit [...] -p lightfuzz-medium"
+            )
+        if has_api:
+            sources = []
+            if s["swagger_probe"]:
+                sources.append(f"swagger_probe ({s['swagger_probe']} findings)")
+            if s["graphql_introspection"]:
+                sources.append(f"graphql_introspection ({s['graphql_introspection']} findings)")
+            lines.append(
+                f"  • {' + '.join(sources)} — documented API surface with known parameters is ideal for fuzzing. "
+                "Recommended: saudit [...] -p lightfuzz-medium"
+            )
+        if has_paramminer:
+            discovered = s["paramminer_getparams"] + s["paramminer_headers"] + s["paramminer_cookies"]
+            lines.append(
+                f"  • paramminer discovered {discovered} hidden parameter(s) not present in source — "
+                "undocumented surface warrants aggressive coverage. "
+                "Recommended: saudit [...] -p lightfuzz-heavy"
+            )
+
+        # preset escalation summary
+        if signal_count >= 3 or has_paramminer:
+            lines.append(
+                "  ► Multiple signals detected — consider lightfuzz-superheavy for maximum coverage: "
+                "saudit [...] -p lightfuzz-superheavy"
+            )
+        elif signal_count == 1 and has_reflection and not has_hunt and not has_api:
+            lines.append(
+                "  ► Only reflection detected — lightfuzz-xss is the most surgical option: "
+                "saudit [...] -p lightfuzz-xss"
+            )
+
+        return "\n".join(lines)
+
     # ── Source-map analysis ───────────────────────────────────────────────────
 
     async def _analyze_source_maps(self, target: str, waf_hint: str, delay: float):
-        """Async generator — yields each analysed chunk as it completes (fix 5)."""
+        """Async generator — yields each analysed chunk as it completes."""
         jsfuzzer_dir = self.scan.home / "jsfuzzer_files"
 
         source_files = []
@@ -400,11 +578,6 @@ class ai_review(BaseOutputModule):
             if not source_files:
                 source_files = [f for f in jsfuzzer_dir.rglob("*.map") if f.is_file()]
 
-        # Sort high-value files first so the model sees auth/api code before vendor bundles
-        _HV_KEYWORDS = {"auth", "api", "user", "login", "token", "secret",
-                        "password", "admin", "config", "session", "permission", "role"}
-        source_files.sort(key=lambda f: -sum(kw in f.name.lower() for kw in _HV_KEYWORDS))
-
         # Minified JS fallback
         if not source_files:
             if self._js_urls:
@@ -414,8 +587,59 @@ class ai_review(BaseOutputModule):
                     yield section
             return
 
-        print(f"{_CYN}[AI]{_R} Reviewing {len(source_files)} source file(s)…", flush=True)
-        chunks = self._chunk_files(source_files)
+        # ── Two-pass filter ───────────────────────────────────────────────────
+        # Pass 1: discard obvious vendor/library bundles by filename
+        _HV_KEYWORDS = {"auth", "api", "user", "login", "token", "secret",
+                        "password", "admin", "config", "session", "permission", "role"}
+
+        def _is_vendor(f):
+            name = f.name.lower()
+            # always keep high-value filenames regardless of vendor heuristic
+            if any(kw in name for kw in _HV_KEYWORDS):
+                return False
+            return any(frag in name for frag in _VENDOR_FRAGMENTS)
+
+        non_vendor = [f for f in source_files if not _is_vendor(f)]
+        skipped_vendor = len(source_files) - len(non_vendor)
+
+        # Pass 2: score by filename keywords + content signal count
+        def _score(f):
+            name_score    = sum(kw in f.name.lower() for kw in _HV_KEYWORDS)
+            try:
+                content   = f.read_text(encoding="utf-8", errors="replace")
+            except Exception:
+                return (name_score, 0)
+            signal_count  = sum(1 for p in _CONTENT_SIGNAL_PATTERNS if p.search(content))
+            return (name_score, signal_count)
+
+        scored = sorted(non_vendor, key=_score, reverse=True)
+
+        # Pass 3: hard cut — discard files below signal threshold (unless name is high-value)
+        def _keep(f):
+            name_score = sum(kw in f.name.lower() for kw in _HV_KEYWORDS)
+            if name_score > 0:
+                return True
+            try:
+                content = f.read_text(encoding="utf-8", errors="replace")
+            except Exception:
+                return False
+            return sum(1 for p in _CONTENT_SIGNAL_PATTERNS if p.search(content)) >= _JS_SIGNAL_THRESHOLD
+
+        filtered = [f for f in scored if _keep(f)][:_JS_FILE_CAP]
+        skipped_low_signal = len(scored) - len(filtered) - max(0, len(scored) - _JS_FILE_CAP)
+
+        total_skipped = skipped_vendor + skipped_low_signal
+        print(
+            f"{_CYN}[AI]{_R} JS analysis: {len(filtered)}/{len(source_files)} files selected "
+            f"({skipped_vendor} vendor, {skipped_low_signal} low-signal skipped, cap={_JS_FILE_CAP})…",
+            flush=True,
+        )
+
+        if not filtered:
+            print(f"{_DIM}[AI] No security-relevant JS files found after filtering.{_R}", flush=True)
+            return
+
+        chunks = self._chunk_files(filtered)
         for i, (label, code) in enumerate(chunks, 1):
             print(f"{_DIM}[AI] Map chunk {i}/{len(chunks)}: {label[:60]}{_R}", flush=True)
             md = await self._analyze_code_chunk(target, waf_hint, label, code)
@@ -529,13 +753,55 @@ Auth bypasses, IDOR patterns, privilege escalation. Include PoC where possible."
     def _init_output_file(self, target: str):
         """Write the report header immediately so html_report can start reading."""
         model_id = self._ollama_model if self._backend == "ollama" else "gemini-1.5-flash"
+
+        # ── Scan output file index ────────────────────────────────────────────
+        index_lines = ["## Scan Output Files\n"]
+        scan_home = self.scan.home
+
+        _file_descriptions = {
+            "output.json":    "All events in NDJSON — import into Burp, Splunk or custom tooling",
+            "html_report.html": "Interactive HTML report — main deliverable for review",
+            "AI_REVIEW.md":   "This file — AI-generated attack plan and next steps",
+            "preset.yml":     "Resolved preset used for this scan",
+            "scan.log":       "Full scan log",
+            "wordcloud.tsv":  "Word frequency from discovered content",
+        }
+
+        with suppress(Exception):
+            for f in sorted(scan_home.iterdir()):
+                if f.is_file():
+                    size = f.stat().st_size
+                    size_str = f"{size // 1024} KB" if size >= 1024 else f"{size} B"
+                    desc = _file_descriptions.get(f.name, "")
+                    index_lines.append(f"| `{f.name}` | {size_str} | {desc} |")
+                elif f.is_dir() and f.name not in ("temp", "cache"):
+                    count = sum(1 for _ in f.rglob("*") if _.is_file())
+                    dir_descs = {
+                        "js_analysis":  "JS source map files (raw + deobfuscated)",
+                        "filedownload": "Files downloaded from the target during scan",
+                        "jsfuzzer_files": "jsfuzzer working directory",
+                    }
+                    desc = dir_descs.get(f.name, "")
+                    index_lines.append(f"| `{f.name}/` | {count} files | {desc} |")
+
+        index_md = (
+            "| File | Size | Description |\n"
+            "|------|------|-------------|\n"
+            + "\n".join(index_lines[1:])  # skip the header line, already in table
+        )
+
         header = (
             f"# AI Review — {target}\n"
             f"_Generated {datetime.now().strftime('%Y-%m-%d %H:%M')} "
             f"via {self._backend} ({model_id})_\n\n"
             f"**WAF:** {', '.join(self._wafs) or 'None detected'}  \n"
             f"**Technologies:** {', '.join(sorted(set(self._technologies))) or 'Unknown'}\n\n"
-            f"---\n"
+            f"---\n\n"
+            f"## Scan Output Files\n\n"
+            f"| File | Size | Description |\n"
+            f"|------|------|-------------|\n"
+            + "\n".join(index_lines[1:])
+            + "\n\n---\n"
         )
         with suppress(Exception):
             self.output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -585,7 +851,8 @@ Auth bypasses, IDOR patterns, privilege escalation. Include PoC where possible."
         return sorted(items, key=lambda f: -score_map.get(indexed.get(id(f), 0), 0))
 
     async def _generate_commands(self, top_items: list, target: str, waf_hint: str,
-                                  critical_block: str, api_block: str, tech_block: str) -> str:
+                                  critical_block: str, api_block: str, tech_block: str,
+                                  rec_block: str = "") -> str:
         """Call 2 — generate exact attack commands for the top-scored items only."""
         if not top_items:
             return ""
@@ -616,10 +883,15 @@ Verified API endpoints:
 Top findings to attack:
 {chr(10).join(items_text)}
 
+Advisory — specialized modules recommended or source code found:
+{rec_block or "None."}
+
 RULES:
 - Use exact URL "{target}" in every command — zero placeholders.
 - Apply WAF evasion from the WAF context.
 - Critical exposures must always appear first in Attack Plan.
+- Advisory items (cms_advisor, gitdumper, gitlab_onprem) go ONLY in Next Steps, never in Attack Plan.
+- If gitdumper found source code, always include: grep -rE "(password|secret|api_key|token)" <recovered_repo_path>
 
 Produce ONLY these sections (no other text):
 
@@ -630,7 +902,10 @@ Produce ONLY these sections (no other text):
 One ### subsection per vector. Exact bash commands.
 
 ## Quick Wins
-Max 3 items exploitable in under 5 minutes with exact URL or command."""
+Max 3 items exploitable in under 5 minutes with exact URL or command.
+
+## Next Steps
+Specialized modules or manual actions not yet performed. Include exact saudit command to run each recommended module."""
 
         return await self._call(prompt)
 

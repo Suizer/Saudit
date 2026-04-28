@@ -1,0 +1,32 @@
+description: >
+  Recursive web directory brute-force with aggressive wordlist, depth and extension coverage.
+  Uses ffuf with depth 3 and 5000-line wordlist across common web extensions.
+  For IIS targets, combine with iis-shortnames or dotnet-audit:
+    saudit [...] -p ffuf-heavy -p iis-shortnames
+    saudit [...] -p ffuf-heavy -p dotnet-audit
+
+modules:
+  - httpx
+  - ffuf
+
+config:
+  modules:
+    ffuf:
+      depth: 3
+      lines: 5000
+      extensions:
+        - php
+        - asp
+        - aspx
+        - ashx
+        - asmx
+        - jsp
+        - jspx
+        - cfm
+        - zip
+        - conf
+        - config
+        - xml
+        - json
+        - yml
+        - yaml

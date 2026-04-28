@@ -1,7 +1,8 @@
 description: >
   Standard web audit without authentication.
-  Extends initial recon with full Nuclei template coverage, 403 bypass techniques,
-  subdomain takeover detection, and surface-level directory discovery.
+  Extends initial recon with 403 bypass, subdomain takeover detection,
+  surface-level directory discovery, file harvesting and API probing.
+  Add a nuclei sub-preset explicitly when ready: -p nuclei, -p nuclei-budget, -p nuclei-technology.
   Wordlist can be overridden with -c modules.ffuf.wordlist=<path_or_url>.
 
 include:
@@ -10,8 +11,10 @@ include:
 modules:
   - bypass403
   - baddns
-  - nuclei
   - ffuf
+  - filedownload
+  - extractous
+  - api_probe
 
 output_modules:
   - html_report
@@ -21,8 +24,6 @@ output_modules:
 
 config:
   modules:
-    nuclei:
-      tags: ""
     ffuf:
       wordlist: "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/raft-small-directories.txt"
       lines: 2000
