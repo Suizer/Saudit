@@ -4,7 +4,7 @@ from saudit.modules.base import BaseModule
 
 
 class cms_advisor(BaseModule):
-    watched_events = ["TECHNOLOGY", "WAF"]
+    watched_events = ["TECHNOLOGY", "WAF", "URL"]
     produced_events = ["FINDING"]
     flags = ["passive", "safe"]
     meta = {
@@ -69,6 +69,9 @@ class cms_advisor(BaseModule):
         },
     }
 
+    # URL path fragments that confirm HubSpot CMS (SaaS — no plugin vulns, different attack surface)
+    _HUBSPOT_PATHS = frozenset({"/_hcms/", "/hs-fs/", "/hs/hsstatic/", "/hubfs/", "/hs/"})
+
     async def setup(self):
         # host → set of detected tech keys
         self._detected_tech = defaultdict(set)
@@ -76,6 +79,8 @@ class cms_advisor(BaseModule):
         self._detected_waf = {}
         # host → set of already-emitted tool advisory keys (to deduplicate across report() calls)
         self._emitted = defaultdict(set)
+        # hosts where HubSpot paths were confirmed via URL events
+        self._hubspot_hosts = set()
         return True
 
     async def handle_event(self, event):
@@ -92,8 +97,13 @@ class cms_advisor(BaseModule):
                 if key in technology:
                     self._detected_tech[host].add(key)
 
+        elif event.type == "URL":
+            url = str(event.data) if isinstance(event.data, str) else event.data.get("url", "")
+            if any(frag in url for frag in self._HUBSPOT_PATHS):
+                self._hubspot_hosts.add(host)
+
     async def report(self):
-        all_hosts = set(self._detected_tech) | set(self._detected_waf)
+        all_hosts = set(self._detected_tech) | set(self._detected_waf) | self._hubspot_hosts
 
         for host in all_hosts:
             waf = self._detected_waf.get(host)
@@ -113,6 +123,26 @@ class cms_advisor(BaseModule):
                     },
                     "FINDING",
                     context=f"{{module}} recommends nuclei-budget due to detected WAF ({waf})",
+                )
+
+            # HubSpot advisory — SaaS CMS, different attack surface than self-hosted CMSes
+            if host in self._hubspot_hosts and "hubspot" not in self._emitted[host]:
+                self._emitted[host].add("hubspot")
+                await self.emit_event(
+                    {
+                        "host": host,
+                        "description": (
+                            "HubSpot CMS detected (SaaS) — attack surface differs from self-hosted CMSes: "
+                            "1) Check HubDB public tables: https://<host>/api/v3/hubdb/tables (may expose structured data without auth). "
+                            "2) Search JS for HubSpot API keys: grep -r 'hapikey=' or 'HAPI_KEY' in downloaded JS. "
+                            "3) Test contact/form endpoints for injection: /dejanos-blindarte, /contact, /hs-search-results?term=. "
+                            "4) Check for private content accessible without auth (HubSpot memberships misconfiguration). "
+                            "5) nuclei-technology will cover HubSpot-specific CVE templates. "
+                            "Command: saudit [...] -p nuclei-technology"
+                        ),
+                    },
+                    "FINDING",
+                    context="{module} detected HubSpot CMS — recommending HubSpot-specific attack surface checks",
                 )
 
             for key in tech_keys:

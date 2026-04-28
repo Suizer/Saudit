@@ -2,9 +2,10 @@
 ai_review.py — Local AI post-scan analysis for SuizerAudit.
 
 Backend priority:
-  1. Ollama  (local, free — preferred)
-  2. Gemini  (cloud, free tier fallback)
-  3. Skip    (warn and exit cleanly)
+  1. Ollama     (local, free — preferred)
+  2. Claude     (cloud, Anthropic API — high quality)
+  3. Gemini     (cloud, free tier fallback)
+  4. Skip       (warn and exit cleanly)
 
 Produces:
   - Prioritized attack plan with ready-to-run commands
@@ -15,6 +16,8 @@ Produces:
 Config:
   OLLAMA_HOST=http://localhost:11434     (.env or env var — for Docker users)
   OLLAMA_MODEL=qwen2.5-coder:7b         (.env or env var)
+  ANTHROPIC_API_KEY=...                  (.env or env var — Claude backend)
+  ANTHROPIC_MODEL=claude-sonnet-4-6     (.env or env var — override model)
   GEMINI_API_KEY=...                     (.env or env var, fallback only)
   -c modules.ai_review.analyze_maps=false   (skip map review)
 """
@@ -42,6 +45,10 @@ _GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
     "gemini-1.5-flash:generateContent?key={key}"
 )
+
+_ANTHROPIC_URL     = "https://api.anthropic.com/v1/messages"
+_ANTHROPIC_VERSION = "2024-10-22"
+_ANTHROPIC_DELAY   = 1.0
 
 _CHUNK_CHARS  = 110_000   # safe upper bound for 32k-context models (leaves room for prompt + 4k response)
 _OLLAMA_DELAY = 0.5
@@ -243,14 +250,18 @@ class ai_review(BaseOutputModule):
         "author": "@suizer",
     }
     options = {
-        "ollama_model": "qwen2.5-coder:7b",
-        "gemini_key":   "",
-        "analyze_maps": True,
+        "ollama_model":    "qwen2.5-coder:7b",
+        "anthropic_key":   "",
+        "anthropic_model": "claude-sonnet-4-6",
+        "gemini_key":      "",
+        "analyze_maps":    True,
     }
     options_desc = {
-        "ollama_model": "Ollama model to use (default: qwen2.5-coder:7b)",
-        "gemini_key":   "Gemini API key fallback (or set GEMINI_API_KEY env var / .env)",
-        "analyze_maps": "Review unpacked source-map files (default: true)",
+        "ollama_model":    "Ollama model to use (default: qwen2.5-coder:7b)",
+        "anthropic_key":   "Anthropic API key for Claude backend (or set ANTHROPIC_API_KEY env var / .env)",
+        "anthropic_model": "Claude model ID (default: claude-sonnet-4-6)",
+        "gemini_key":      "Gemini API key fallback (or set GEMINI_API_KEY env var / .env)",
+        "analyze_maps":    "Review unpacked source-map files (default: true)",
     }
 
     output_filename = "AI_REVIEW.md"
@@ -258,9 +269,11 @@ class ai_review(BaseOutputModule):
     async def setup(self):
         self._prep_output_dir("AI_REVIEW.md")
         self._analyze_maps = self.config.get("analyze_maps", True)
-        self._ollama_model = self._resolve_env("OLLAMA_MODEL", self.config.get("ollama_model", "qwen2.5-coder:7b"))
-        self._gemini_key   = self._resolve_env("GEMINI_API_KEY", self.config.get("gemini_key", ""))
-        self._backend      = None
+        self._ollama_model     = self._resolve_env("OLLAMA_MODEL", self.config.get("ollama_model", "qwen2.5-coder:7b"))
+        self._anthropic_key   = self._resolve_env("ANTHROPIC_API_KEY", self.config.get("anthropic_key", ""))
+        self._anthropic_model = self._resolve_env("ANTHROPIC_MODEL", self.config.get("anthropic_model", "claude-sonnet-4-6"))
+        self._gemini_key      = self._resolve_env("GEMINI_API_KEY", self.config.get("gemini_key", ""))
+        self._backend         = None
 
         self._findings        = []
         self._vulns           = []
@@ -376,7 +389,7 @@ class ai_review(BaseOutputModule):
         if not self._backend:
             self.warning(
                 "No AI backend available. "
-                "Start Ollama (ollama serve) or set GEMINI_API_KEY."
+                "Start Ollama (ollama serve), set ANTHROPIC_API_KEY, or set GEMINI_API_KEY."
             )
             return
 
@@ -398,7 +411,12 @@ class ai_review(BaseOutputModule):
             wrote = True
 
         if self._analyze_maps:
-            delay = _GEMINI_DELAY if self._backend == "gemini" else _OLLAMA_DELAY
+            if self._backend == "gemini":
+                delay = _GEMINI_DELAY
+            elif self._backend == "claude":
+                delay = _ANTHROPIC_DELAY
+            else:
+                delay = _OLLAMA_DELAY
             # Fix 5: async generator — each chunk is written to disk as it completes
             async for section_md in self._analyze_source_maps(target, waf_hint, delay):
                 self._append_section(section_md)
@@ -752,7 +770,12 @@ Auth bypasses, IDOR patterns, privilege escalation. Include PoC where possible."
 
     def _init_output_file(self, target: str):
         """Write the report header immediately so html_report can start reading."""
-        model_id = self._ollama_model if self._backend == "ollama" else "gemini-1.5-flash"
+        if self._backend == "ollama":
+            model_id = self._ollama_model
+        elif self._backend == "claude":
+            model_id = self._anthropic_model
+        else:
+            model_id = "gemini-1.5-flash"
 
         # ── Scan output file index ────────────────────────────────────────────
         index_lines = ["## Scan Output Files\n"]
@@ -1015,9 +1038,19 @@ Auth bypasses, IDOR, privilege escalation patterns from the endpoint structure."
             async with httpx.AsyncClient(timeout=3) as c:
                 r = await c.get(_OLLAMA_TAGS_URL)
                 if r.status_code == 200:
-                    return "ollama"
+                    models = [m.get("name", "") for m in r.json().get("models", [])]
+                    # accept if configured model (with or without tag suffix) is available
+                    if any(self._ollama_model in m or m in self._ollama_model for m in models):
+                        return "ollama"
+                    self.warning(
+                        f"Ollama running but model '{self._ollama_model}' not found "
+                        f"(available: {', '.join(models) or 'none'}). "
+                        f"Run: ollama pull {self._ollama_model}"
+                    )
         except Exception:
             pass
+        if self._anthropic_key:
+            return "claude"
         if self._gemini_key:
             return "gemini"
         return None
@@ -1025,6 +1058,8 @@ Auth bypasses, IDOR, privilege escalation patterns from the endpoint structure."
     async def _call(self, prompt: str) -> str:
         if self._backend == "ollama":
             return await self._ollama_call(prompt)
+        if self._backend == "claude":
+            return await self._claude_call(prompt)
         return await self._gemini_call(prompt)
 
     async def _ollama_call(self, prompt: str) -> str:
@@ -1045,6 +1080,29 @@ Auth bypasses, IDOR, privilege escalation patterns from the endpoint structure."
         except Exception as e:
             self.warning(f"Ollama call failed: {e}")
             return ""
+
+    async def _claude_call(self, prompt: str) -> str:
+        payload = {
+            "model":      self._anthropic_model,
+            "max_tokens": 4096,
+            "system":     _SYSTEM_PROMPT,
+            "messages":   [{"role": "user", "content": prompt}],
+        }
+        headers = {
+            "x-api-key":         self._anthropic_key,
+            "anthropic-version": _ANTHROPIC_VERSION,
+            "content-type":      "application/json",
+        }
+        try:
+            async with httpx.AsyncClient(timeout=120) as client:
+                resp = await client.post(_ANTHROPIC_URL, json=payload, headers=headers)
+                resp.raise_for_status()
+                return resp.json()["content"][0]["text"].strip()
+        except httpx.HTTPStatusError as e:
+            self.warning(f"Claude error: {e.response.status_code} — {e.response.text[:200]}")
+        except Exception as e:
+            self.warning(f"Claude call failed: {e}")
+        return ""
 
     async def _gemini_call(self, prompt: str) -> str:
         url = _GEMINI_URL.format(key=self._gemini_key)

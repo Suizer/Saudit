@@ -166,8 +166,13 @@ class bypass403(BaseModule):
                     context=f"{{module}} discovered potential 403 bypass ({{event.type}}) for {event.data}",
                 )
 
-    # When a WAF-check helper is available in the future, we will convert to HTTP_RESPONSE and check for the WAF string here.
+    # CDN WAFs return 403 uniformly for all paths — bypass403 cannot distinguish
+    # between "WAF blocking" and "origin protecting a resource", making it useless and slow.
+    _CDN_WAF_TAGS = frozenset({"waf-cloudflare", "waf-akamai", "waf-imperva", "waf-sucuri"})
+
     async def filter_event(self, event):
+        if self._CDN_WAF_TAGS & set(event.tags):
+            return False, "CDN WAF detected on host — bypass403 skipped (WAF blocks all paths uniformly)"
         if ("status-403" in event.tags) or ("status-401" in event.tags):
             return True
         return False
