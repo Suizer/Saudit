@@ -388,9 +388,10 @@ class ai_review(BaseOutputModule):
         self._backend = await self._detect_backend()
         if not self._backend:
             self.warning(
-                "No AI backend available. "
-                "Start Ollama (ollama serve), set ANTHROPIC_API_KEY, or set GEMINI_API_KEY."
+                "No AI backend available — generating plain structured summary. "
+                "For AI analysis: start Ollama (ollama serve), set ANTHROPIC_API_KEY, or set GEMINI_API_KEY."
             )
+            self._plain_report()
             return
 
         seeds    = list(self.scan.target.seeds.inputs)
@@ -1169,6 +1170,87 @@ Auth bypasses, IDOR, privilege escalation patterns from the endpoint structure."
                 print(f"  {_YEL}{line}{_R}", flush=True)
             elif line.strip():
                 print(f"  {_DIM}{line}{_R}", flush=True)
+
+    def _plain_report(self):
+        """Structured markdown summary without any LLM — fallback when no backend is available."""
+        seeds  = list(self.scan.target.seeds.inputs)
+        target = seeds[0] if seeds else "unknown"
+
+        lines = [
+            f"# Scan Summary — {target}",
+            f"_Generated {datetime.now().strftime('%Y-%m-%d %H:%M')} — no AI backend, structured data only_",
+            "",
+            f"**WAF:** {', '.join(self._wafs) or 'None detected'}  ",
+            f"**Technologies:** {', '.join(sorted(set(self._technologies))) or 'Unknown'}",
+            "",
+            "---",
+        ]
+
+        def _table(records: list, title: str):
+            if not records:
+                return
+            lines.append(f"\n## {title} ({len(records)})\n")
+            lines.append("| Severity | Module | Description | URL |")
+            lines.append("|----------|--------|-------------|-----|")
+            for r in sorted(records, key=lambda x: _SEV_ORDER.get(x.get("severity", "info"), 4)):
+                sev  = r.get("severity", "info").upper()
+                mod  = r.get("module", "")
+                desc = (r.get("name") or r.get("description", ""))[:120].replace("|", "\\|")
+                url  = r.get("url", "")
+                lines.append(f"| {sev} | {mod} | {desc} | {url} |")
+
+        _table(self._vulns,    "Vulnerabilities")
+        _table(self._findings, "Findings")
+
+        if self._api_specs:
+            lines.append(f"\n## API Surface ({len(self._api_specs)})\n")
+            lines.append("| Module | Description | URL |")
+            lines.append("|--------|-------------|-----|")
+            for r in self._api_specs[:50]:
+                mod  = r.get("module", "")
+                desc = r.get("description", "")[:120].replace("|", "\\|")
+                url  = r.get("url", "")
+                lines.append(f"| {mod} | {desc} | {url} |")
+
+        if self._recommendations:
+            lines.append(f"\n## Recommendations ({len(self._recommendations)})\n")
+            for r in self._recommendations:
+                mod  = r.get("module", "")
+                desc = r.get("description", "")[:200]
+                lines.append(f"- **[{mod}]** {desc}")
+
+        lines += [
+            "",
+            "---",
+            "",
+            "## Next Steps",
+            "",
+            "No AI analysis was performed. To get an AI-generated attack plan, re-run with one of:",
+            "```",
+            "# Option 1 — Ollama (local, free)",
+            "ollama serve && ollama pull qwen2.5-coder:7b",
+            "# Option 2 — Claude",
+            "export ANTHROPIC_API_KEY=sk-ant-...",
+            "# Option 3 — Gemini",
+            "export GEMINI_API_KEY=...",
+            "```",
+        ]
+
+        md = "\n".join(lines)
+        with suppress(Exception):
+            self.output_file.parent.mkdir(parents=True, exist_ok=True)
+            self.output_file.write_text(md, encoding="utf-8")
+
+        print(_hdr("SCAN SUMMARY (no AI backend)"), flush=True)
+        if self._vulns:
+            print(f"  {_YEL}Vulnerabilities : {len(self._vulns)}{_R}", flush=True)
+        if self._findings:
+            print(f"  {_DIM}Findings        : {len(self._findings)}{_R}", flush=True)
+        if self._api_specs:
+            print(f"  {_CYN}API endpoints   : {len(self._api_specs)}{_R}", flush=True)
+        if self._wafs:
+            print(f"  {_WHT}WAF             : {', '.join(self._wafs)}{_R}", flush=True)
+        print(f"{_GRN}[AI]{_R} Saved → {self.output_file}", flush=True)
 
     async def cleanup(self):
         pass
