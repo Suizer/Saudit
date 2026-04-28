@@ -5,10 +5,10 @@ import string
 import json
 import base64
 
-# CDN WAFs that return 403 for ALL paths uniformly — ffuf is completely ineffective
-_CDN_WAF_TAGS = frozenset({"waf-cloudflare", "waf-akamai", "waf-imperva", "waf-sucuri"})
+# All WAF tags that trigger stealth mode — baseline will decide if scanning is viable
+_WAF_TAGS = frozenset({"waf-cloudflare", "waf-akamai", "waf-imperva", "waf-sucuri", "waf"})
 
-# High-value paths worth trying even in stealth mode against generic WAFs
+# High-value paths worth trying in stealth mode — baseline aborts if WAF blocks uniformly
 _STEALTH_WORDLIST = [
     "admin", "administrator", "dashboard", "panel", "console", "manage", "management",
     "api", "api/v1", "api/v2", "api/v3", "graphql", "swagger", "swagger-ui", "openapi",
@@ -21,12 +21,39 @@ _STEALTH_WORDLIST = [
     "robots.txt", "sitemap.xml", ".git/config", "crossdomain.xml",
 ]
 
+# Realistic browser User-Agents — rotated per URL to reduce WAF bot fingerprint
+# Helps against WAFs that track UA patterns across requests; won't bypass Cloudflare JS challenge
+_USER_AGENTS = [
+    # Chrome Windows
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+    # Chrome macOS
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+    # Firefox Windows
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0",
+    # Firefox macOS
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.4; rv:125.0) Gecko/20100101 Firefox/125.0",
+    # Safari macOS
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15",
+    # Edge Windows
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0",
+    # Chrome Linux
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    # Chrome Android
+    "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.82 Mobile Safari/537.36",
+    # Safari iOS
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
+]
+
 # Browser-like headers to reduce WAF bot fingerprint in stealth mode
 _STEALTH_HEADERS = [
-    ("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
+    ("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"),
     ("Accept-Language", "en-US,en;q=0.9"),
     ("Accept-Encoding", "gzip, deflate, br"),
     ("Cache-Control", "no-cache"),
+    ("Pragma", "no-cache"),
 ]
 
 _STEALTH_RATE = 5  # req/s — slow enough to avoid immediate rate-limiting
@@ -106,9 +133,9 @@ class ffuf(BaseModule):
         else:
             fixed_url = event.data.rstrip("/") + "/"
 
-        stealth = "waf" in event.tags and not (_CDN_WAF_TAGS & set(event.tags))
+        stealth = bool(_WAF_TAGS & set(event.tags))
         if stealth:
-            self.verbose(f"WAF detected on {event.host} — switching to stealth mode (rate={_STEALTH_RATE}, {len(_STEALTH_WORDLIST)} paths)")
+            self.verbose(f"WAF detected on {event.host} — stealth mode: {len(_STEALTH_WORDLIST)} paths @ {_STEALTH_RATE} req/s, baseline decides if viable")
 
         wordlist_file = self._stealth_tempfile if stealth else self.tempfile
         rate_override  = _STEALTH_RATE if stealth else self.rate
@@ -133,8 +160,6 @@ class ffuf(BaseModule):
         if "endpoint" in event.tags:
             self.debug(f"rejecting URL [{event.data}] because we don't ffuf endpoints")
             return False
-        if _CDN_WAF_TAGS & set(event.tags):
-            return False, "CDN WAF detected — ffuf skipped (uniform 403 blocking, no signal possible)"
         return True
 
     async def baseline_ffuf(self, url, exts=[""], prefix="", suffix="", mode="normal", stealth=False):
@@ -270,12 +295,13 @@ class ffuf(BaseModule):
 
                 fuzz_url = f"{url}{prefix}FUZZ{suffix}"
 
+                ua = random.choice(_USER_AGENTS) if stealth else self.scan.useragent
                 command = [
                     "ffuf",
                     "-noninteractive",
                     "-s",
                     "-H",
-                    f"User-Agent: {self.scan.useragent}",
+                    f"User-Agent: {ua}",
                     "-json",
                     "-w",
                     tempfile,
@@ -286,12 +312,13 @@ class ffuf(BaseModule):
             elif mode == "hostheader":
                 self.debug("in mode [hostheader]")
 
+                ua = random.choice(_USER_AGENTS) if stealth else self.scan.useragent
                 command = [
                     "ffuf",
                     "-noninteractive",
                     "-s",
                     "-H",
-                    f"User-Agent: {self.scan.useragent}",
+                    f"User-Agent: {ua}",
                     "-H",
                     f"Host: FUZZ{suffix}",
                     "-json",

@@ -105,17 +105,12 @@ class api_probe(BaseModule):
         self._auth_headers = {"Authorization": token} if token else {}
         return True
 
-    _CDN_WAF_TAGS = frozenset({"waf-cloudflare", "waf-akamai", "waf-imperva", "waf-sucuri"})
-
     async def filter_event(self, event):
         tags = set(getattr(event, "tags", []) or [])
         if "endpoint" not in tags:
             return False, "not an endpoint finding"
-        # accept from jsfuzzer or swagger_probe
         if "jsfuzzer" not in tags and "swagger-probe" not in tags:
             return False, "not from jsfuzzer or swagger_probe"
-        if self._CDN_WAF_TAGS & tags:
-            return False, "CDN WAF detected — api_probe skipped (all requests will be blocked)"
         return True, ""
 
     async def handle_event(self, event):
