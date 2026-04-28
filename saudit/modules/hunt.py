@@ -2,6 +2,23 @@
 
 from saudit.modules.base import BaseModule
 
+# Static asset extensions — parameters on these URLs are CDN delivery params, not app inputs
+_STATIC_EXTENSIONS = frozenset({
+    ".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".ico", ".bmp", ".tiff",
+    ".woff", ".woff2", ".ttf", ".eot", ".otf",
+    ".mp4", ".mp3", ".avi", ".mov", ".webm",
+    ".css", ".map",
+})
+
+# CDN/platform path fragments where parameters are asset-delivery controls, not app logic
+_CDN_PATH_FRAGMENTS = frozenset({
+    "/hs-fs/hubfs/",        # HubSpot file system CDN
+    "/hs/hsstatic/",        # HubSpot static assets
+    "/hubfs/",              # HubSpot CDN
+    "/wp-content/uploads/", # WordPress media uploads
+    "/sites/default/files/",# Drupal file storage
+})
+
 hunt_param_dict = {
     "Command Injection": [
         "daemon",
@@ -288,6 +305,17 @@ class hunt(BaseModule):
         "author": "@liquidsec",
         "created_date": "2022-07-20",
     }
+
+    async def filter_event(self, event):
+        url = event.data.get("url", "")
+        if url:
+            # Strip query string to check path only
+            path = url.split("?")[0].lower()
+            if any(path.endswith(ext) for ext in _STATIC_EXTENSIONS):
+                return False, "parameter on static asset URL — not an application input"
+            if any(frag in path for frag in _CDN_PATH_FRAGMENTS):
+                return False, "parameter on CDN/platform asset path — not an application input"
+        return True, "accepted"
 
     async def handle_event(self, event):
         p = event.data["name"]
