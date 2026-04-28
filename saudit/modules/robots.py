@@ -36,7 +36,9 @@ class robots(BaseModule):
                         if (split_l[0].lower() == "allow" and self.config.get("include_allow") is True) or (
                             split_l[0].lower() == "disallow" and self.config.get("include_disallow") is True
                         ):
-                            unverified_url = f"{host}{split_l[1].lstrip('/')}".replace(
+                            # strip whitespace, inline comments, and robots.txt regex anchors ($ = end-of-path)
+                            path = split_l[1].split("#")[0].strip().rstrip("$")
+                            unverified_url = f"{host}{path.lstrip('/')}".replace(
                                 "*", self.helpers.rand_string(4)
                             )
 
