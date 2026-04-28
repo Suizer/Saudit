@@ -5,6 +5,32 @@ import string
 import json
 import base64
 
+# CDN WAFs that return 403 for ALL paths uniformly — ffuf is completely ineffective
+_CDN_WAF_TAGS = frozenset({"waf-cloudflare", "waf-akamai", "waf-imperva", "waf-sucuri"})
+
+# High-value paths worth trying even in stealth mode against generic WAFs
+_STEALTH_WORDLIST = [
+    "admin", "administrator", "dashboard", "panel", "console", "manage", "management",
+    "api", "api/v1", "api/v2", "api/v3", "graphql", "swagger", "swagger-ui", "openapi",
+    "login", "logout", "register", "signup", "auth", "oauth", "sso",
+    "config", "configuration", "settings", "debug", "status", "health", "metrics", "info",
+    ".env", "backup", "bak", "old", "tmp", "test", "dev", "staging",
+    "portal", "app", "internal", "private", "secure", "hidden",
+    "docs", "documentation", "help",
+    "upload", "uploads", "files", "static", "assets",
+    "robots.txt", "sitemap.xml", ".git/config", "crossdomain.xml",
+]
+
+# Browser-like headers to reduce WAF bot fingerprint in stealth mode
+_STEALTH_HEADERS = [
+    ("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
+    ("Accept-Language", "en-US,en;q=0.9"),
+    ("Accept-Encoding", "gzip, deflate, br"),
+    ("Cache-Control", "no-cache"),
+]
+
+_STEALTH_RATE = 5  # req/s — slow enough to avoid immediate rate-limiting
+
 
 class ffuf(BaseModule):
     watched_events = ["URL"]
@@ -57,6 +83,7 @@ class ffuf(BaseModule):
             primary |= extra
         self.wordlist_lines = list(primary)
         self.tempfile, tempfile_len = self.generate_templist()
+        self._stealth_tempfile = self.helpers.tempfile(_STEALTH_WORDLIST + [self.canary], pipe=False)
         self.rate = self.config.get("rate", 0)
         self.verbose(f"Generated dynamic wordlist with length [{str(tempfile_len)}]")
         try:
@@ -77,16 +104,23 @@ class ffuf(BaseModule):
             self.debug("Aborting FFUF as period was detected in right-most path segment (likely a file)")
             return
         else:
-            # if we think its a directory, normalize it.
             fixed_url = event.data.rstrip("/") + "/"
 
+        stealth = "waf" in event.tags and not (_CDN_WAF_TAGS & set(event.tags))
+        if stealth:
+            self.verbose(f"WAF detected on {event.host} — switching to stealth mode (rate={_STEALTH_RATE}, {len(_STEALTH_WORDLIST)} paths)")
+
+        wordlist_file = self._stealth_tempfile if stealth else self.tempfile
+        rate_override  = _STEALTH_RATE if stealth else self.rate
+
         exts = ["", "/"]
-        if self.extensions:
+        if self.extensions and not stealth:
             for ext in self.extensions:
                 exts.append(f".{ext}")
 
-        filters = await self.baseline_ffuf(fixed_url, exts=exts)
-        async for r in self.execute_ffuf(self.tempfile, fixed_url, exts=exts, filters=filters):
+        filters = await self.baseline_ffuf(fixed_url, exts=exts, stealth=stealth)
+        async for r in self.execute_ffuf(wordlist_file, fixed_url, exts=exts, filters=filters,
+                                          rate_override=rate_override, stealth=stealth):
             await self.emit_event(
                 r["url"],
                 "URL_UNVERIFIED",
@@ -99,9 +133,11 @@ class ffuf(BaseModule):
         if "endpoint" in event.tags:
             self.debug(f"rejecting URL [{event.data}] because we don't ffuf endpoints")
             return False
+        if _CDN_WAF_TAGS & set(event.tags):
+            return False, "CDN WAF detected — ffuf skipped (uniform 403 blocking, no signal possible)"
         return True
 
-    async def baseline_ffuf(self, url, exts=[""], prefix="", suffix="", mode="normal"):
+    async def baseline_ffuf(self, url, exts=[""], prefix="", suffix="", mode="normal", stealth=False):
         filters = {}
         for ext in exts:
             self.debug(f"running baseline for URL [{url}] with ext [{ext}]")
@@ -150,8 +186,14 @@ class ffuf(BaseModule):
                 filters[ext] = ["-fc", "404"]
                 continue
 
-            # if we only got 403, we might already be blocked by a WAF. Issue a warning, but it's possible all 'not founds' are given 403
+            # if we only got 403 AND we're in stealth mode, abort — WAF is blocking uniformly
             if canary_results[0]["status"] == 403:
+                if stealth:
+                    self.warning(
+                        f"WAF returning 403 for all baseline requests on [{url}] in stealth mode — aborting (no signal possible)."
+                    )
+                    filters[ext] = ["ABORT", "WAF_BLOCKED_403"]
+                    continue
                 self.warning(
                     "All requests of the baseline received a 403 response. It is possible a WAF is actively blocking your traffic."
                 )
@@ -219,6 +261,8 @@ class ffuf(BaseModule):
         mode="normal",
         apply_filters=True,
         baseline=False,
+        rate_override=0,
+        stealth=False,
     ):
         for ext in exts:
             if mode == "normal":
@@ -260,8 +304,14 @@ class ffuf(BaseModule):
                 self.debug("invalid mode specified, aborting")
                 return
 
-            if self.rate > 0:
-                command += ["-rate", f"{self.rate}"]
+            effective_rate = rate_override if rate_override > 0 else self.rate
+            if effective_rate > 0:
+                command += ["-rate", f"{effective_rate}"]
+
+            if stealth:
+                for hk, hv in _STEALTH_HEADERS:
+                    command += ["-H", f"{hk}: {hv}"]
+                command += ["-p", "0.2-0.5"]  # random delay 200-500ms between requests
 
             if self.proxy:
                 command += ["-x", self.proxy]
