@@ -103,6 +103,20 @@ class nuclei(BaseModule):
             self.warning(f"Unable to initialize nuclei: invalid mode selected: [{self.mode}]")
             return False
 
+        # Remove deadly flag for safe configurations:
+        # - tags:tech → pure fingerprinting, no exploitation
+        # - mode:technology → wappalyzer-matched templates only, no exploitation
+        # - mode:budget → limited requests, no intrusive templates
+        _safe_tags = {"tech", "technology"}
+        _configured_tags = {t.strip().lower() for t in (self.config.get("tags") or "").split(",") if t.strip()}
+        _is_safe = (
+            self.mode in ("technology", "budget")
+            or (_configured_tags and _configured_tags.issubset(_safe_tags))
+        )
+        if _is_safe:
+            self.flags = [f for f in self.flags if f != "deadly"]
+            self.info("nuclei running in safe mode (tech/budget) — deadly flag removed, --allow-deadly not required")
+
         if self.mode == "technology":
             self.info(
                 "Running nuclei in TECHNOLOGY mode. Scans will only be performed with the --automatic-scan flag set. This limits the templates used to those that match wappalyzer signatures"

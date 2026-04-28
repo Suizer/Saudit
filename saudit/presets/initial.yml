@@ -49,7 +49,7 @@ config:
 
   modules:
     nuclei:
-      tags: tech
+      mode: technology
     jsfuzzer:
       severity_filter:
         - critical
