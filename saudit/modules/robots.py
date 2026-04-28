@@ -32,7 +32,7 @@ class robots(BaseModule):
                 lines = body.split("\n")
                 for l in lines:
                     if len(l) > 0:
-                        split_l = l.split(": ")
+                        split_l = l.split(": ", 1)
                         if (split_l[0].lower() == "allow" and self.config.get("include_allow") is True) or (
                             split_l[0].lower() == "disallow" and self.config.get("include_disallow") is True
                         ):
