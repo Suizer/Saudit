@@ -3,9 +3,10 @@ ai_review.py — Local AI post-scan analysis for SuizerAudit.
 
 Backend priority:
   1. Ollama     (local, free — preferred)
-  2. Claude     (cloud, Anthropic API — high quality)
-  3. Gemini     (cloud, free tier fallback)
-  4. Skip       (warn and exit cleanly)
+  2. NVIDIA NIM (cloud, free tier — 1 000 req/month)
+  3. Claude     (cloud, Anthropic API — high quality)
+  4. Gemini     (cloud, free tier fallback)
+  5. Skip       (warn and exit cleanly)
 
 Produces:
   - Prioritized attack plan with ready-to-run commands
@@ -14,18 +15,21 @@ Produces:
   - Hardcoded secrets and directly exposed sensitive files
 
 Config:
-  OLLAMA_HOST=http://localhost:11434     (.env or env var — for Docker users)
-  OLLAMA_MODEL=qwen2.5-coder:7b         (.env or env var)
-  ANTHROPIC_API_KEY=...                  (.env or env var — Claude backend)
-  ANTHROPIC_MODEL=claude-sonnet-4-6     (.env or env var — override model)
-  GEMINI_API_KEY=...                     (.env or env var, fallback only)
-  -c modules.ai_review.analyze_maps=false   (skip map review)
+  OLLAMA_HOST=http://localhost:11434          (.env or env var — for Docker users)
+  OLLAMA_MODEL=qwen2.5-coder:7b              (.env or env var)
+  NVIDIA_API_KEY=...                          (.env or env var — NVIDIA NIM backend)
+  NVIDIA_MODEL=meta/llama-3.3-70b-instruct   (.env or env var — override model)
+  ANTHROPIC_API_KEY=...                       (.env or env var — Claude backend)
+  ANTHROPIC_MODEL=claude-sonnet-4-6          (.env or env var — override model)
+  GEMINI_API_KEY=...                          (.env or env var, fallback only)
+  -c modules.ai_review.analyze_maps=false    (skip map review)
 """
 
 from __future__ import annotations
 
 import os
 import asyncio
+import yaml
 from pathlib import Path
 from contextlib import suppress
 from datetime import datetime
@@ -34,6 +38,9 @@ from collections import defaultdict
 import httpx
 
 from saudit.modules.output.base import BaseOutputModule
+from saudit.scanner.preset.orchestrator import PresetOrchestrator
+
+_orchestrator = PresetOrchestrator()
 
 # ── Backend endpoints ─────────────────────────────────────────────────────────
 # OLLAMA_HOST env var lets Docker users point to host.docker.internal:11434
@@ -49,6 +56,9 @@ _GEMINI_URL = (
 _ANTHROPIC_URL     = "https://api.anthropic.com/v1/messages"
 _ANTHROPIC_VERSION = "2024-10-22"
 _ANTHROPIC_DELAY   = 1.0
+
+_NVIDIA_URL   = "https://integrate.api.nvidia.com/v1/chat/completions"
+_NVIDIA_DELAY = 1.0
 
 _CHUNK_CHARS  = 110_000   # safe upper bound for 32k-context models (leaves room for prompt + 4k response)
 _OLLAMA_DELAY = 0.5
@@ -251,6 +261,8 @@ class ai_review(BaseOutputModule):
     }
     options = {
         "ollama_model":    "qwen2.5-coder:7b",
+        "nvidia_key":      "",
+        "nvidia_model":    "meta/llama-3.3-70b-instruct",
         "anthropic_key":   "",
         "anthropic_model": "claude-sonnet-4-6",
         "gemini_key":      "",
@@ -258,6 +270,8 @@ class ai_review(BaseOutputModule):
     }
     options_desc = {
         "ollama_model":    "Ollama model to use (default: qwen2.5-coder:7b)",
+        "nvidia_key":      "NVIDIA NIM API key (or set NVIDIA_API_KEY env var / .env)",
+        "nvidia_model":    "NVIDIA NIM model ID (default: meta/llama-3.3-70b-instruct)",
         "anthropic_key":   "Anthropic API key for Claude backend (or set ANTHROPIC_API_KEY env var / .env)",
         "anthropic_model": "Claude model ID (default: claude-sonnet-4-6)",
         "gemini_key":      "Gemini API key fallback (or set GEMINI_API_KEY env var / .env)",
@@ -269,10 +283,12 @@ class ai_review(BaseOutputModule):
     async def setup(self):
         self._prep_output_dir("AI_REVIEW.md")
         self._analyze_maps = self.config.get("analyze_maps", True)
-        self._ollama_model     = self._resolve_env("OLLAMA_MODEL", self.config.get("ollama_model", "qwen2.5-coder:7b"))
+        self._ollama_model     = self._resolve_env("OLLAMA_MODEL",    self.config.get("ollama_model",    "qwen2.5-coder:7b"))
+        self._nvidia_key      = self._resolve_env("NVIDIA_API_KEY",  self.config.get("nvidia_key",      ""))
+        self._nvidia_model    = self._resolve_env("NVIDIA_MODEL",    self.config.get("nvidia_model",    "meta/llama-3.3-70b-instruct"))
         self._anthropic_key   = self._resolve_env("ANTHROPIC_API_KEY", self.config.get("anthropic_key", ""))
         self._anthropic_model = self._resolve_env("ANTHROPIC_MODEL", self.config.get("anthropic_model", "claude-sonnet-4-6"))
-        self._gemini_key      = self._resolve_env("GEMINI_API_KEY", self.config.get("gemini_key", ""))
+        self._gemini_key      = self._resolve_env("GEMINI_API_KEY",  self.config.get("gemini_key",      ""))
         self._backend         = None
 
         self._findings        = []
@@ -282,6 +298,9 @@ class ai_review(BaseOutputModule):
         self._api_specs       = []   # findings from swagger_probe / graphql_introspection / jsfuzzer
         self._recommendations = []   # cms_advisor / gitdumper advisory findings
         self._js_urls         = []   # .js URLs for minified-JS fallback (capped at 15)
+
+        self._prev_context    = ""   # extracted sections from previous scan's AI_REVIEW.md
+        self._prev_scan_path  = ""   # relative path shown in report header
 
         # lightfuzz signal tracking — module → finding count
         self._lightfuzz_signals = {
@@ -389,7 +408,7 @@ class ai_review(BaseOutputModule):
         if not self._backend:
             self.warning(
                 "No AI backend available — generating plain structured summary. "
-                "For AI analysis: start Ollama (ollama serve), set ANTHROPIC_API_KEY, or set GEMINI_API_KEY."
+                "For AI analysis: start Ollama (ollama serve), set NVIDIA_API_KEY, set ANTHROPIC_API_KEY, or set GEMINI_API_KEY."
             )
             self._plain_report()
             return
@@ -400,6 +419,10 @@ class ai_review(BaseOutputModule):
         wrote    = False
 
         print(f"\n{_CYN}[AI]{_R} Backend: {_WHT}{self._backend}{_R}", flush=True)
+
+        self._prev_context, self._prev_scan_path = self._find_previous_scan()
+        if self._prev_scan_path:
+            print(f"{_DIM}[AI] Previous scan context: {self._prev_scan_path}{_R}", flush=True)
 
         # Fix 5: write header to disk immediately so html_report can start reading
         self._init_output_file(target)
@@ -416,12 +439,21 @@ class ai_review(BaseOutputModule):
                 delay = _GEMINI_DELAY
             elif self._backend == "claude":
                 delay = _ANTHROPIC_DELAY
+            elif self._backend == "nvidia":
+                delay = _NVIDIA_DELAY
             else:
                 delay = _OLLAMA_DELAY
             # Fix 5: async generator — each chunk is written to disk as it completes
             async for section_md in self._analyze_source_maps(target, waf_hint, delay):
                 self._append_section(section_md)
                 wrote = True
+
+        print(f"{_DIM}[AI] Orchestrator — recommending next scan…{_R}", flush=True)
+        next_scan_md = await self._recommend_next_scan(target, waf_hint)
+        if next_scan_md:
+            self._append_section(next_scan_md)
+            self._print_next_scan(next_scan_md)
+            wrote = True
 
         if not wrote:
             print(f"{_DIM}[AI] Nothing to report.{_R}", flush=True)
@@ -773,6 +805,8 @@ Auth bypasses, IDOR patterns, privilege escalation. Include PoC where possible."
         """Write the report header immediately so html_report can start reading."""
         if self._backend == "ollama":
             model_id = self._ollama_model
+        elif self._backend == "nvidia":
+            model_id = self._nvidia_model
         elif self._backend == "claude":
             model_id = self._anthropic_model
         else:
@@ -814,13 +848,18 @@ Auth bypasses, IDOR patterns, privilege escalation. Include PoC where possible."
             + "\n".join(index_lines[1:])  # skip the header line, already in table
         )
 
+        prev_line = (
+            f"**Previous context:** `{self._prev_scan_path}`  \n"
+            if self._prev_scan_path else ""
+        )
         header = (
             f"# AI Review — {target}\n"
             f"_Generated {datetime.now().strftime('%Y-%m-%d %H:%M')} "
             f"via {self._backend} ({model_id})_\n\n"
             f"**WAF:** {', '.join(self._wafs) or 'None detected'}  \n"
-            f"**Technologies:** {', '.join(sorted(set(self._technologies))) or 'Unknown'}\n\n"
-            f"---\n\n"
+            f"**Technologies:** {', '.join(sorted(set(self._technologies))) or 'Unknown'}  \n"
+            f"{prev_line}"
+            f"\n---\n\n"
             f"## Scan Output Files\n\n"
             f"| File | Size | Description |\n"
             f"|------|------|-------------|\n"
@@ -893,11 +932,17 @@ Auth bypasses, IDOR patterns, privilege escalation. Include PoC where possible."
                 line += f"\n    Risk: {risk}"
             items_text.append(line)
 
+        prev_block = (
+            f"\nPrevious scan findings (already explored — do not repeat, build on top):\n"
+            f"{self._prev_context}\n"
+            if self._prev_context else ""
+        )
+
         prompt = f"""Authorized penetration test.
 Target: {target}
 Technologies: {tech_block}
 WAF context: {waf_hint}
-
+{prev_block}
 Critical exposures (ALWAYS include in plan):
 {critical_block or "None."}
 
@@ -916,6 +961,7 @@ RULES:
 - Critical exposures must always appear first in Attack Plan.
 - Advisory items (cms_advisor, gitdumper, gitlab_onprem) go ONLY in Next Steps, never in Attack Plan.
 - If gitdumper found source code, always include: grep -rE "(password|secret|api_key|token)" <recovered_repo_path>
+- If previous scan context is provided, prioritize NEW findings not covered before. Do not repeat attack vectors already recommended in the previous scan.
 
 Produce ONLY these sections (no other text):
 
@@ -1012,6 +1058,164 @@ Auth bypasses, IDOR, privilege escalation patterns from the endpoint structure."
 
         return await self._call(prompt)
 
+    # ── Orchestrator ──────────────────────────────────────────────────────────
+
+    def _find_previous_scan(self) -> tuple[str, str]:
+        """Return (extracted_context, relative_path) of the most recent previous scan for this target."""
+        import re
+        scan_home  = self.scan.home
+        scans_dir  = scan_home.parent
+        slug_match = re.match(r"^(.+)_\d{8}_\d{6}$", scan_home.name)
+        if not slug_match:
+            return "", ""
+
+        slug = slug_match.group(1)
+        candidates = []
+        with suppress(Exception):
+            for d in scans_dir.iterdir():
+                if d == scan_home or not d.is_dir():
+                    continue
+                if not d.name.startswith(slug + "_"):
+                    continue
+                review = d / "AI_REVIEW.md"
+                if review.is_file():
+                    candidates.append((d.stat().st_mtime, d, review))
+
+        if not candidates:
+            return "", ""
+
+        candidates.sort(reverse=True)
+        _, prev_dir, review_path = candidates[0]
+        with suppress(Exception):
+            text    = review_path.read_text(encoding="utf-8", errors="replace")
+            context = self._extract_prev_context(text)
+            rel     = f"{prev_dir.name}/AI_REVIEW.md"
+            return context, rel
+
+        return "", ""
+
+    def _extract_prev_context(self, md: str) -> str:
+        """Extract key sections from a previous AI_REVIEW.md, capped at ~3000 chars."""
+        import re
+        _KEEP = {"attack plan", "quick wins", "next steps", "recommended next scan"}
+        sections, current_title, current_lines = [], None, []
+
+        for line in md.splitlines():
+            if line.startswith("## "):
+                if current_title and current_title.lower() in _KEEP:
+                    sections.append(("## " + current_title, current_lines))
+                current_title = line[3:].strip()
+                current_lines = []
+            elif current_title:
+                current_lines.append(line)
+
+        if current_title and current_title.lower() in _KEEP:
+            sections.append(("## " + current_title, current_lines))
+
+        result, total = [], 0
+        for header, lines in sections:
+            block = header + "\n" + "\n".join(lines).strip()
+            if total + len(block) > 3000:
+                block = block[: 3000 - total]
+            result.append(block)
+            total += len(block)
+            if total >= 3000:
+                break
+
+        return "\n\n".join(result)
+
+    async def _recommend_next_scan(self, target: str, waf_hint: str) -> str:
+        # Read ran modules from preset.yml saved by saudit in scan home
+        preset_file = self.scan.home / "preset.yml"
+        ran_modules: set = set()
+        with suppress(Exception):
+            data = yaml.safe_load(preset_file.read_text(encoding="utf-8"))
+            ran_modules = set(data.get("modules", []))
+
+        rec = _orchestrator.recommend(ran_modules)
+        current_preset   = rec.current
+        next_preset      = rec.next
+        escalation_desc  = rec.escalation_desc
+
+        # Build compact findings summary for context (top 10 items max)
+        all_items = self._vulns + self._findings
+        all_items.sort(key=lambda f: _SEV_ORDER.get(f.get("severity", "info"), 4))
+        findings_lines = []
+        for f in all_items[:10]:
+            sev  = f.get("severity", "info").upper()
+            desc = f.get("name") or f.get("description", "")
+            url  = f.get("url", "")
+            findings_lines.append(f"  [{sev}] {desc}" + (f"  → {url}" if url else ""))
+        if self._api_specs:
+            findings_lines.append(f"  [API] {len(self._api_specs)} endpoint(s) discovered (swagger/graphql/jsfuzzer)")
+        if self._recommendations:
+            for r in self._recommendations[:5]:
+                findings_lines.append(f"  [ADVISORY][{r.get('module','')}] {r.get('description','')}")
+
+        findings_summary = "\n".join(findings_lines) or "  No significant findings."
+        tech_summary     = ", ".join(sorted(set(self._technologies))) or "unknown"
+
+        prev_orch_block = (
+            f"\nPrevious scan context (already covered):\n{self._prev_context}\n"
+            if self._prev_context else ""
+        )
+
+        prompt = f"""You are recommending the next security scan step based on what was already found.
+
+Authorized penetration test against: {target}
+Current preset already run: {current_preset}
+Technologies detected: {tech_summary}
+WAF context: {waf_hint}
+{prev_orch_block}
+Findings from this scan:
+{findings_summary}
+
+Preset escalation path from {current_preset}:
+  Next preset: {next_preset or "none — already at maximum coverage"}
+  What it adds: {escalation_desc}
+
+RULES:
+- If {current_preset} is "web-authenticated-thorough", recommend specific sub-presets from:
+  nuclei/nuclei-intense, web/lightfuzz-superheavy, web/ffuf-heavy, web/paramminer
+- If the next preset requires authentication (web-authenticated or thorough) but NO login surface
+  was found in the findings, still recommend it but add a clear WARNING that credentials are needed.
+- The saudit command must use the exact target "{target}" — no placeholders.
+- If there are high-value findings (secrets, exposed files, auth bypass), escalate aggressively.
+- Keep the rationale to 2-3 sentences maximum.
+
+Produce ONLY this section (no other text):
+
+## Recommended Next Scan
+
+**Current coverage:** `{current_preset}`
+**Recommended:** `<preset-name>`
+
+```bash
+saudit -t {target} -p <preset-name>
+```
+
+**Rationale:** <2-3 sentences explaining WHY this next step based on what was found>
+
+> **Note:** <only if auth is required or there is an important caveat — otherwise omit this line>"""
+
+        return await self._call(prompt)
+
+    def _print_next_scan(self, md: str):
+        print(_hdr("NEXT SCAN"), flush=True)
+        for line in md.splitlines():
+            if line.startswith("## "):
+                continue
+            elif line.startswith("**Recommended"):
+                print(f"  {_GRN}{line}{_R}", flush=True)
+            elif line.startswith("```"):
+                print(f"  {_DIM}{line}{_R}", flush=True)
+            elif line.strip().startswith("saudit"):
+                print(f"  {_YEL}{line}{_R}", flush=True)
+            elif line.startswith("**Rationale"):
+                print(f"  {_WHT}{line}{_R}", flush=True)
+            elif line.strip():
+                print(f"  {_DIM}{line}{_R}", flush=True)
+
     def _extract_json(self, text: str, fallback=None):
         """Robustly extract JSON from model output that may include prose or markdown."""
         import json, re
@@ -1050,18 +1254,39 @@ Auth bypasses, IDOR, privilege escalation patterns from the endpoint structure."
                     )
         except Exception:
             pass
+        if self._nvidia_key:
+            return "nvidia"
         if self._anthropic_key:
             return "claude"
         if self._gemini_key:
             return "gemini"
         return None
 
+    def _backend_chain(self) -> list[tuple[str, object]]:
+        """Priority-ordered list of (name, callable) for available backends."""
+        all_backends = [
+            ("ollama",  self._ollama_call),
+            ("nvidia",  self._nvidia_call)  if self._nvidia_key      else None,
+            ("claude",  self._claude_call)  if self._anthropic_key   else None,
+            ("gemini",  self._gemini_call)  if self._gemini_key      else None,
+        ]
+        ordered = [b for b in all_backends if b]
+        # rotate so current backend is first
+        names = [b[0] for b in ordered]
+        if self._backend in names:
+            idx = names.index(self._backend)
+            ordered = ordered[idx:] + ordered[:idx]
+        return ordered
+
     async def _call(self, prompt: str) -> str:
-        if self._backend == "ollama":
-            return await self._ollama_call(prompt)
-        if self._backend == "claude":
-            return await self._claude_call(prompt)
-        return await self._gemini_call(prompt)
+        for name, fn in self._backend_chain():
+            result = await fn(prompt)
+            if result:
+                if name != self._backend:
+                    print(f"{_YEL}[AI] Fallback: {self._backend} unreachable → using {name}{_R}", flush=True)
+                    self._backend = name
+                return result
+        return ""
 
     async def _ollama_call(self, prompt: str) -> str:
         payload = {
@@ -1081,6 +1306,33 @@ Auth bypasses, IDOR, privilege escalation patterns from the endpoint structure."
         except Exception as e:
             self.warning(f"Ollama call failed: {e}")
             return ""
+
+    async def _nvidia_call(self, prompt: str) -> str:
+        payload = {
+            "model":       self._nvidia_model,
+            "messages":    [
+                {"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "user",   "content": prompt},
+            ],
+            "temperature": 0.1,
+            "top_p":       0.7,
+            "max_tokens":  4096,
+            "stream":      False,
+        }
+        headers = {
+            "Authorization": f"Bearer {self._nvidia_key}",
+            "Content-Type":  "application/json",
+        }
+        try:
+            async with httpx.AsyncClient(timeout=120) as client:
+                resp = await client.post(_NVIDIA_URL, json=payload, headers=headers)
+                resp.raise_for_status()
+                return resp.json()["choices"][0]["message"]["content"].strip()
+        except httpx.HTTPStatusError as e:
+            self.warning(f"NVIDIA NIM error: {e.response.status_code} — {e.response.text[:200]}")
+        except Exception as e:
+            self.warning(f"NVIDIA NIM call failed: {e}")
+        return ""
 
     async def _claude_call(self, prompt: str) -> str:
         payload = {
@@ -1229,9 +1481,11 @@ Auth bypasses, IDOR, privilege escalation patterns from the endpoint structure."
             "```",
             "# Option 1 — Ollama (local, free)",
             "ollama serve && ollama pull qwen2.5-coder:7b",
-            "# Option 2 — Claude",
+            "# Option 2 — NVIDIA NIM (cloud, free tier — 1 000 req/month)",
+            "export NVIDIA_API_KEY=nvapi-...",
+            "# Option 3 — Claude",
             "export ANTHROPIC_API_KEY=sk-ant-...",
-            "# Option 3 — Gemini",
+            "# Option 4 — Gemini",
             "export GEMINI_API_KEY=...",
             "```",
         ]
